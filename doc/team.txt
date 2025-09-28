@@ -2,3 +2,4 @@ Team Details
 Name               | CCID          | GITHUB username
 Erik Bacsa         | ebacsa        | erikbacsa
 Ebuka Odeluga      | chukwueb      | ebxka
+Michael Gao        | mhgao         | michaelhgao
