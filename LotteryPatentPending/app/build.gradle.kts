@@ -41,5 +41,8 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
-
+    //Firebase BoM
+    implementation(platform("com.google.firebase:firebase-bom:34.3.0"))
+    //Firebase dependencies
+    implementation("com.google.firebase:firebase-firestore")
 }
