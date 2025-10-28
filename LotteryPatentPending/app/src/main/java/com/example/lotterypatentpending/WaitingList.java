@@ -6,11 +6,9 @@ import java.util.ArrayList;
 
 public class WaitingList {
     private ArrayList<Pair<Entrant, WaitingListState>> list;
-    private Integer numSelect;
 
-    public WaitingList(Integer numSelect) {
+    public WaitingList() {
         list = new ArrayList<>();
-        this.numSelect = numSelect;
     }
 
     public void addEntrant(Entrant entrant) {
@@ -20,23 +18,15 @@ public class WaitingList {
     /**
      * Selects a number of people randomly with a lottery system
      */
-    public void lotterySelect() {
-        LotterySystem.lotterySelect(this.list, this.numSelect);
+    public void lotterySelect(Integer numSelect) {
+        LotterySystem.lotterySelect(this.list, numSelect);
     }
 
     /**
      * Reselects people, caring about states as well
      */
-    public void lotteryReselect() {
-        LotterySystem.lotteryReselect(this.list, this.numSelect);
-    }
-
-    public void setNumSelect(Integer numSelect) {
-        this.numSelect = numSelect;
-    }
-
-    public Integer getNumSelect() {
-        return this.numSelect;
+    public void lotteryReselect(Integer numSelect) {
+        LotterySystem.lotteryReselect(this.list, numSelect);
     }
 
     public Integer getNumEntrants() {
