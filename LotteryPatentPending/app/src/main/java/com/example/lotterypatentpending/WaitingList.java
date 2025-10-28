@@ -20,7 +20,7 @@ public class WaitingList {
      * @param num number of people to select
      */
     public void lotterySelect(Integer num) {
-
+        LotterySystem.lotterySelect(this.list, num);
     }
 
     /**
