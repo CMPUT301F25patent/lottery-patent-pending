@@ -7,17 +7,17 @@ import java.util.Comparator;
 import java.util.List;
 
 public class LotterySystem {
-    public static void selectEntrants(List<Pair<Entrant, WaitingListState>> entrants, Integer n) {
-        Collections.shuffle(entrants);
-        for (int i = 0; i < entrants.size(); i++) {
-            Pair<Entrant, WaitingListState> pair = entrants.get(i);
-            WaitingListState newState = (i < n) ? WaitingListState.ENTERED : WaitingListState.CANCELED;
-            entrants.set(i, new Pair<>(pair.first, newState));
+    public static void lotterySelect(List<Pair<Entrant, WaitingListState>> list, Integer num) {
+        Collections.shuffle(list);
+        for (int i = 0; i < list.size(); i++) {
+            Pair<Entrant, WaitingListState> pair = list.get(i);
+            WaitingListState newState = (i < num) ? WaitingListState.SELECTED : WaitingListState.NOT_SELECTED;
+            list.set(i, new Pair<>(pair.first, newState));
         }
-        entrants.sort(Comparator.comparing(pair -> pair.first.getName()));
+        list.sort(Comparator.comparing(pair -> pair.first.getName()));
     }
 
-    public static void reselectEntrants() {
+    public static void lotteryReselect() {
 
     }
 }
