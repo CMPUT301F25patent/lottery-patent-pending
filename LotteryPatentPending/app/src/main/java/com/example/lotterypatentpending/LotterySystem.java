@@ -7,6 +7,11 @@ import java.util.Comparator;
 import java.util.List;
 
 public class LotterySystem {
+    /**
+     * Selects random entrants by shuffling the list and picking the first n entrants, then sorting the list
+     * @param list list of entrants
+     * @param num number of entrants to select
+     */
     public static void lotterySelect(List<Pair<Entrant, WaitingListState>> list, Integer num) {
         Collections.shuffle(list);
         for (int i = 0; i < list.size(); i++) {
@@ -17,7 +22,7 @@ public class LotterySystem {
         list.sort(Comparator.comparing(pair -> pair.first.getName()));
     }
 
-    public static void lotteryReselect() {
+    public static void lotteryReselect(List<Pair<Entrant, WaitingListState>> list, Integer num) {
 
     }
 }

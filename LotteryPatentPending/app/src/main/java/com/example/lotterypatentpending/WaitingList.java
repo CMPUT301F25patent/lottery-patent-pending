@@ -21,14 +21,14 @@ public class WaitingList {
      * Selects a number of people randomly with a lottery system
      */
     public void lotterySelect() {
-
+        LotterySystem.lotterySelect(this.list, this.numSelect);
     }
 
     /**
      * Reselects people, caring about states as well
      */
     public void lotteryReselect() {
-
+        LotterySystem.lotteryReselect(this.list, this.numSelect);
     }
 
     public void setNumSelect(Integer numSelect) {
