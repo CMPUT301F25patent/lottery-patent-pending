@@ -14,4 +14,17 @@
 .cxx
 local.properties
 
+# Android Studio/IntelliJ
 .idea/
+*.iml
+
+
+# Local build & config
+local.properties
+.gradle/.cxx/.externalNativeBuild/
+
+
+# Build outputs
+/app/build/
+**/build/
+
