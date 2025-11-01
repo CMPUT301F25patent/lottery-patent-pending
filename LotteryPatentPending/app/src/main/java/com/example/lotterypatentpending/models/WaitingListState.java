@@ -1,4 +1,4 @@
-package com.example.lotterypatentpending;
+package com.example.lotterypatentpending.models;
 
 public enum WaitingListState {
     NOT_IN, // error state

@@ -1,4 +1,4 @@
-package com.example.lotterypatentpending;
+package com.example.lotterypatentpending.models;
 
 import com.google.firebase.firestore.DocumentId;
 import com.google.firebase.Timestamp;

@@ -1,4 +1,4 @@
-package com.example.lotterypatentpending;
+package com.example.lotterypatentpending.models;
 
 import android.util.Pair;
 

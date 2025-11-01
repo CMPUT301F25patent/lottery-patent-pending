@@ -6,7 +6,7 @@ package com.example.lotterypatentpending.models;
  * @maintainer Erik
  * @author Erik
  */
-public class QRCodeModel {
+public class QRCode {
 
     //Helpful for identifying if QRCode is ours
     private static final String PREFIX = "EVT:";
@@ -16,7 +16,9 @@ public class QRCodeModel {
     /**
      * @param eventId Event ID associated with QRCode
      */
-    public QRCodeModel(String eventId){
+    public QRCode(String eventId){
+        if (eventId == null || eventId.trim().isEmpty())
+            throw new IllegalArgumentException("eventId required");
         this.eventId = eventId;
     }
 
@@ -28,19 +30,21 @@ public class QRCodeModel {
      * String to embed inside the QR code
      */
 
-    public String toPayLoad(){
+    public String toPayload(){
         return PREFIX + eventId;
     }
 
     /**
      * Checks if our prefix in QRCode
      */
-    public static QRCodeModel fromPayload(String s){
+    public static QRCode fromPayload(String s){
         if ( s == null || !s.startsWith(PREFIX) ) return null;
         String id = s.substring(PREFIX.length()).trim();
         if (id.isEmpty()) return null;
-        return new QRCodeModel(id);
+        return new QRCode(id);
     }
+
+
 
 
 
