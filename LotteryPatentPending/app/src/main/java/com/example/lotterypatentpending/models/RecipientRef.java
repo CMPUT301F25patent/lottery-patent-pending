@@ -1,6 +1,4 @@
-package com.example.lotterypatentpending;
-
-import java.util.*;
+package com.example.lotterypatentpending.models;
 
 public class RecipientRef {
     private String userId;
