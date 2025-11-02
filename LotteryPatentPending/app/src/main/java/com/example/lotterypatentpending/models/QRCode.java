@@ -43,9 +43,4 @@ public class QRCode {
         if (id.isEmpty()) return null;
         return new QRCode(id);
     }
-
-
-
-
-
 }
