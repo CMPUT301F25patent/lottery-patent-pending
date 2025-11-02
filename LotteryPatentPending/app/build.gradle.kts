@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.android.application)
+    alias(libs.plugins.google.gms.google.services)
 }
 
 android {
@@ -53,6 +54,8 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:34.3.0"))
     //Firebase dependencies
     implementation("com.google.firebase:firebase-firestore")
+      implementation(libs.firebase.firestore)
+    implementation(libs.firebase.storage)
 
     // Generate QR bitmaps
     implementation("com.google.zxing:core:3.5.3")
