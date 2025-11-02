@@ -37,7 +37,6 @@ android {
 }
 
 dependencies {
-    // Use cataloged deps (remove the hardcoded Material line to avoid duplicates)
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.activity)
