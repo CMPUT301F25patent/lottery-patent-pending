@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Used by BottomNavigationView: app:itemActiveIndicatorStyle -->
+    <style name="NoActiveIndicator" parent="">
+        <item name="android:color">@android:color/transparent</item>
+    </style>
+</resources>
