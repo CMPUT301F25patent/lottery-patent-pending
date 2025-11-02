@@ -1,15 +1,15 @@
 package com.example.lotterypatentpending;
 
 import java.util.Map;
-
+import java.util.HashMap;
 
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.auth.User;
+import com.google.firebase.storage.FirebaseStorage;
 
-import java.util.HashMap;
-import java.util.Map;
 public class FirebaseManager {
     // --- Firebase Instances ---
     private final FirebaseFirestore db;
@@ -23,14 +23,11 @@ public class FirebaseManager {
 
     // generic user methods, will be updated when user class is looked at
 
-    public void addUser(String userId, Map<String, Object> userData) {
-        db.collection("users").document(userId).set(userData)
-                .addOnSuccessListener(aVoid -> {
-                    System.out.println("User added successfully.");
-                })
-                .addOnFailureListener(e -> {
-                    System.err.println("Error adding user: " + e.getMessage());
-                });
+    //utilizes user  class, add update, delete and get methods added
+    public void addOrUpdateUser(User user) {
+        db.collection("users").document(user.getUserId()).set(user)
+                .addOnSuccessListener(aVoid -> System.out.println("User saved successfully: " + user.getUserId()))
+                .addOnFailureListener(e -> System.err.println("Error saving user: " + e.getMessage()));
     }
 
     public void getUser(String userId, FirebaseCallback<DocumentSnapshot> callback) {
@@ -38,7 +35,17 @@ public class FirebaseManager {
                 .addOnSuccessListener(callback::onSuccess)
                 .addOnFailureListener(callback::onFailure);
     }
+    public void getAllUsers(FirebaseCallback<QuerySnapshot> callback) {
+        db.collection("users").get()
+                .addOnSuccessListener(callback::onSuccess)
+                .addOnFailureListener(callback::onFailure);
+    }
 
+    public void deleteUser(String userId) {
+        db.collection("users").document(userId).delete()
+                .addOnSuccessListener(aVoid -> System.out.println("User deleted successfully: " + userId))
+                .addOnFailureListener(e -> System.err.println("Error deleting user: " + e.getMessage()));
+    }
     // generic event add, will update after looking at event class
 
     public void addEvent(String eventId, Map<String, Object> eventData) {
@@ -50,6 +57,8 @@ public class FirebaseManager {
                     System.err.println("Error creating event: " + e.getMessage());
                 });
     }
+
+
 
     public void getEvent(String eventId, FirebaseCallback<DocumentSnapshot> callback) {
         db.collection("events").document(eventId).get()
