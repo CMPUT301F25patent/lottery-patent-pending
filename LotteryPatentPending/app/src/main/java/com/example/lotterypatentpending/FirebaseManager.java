@@ -128,8 +128,6 @@ public class FirebaseManager {
                 .addOnSuccessListener(callback::onSuccess)
                 .addOnFailureListener(callback::onFailure);
     }
-
-    // generic waitinglist add, will updated after looking at waitinglistclass
     public void deleteEvent(String eventId) {
         db.collection("events").document(eventId).delete()
                 .addOnSuccessListener(aVoid ->
@@ -137,23 +135,62 @@ public class FirebaseManager {
                 .addOnFailureListener(e ->
                         System.err.println("Error deleting event: " + e.getMessage()));
     }
-    public void addToWaitingList(String eventId, String entrantId, Map<String, Object> entrantData) {
-        CollectionReference waitingList = db.collection("events").document(eventId).collection("waitingList");
-        waitingList.document(entrantId).set(entrantData)
-                .addOnSuccessListener(aVoid -> {
-                    System.out.println("Entrant added to waiting list.");
-                })
-                .addOnFailureListener(e -> {
-                    System.err.println("Error adding entrant: " + e.getMessage());
-                });
+    //
+    public void addEntrantToWaitingList(String eventId, WaitingListEntry entry) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("entrantId", entry.getEntrantId());
+        data.put("entrantName", entry.getEntrantName());
+        data.put("state", entry.getState().name());  // store enum as String
+
+        db.collection("events")
+                .document(eventId)
+                .collection("waitingList")
+                .document(entry.getEntrantId())
+                .set(data)
+                .addOnSuccessListener(aVoid ->
+                        System.out.println("Entrant added to waiting list: " + entry.getEntrantName()))
+                .addOnFailureListener(e ->
+                        System.err.println("Error adding entrant: " + e.getMessage()));
     }
 
-    public void removeFromWaitingList(String eventId, String entrantId) {
-        db.collection("events").document(eventId)
-                .collection("waitingList").document(entrantId).delete()
-                .addOnSuccessListener(aVoid -> System.out.println("Entrant removed from waiting list."))
-                .addOnFailureListener(e -> System.err.println("Error removing entrant: " + e.getMessage()));
+    //Updates an entrant’s waiting list state (e.g., SELECTED, ACCEPTED, DECLINED).
+
+    public void updateEntrantState(String eventId, String entrantId, WaitingListState newState) {
+        db.collection("events")
+                .document(eventId)
+                .collection("waitingList")
+                .document(entrantId)
+                .update("state", newState.name())
+                .addOnSuccessListener(aVoid ->
+                        System.out.println("Entrant " + entrantId + " state updated to " + newState))
+                .addOnFailureListener(e ->
+                        System.err.println("Error updating state: " + e.getMessage()));
     }
+
+    //Retrieves all entrants in a given event’s waiting list.
+    public void getWaitingList(String eventId, FirebaseCallback<QuerySnapshot> callback) {
+        db.collection("events")
+                .document(eventId)
+                .collection("waitingList")
+                .get()
+                .addOnSuccessListener(callback::onSuccess)
+                .addOnFailureListener(callback::onFailure);
+    }
+
+    //Removes an entrant from the waiting list.
+
+    public void removeEntrantFromWaitingList(String eventId, String entrantId) {
+        db.collection("events")
+                .document(eventId)
+                .collection("waitingList")
+                .document(entrantId)
+                .delete()
+                .addOnSuccessListener(aVoid ->
+                        System.out.println("Entrant removed from waiting list: " + entrantId))
+                .addOnFailureListener(e ->
+                        System.err.println("Error removing entrant: " + e.getMessage()));
+    }
+
 
     // generic notification add, will updated after looking at notification class
     public void logNotification(String notificationId, Map<String, Object> notificationData) {
