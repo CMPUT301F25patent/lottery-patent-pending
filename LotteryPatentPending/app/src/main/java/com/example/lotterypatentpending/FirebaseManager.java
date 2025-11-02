@@ -1,10 +1,13 @@
 package com.example.lotterypatentpending;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Map;
 import java.util.HashMap;
 
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.auth.User;
@@ -46,23 +49,77 @@ public class FirebaseManager {
                 .addOnSuccessListener(aVoid -> System.out.println("User deleted successfully: " + userId))
                 .addOnFailureListener(e -> System.err.println("Error deleting user: " + e.getMessage()));
     }
-    // generic event add, will update after looking at event class
 
-    public void addEvent(String eventId, Map<String, Object> eventData) {
+
+// mapping event objects to firestore
+    private Map<String, Object> eventToMap(Event event) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("title", event.getTitle());
+        data.put("description", event.getDescription());
+        data.put("capacity", event.getCapacity());
+        data.put("location", event.getLocation());
+
+        // Convert LocalDate and LocalTime to Strings for Firebase
+        data.put("date", event.getDate() != null ? event.getDate().toString() : null);
+        data.put("time", event.getTime() != null ? event.getTime().toString() : null);
+        data.put("regStartDate", event.getRegStartDate() != null ? event.getRegStartDate().toString() : null);
+        data.put("regStartTime", event.getRegStartTime() != null ? event.getRegStartTime().toString() : null);
+        data.put("regEndDate", event.getRegEndDate() != null ? event.getRegEndDate().toString() : null);
+        data.put("regEndTime", event.getRegEndTime() != null ? event.getRegEndTime().toString() : null);
+
+        return data;
+    }
+
+    //Converts Firestore data back into an Event object
+    private Event mapToEvent(Map<String, Object> data) {
+        String title = (String) data.get("title");
+        String description = (String) data.get("description");
+        String location = (String) data.get("location");
+        int capacity = ((Long) data.get("capacity")).intValue();
+
+        Event event = new Event(title, description, capacity);
+        event.setLocation(location);
+
+        // Convert Strings back to LocalDate and LocalTime
+        if (data.get("date") != null) event.setDate(LocalDate.parse((String) data.get("date")));
+        if (data.get("time") != null) event.setTime(LocalTime.parse((String) data.get("time")));
+        if (data.get("regStartDate") != null) event.setRegStartDate(LocalDate.parse((String) data.get("regStartDate")));
+        if (data.get("regStartTime") != null) event.setRegStartTime(LocalTime.parse((String) data.get("regStartTime")));
+        if (data.get("regEndDate") != null) event.setRegEndDate(LocalDate.parse((String) data.get("regEndDate")));
+        if (data.get("regEndTime") != null) event.setRegEndTime(LocalTime.parse((String) data.get("regEndTime")));
+
+        return event;
+    }
+
+
+    //
+
+    public void addOrUpdateEvent(String eventId, Event event) {
+        Map<String, Object> eventData = eventToMap(event);
         db.collection("events").document(eventId).set(eventData)
-                .addOnSuccessListener(aVoid -> {
-                    System.out.println("Event created successfully.");
-                })
-                .addOnFailureListener(e -> {
-                    System.err.println("Error creating event: " + e.getMessage());
-                });
+                .addOnSuccessListener(aVoid ->
+                        System.out.println("Event saved successfully: " + event.getTitle()))
+                .addOnFailureListener(e ->
+                        System.err.println("Error saving event: " + e.getMessage()));
     }
 
 
 
-    public void getEvent(String eventId, FirebaseCallback<DocumentSnapshot> callback) {
+    public void getEvent(String eventId, FirebaseCallback<Event> callback) {
         db.collection("events").document(eventId).get()
-                .addOnSuccessListener(callback::onSuccess)
+                .addOnSuccessListener(snapshot -> {
+                    if (snapshot.exists()) {
+                        try {
+                            Event event = mapToEvent(snapshot.getData());
+                            callback.onSuccess(event);
+                        } catch (Exception e) {
+                            callback.onFailure(e);
+                        }
+                    } else {
+                        callback.onFailure(new FirebaseFirestoreException(
+                                "Event not found", FirebaseFirestoreException.Code.NOT_FOUND));
+                    }
+                })
                 .addOnFailureListener(callback::onFailure);
     }
 
@@ -73,7 +130,13 @@ public class FirebaseManager {
     }
 
     // generic waitinglist add, will updated after looking at waitinglistclass
-
+    public void deleteEvent(String eventId) {
+        db.collection("events").document(eventId).delete()
+                .addOnSuccessListener(aVoid ->
+                        System.out.println("Event deleted successfully: " + eventId))
+                .addOnFailureListener(e ->
+                        System.err.println("Error deleting event: " + e.getMessage()));
+    }
     public void addToWaitingList(String eventId, String entrantId, Map<String, Object> entrantData) {
         CollectionReference waitingList = db.collection("events").document(eventId).collection("waitingList");
         waitingList.document(entrantId).set(entrantData)
