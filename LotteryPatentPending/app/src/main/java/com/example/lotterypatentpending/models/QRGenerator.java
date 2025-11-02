@@ -1,11 +1,19 @@
 package com.example.lotterypatentpending.models;
 
 import android.graphics.Bitmap;
+import android.widget.ImageView;
 
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
+
+
+/**
+ * Class to represent a QR code
+ * @maintainer Erik
+ * @author Erik
+ */
 
 public class QRGenerator {
 
@@ -36,5 +44,23 @@ public class QRGenerator {
             }
         }
         return bmp;
+    }
+
+    /**
+     *
+     * @param target Places our QR onto an ImageView
+     * @param eventId ID of an event
+     * @param sizePx size of QR code
+     */
+    public static void setQRToView(ImageView target, String eventId, int sizePx){
+        String payload = new QRCode(eventId).toPayload();
+
+        try{
+            Bitmap bmp = generate(payload, sizePx);
+            target.setImageBitmap(bmp);
+        }
+        catch (WriterException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
