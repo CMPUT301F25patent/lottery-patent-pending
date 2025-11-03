@@ -10,6 +10,8 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.example.lotterypatentpending.models.Notifications;
+import com.example.lotterypatentpending.models.RecipientRef;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
@@ -94,6 +96,41 @@ public class AdminActivity extends AppCompatActivity {
             @Override
             public void onFailure(Exception e) {
                 Log.e("Admin", "Error loading events: " + e.getMessage());
+            }
+        });
+    }
+    private void viewAllNotifications() {
+        if (currentUser == null || !currentUser.isAdmin()) {
+            Toast.makeText(context, "Access denied: Admin privileges required", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        firebaseManager.getAllNotifications(new FirebaseManager.FirebaseCallback<List<Notifications>>() {
+            @Override
+            public void onSuccess(List<Notifications> notifications) {
+                StringBuilder sb = new StringBuilder("=== Notification Logs ===\n\n");
+                for (Notifications n : notifications) {
+                    sb.append("Title: ").append(n.getTitle())
+                            .append("\nType: ").append(n.getType())
+                            .append("\nSender ID: ").append(n.getSenderId())
+                            .append("\nRecipients: ");
+                    if (n.getRecipients() != null) {
+                        for (RecipientRef r : n.getRecipients()) {
+                            sb.append(r.getRecipientId()).append(" ");
+                        }
+                    }
+                    sb.append("\nStatus: ").append(n.getStatus())
+                            .append("\nCreated At: ").append(n.getCreatedAt())
+                            .append("\n\n");
+                }
+
+                Log.d("AdminNotifications", sb.toString());
+                Toast.makeText(context, "Fetched " + notifications.size() + " notifications", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Log.e("Admin", "Error fetching notifications: " + e.getMessage());
             }
         });
     }
