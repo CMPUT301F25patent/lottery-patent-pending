@@ -1,10 +1,18 @@
 package com.example.lotterypatentpending;
 
+import android.util.Log;
+
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 
+import com.example.lotterypatentpending.models.Notifications;
+import com.example.lotterypatentpending.models.WaitingListState;
+import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestoreException;
@@ -18,9 +26,15 @@ public class FirebaseManager {
     private final FirebaseFirestore db;
 
 
-
+    private static FirebaseManager instance;
     private FirebaseManager() {
         db = FirebaseFirestore.getInstance();
+    }
+    public static FirebaseManager getInstance() {
+        if (instance == null) {
+            instance = new FirebaseManager();
+        }
+        return instance;
     }
 
 
@@ -193,10 +207,41 @@ public class FirebaseManager {
 
 
     // generic notification add, will updated after looking at notification class
-    public void logNotification(String notificationId, Map<String, Object> notificationData) {
-        db.collection("notifications").document(notificationId).set(notificationData)
-                .addOnSuccessListener(aVoid -> System.out.println("Notification logged."))
-                .addOnFailureListener(e -> System.err.println("Error logging notification: " + e.getMessage()));
+    public void logNotification(Notifications notification) {
+        // If the notification already has an ID, reuse it; otherwise Firestore generates one.
+        DocumentReference docRef;
+        if (notification.getId() != null && !notification.getId().isEmpty()) {
+            docRef = db.collection("notifications").document(notification.getId());
+        } else {
+            docRef = db.collection("notifications").document();
+            notification.setId(docRef.getId());
+        }
+
+        // Ensure timestamps are filled if not already
+        if (notification.getCreatedAt() == null) {
+            notification.setCreatedAt(Timestamp.now());
+        }
+
+        docRef.set(notification)
+                .addOnSuccessListener(aVoid ->
+                        Log.d("FirebaseManager", "Notification logged: " + notification.getId()))
+                .addOnFailureListener(e ->
+                        Log.e("FirebaseManager", "Error logging notification: " + e.getMessage()));
+    }
+
+    public void getAllNotifications(FirebaseCallback<List<Notifications>> callback) {
+        db.collection("notifications")
+                .orderBy("createdAt") // optional if stored as a Timestamp
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    List<Notifications> notifications = new ArrayList<>();
+                    for (DocumentSnapshot doc : querySnapshot) {
+                        Notifications notif = doc.toObject(Notifications.class);
+                        notifications.add(notif);
+                    }
+                    callback.onSuccess(notifications);
+                })
+                .addOnFailureListener(callback::onFailure);
     }
 
     // for lsteners
