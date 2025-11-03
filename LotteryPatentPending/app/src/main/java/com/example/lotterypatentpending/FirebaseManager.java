@@ -5,6 +5,7 @@ import java.time.LocalTime;
 import java.util.Map;
 import java.util.HashMap;
 
+import com.example.lotterypatentpending.models.WaitingListState;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestoreException;
@@ -18,9 +19,15 @@ public class FirebaseManager {
     private final FirebaseFirestore db;
 
 
-
+    private static FirebaseManager instance;
     private FirebaseManager() {
         db = FirebaseFirestore.getInstance();
+    }
+    public static FirebaseManager getInstance() {
+        if (instance == null) {
+            instance = new FirebaseManager();
+        }
+        return instance;
     }
 
 

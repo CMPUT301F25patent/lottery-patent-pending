@@ -14,7 +14,6 @@ lifecycleLivedataKtx = "2.9.4"
 lifecycleViewmodelKtx = "2.9.4"
 navigationFragment = "2.9.5"
 navigationUi = "2.9.5"
-googleGmsGoogleServices = "4.4.4"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
