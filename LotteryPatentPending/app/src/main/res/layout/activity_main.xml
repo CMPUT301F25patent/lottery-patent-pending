@@ -1,12 +1,12 @@
 <!-- res/layout/activity_main.xml -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
-    android:padding="16dp"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@+id/main"
     android:background="@color/dark_grey"
-    android:gravity="bottom|center">
+    android:gravity="center|top"
+    android:padding="16dp">
 
     <TextView
         android:layout_width="match_parent"

@@ -5,9 +5,7 @@ plugins {
 
 android {
     namespace = "com.example.lotterypatentpending"
-    compileSdk {
-        version = release(36)
-    }
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.lotterypatentpending"
@@ -15,7 +13,6 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -28,17 +25,19 @@ android {
             )
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+
     buildFeatures {
         viewBinding = true
     }
 }
 
 dependencies {
-    implementation("com.google.android.material:material:1.12.0")
+    // Use cataloged (no duplicate hard-coded Material)
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.activity)
@@ -47,18 +46,19 @@ dependencies {
     implementation(libs.lifecycle.viewmodel.ktx)
     implementation(libs.navigation.fragment)
     implementation(libs.navigation.ui)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
-    //Firebase BoM
-    implementation(platform("com.google.firebase:firebase-bom:34.3.0"))
-    //Firebase dependencies
+
+    // Firebase via BoM
+    implementation(platform("com.google.firebase:firebase-bom:34.5.0"))
+    implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-firestore")
-      implementation(libs.firebase.firestore)
+    implementation(libs.firebase.firestore)
     implementation(libs.firebase.storage)
 
-    // Generate QR bitmaps
+    // QR
     implementation("com.google.zxing:core:3.5.3")
-    // (Scanner) Lightweight, easy camera QR scanner
     implementation("com.github.yuriy-budiyev:code-scanner:2.3.2")
 }

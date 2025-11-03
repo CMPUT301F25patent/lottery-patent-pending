@@ -43,7 +43,7 @@ public class AttendeeActivity extends AppCompatActivity {
         });
     }
 
-    private boolean load(@NonNull Fragment f) {
+    private boolean load(Fragment f) {
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.attendeeContainer, f)
                 .commit();
