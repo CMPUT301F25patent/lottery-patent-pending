@@ -1,6 +1,7 @@
 package com.example.lotterypatentpending;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -8,6 +9,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class AdminActivity extends AppCompatActivity {
     private User currentUser;  // holds the logged-in user
@@ -37,6 +44,25 @@ public class AdminActivity extends AppCompatActivity {
 
         firebaseManager.deleteUser(userId);
         Toast.makeText(this, "User profile removed", Toast.LENGTH_SHORT).show();
+    }
+    public void browseAllUsers() {
+        FirebaseManager.getInstance().getAllUsers(new FirebaseManager.FirebaseCallback<QuerySnapshot>() {
+            @Override
+            public void onSuccess(QuerySnapshot result) {
+                List<User> users = new ArrayList<User>();
+                for (DocumentSnapshot doc : result) {
+                    User user = doc.toObject(User.class);
+                    users.add(user);
+                }
+
+                // TODO: bind 'users' to a list adapter
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Log.e("Admin", "Error loading users: " + e.getMessage());
+            }
+        });
     }
 
 }
