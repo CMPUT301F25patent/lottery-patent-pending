@@ -17,6 +17,12 @@ import com.example.lotterypatentpending.models.FirebaseManager;
 import com.example.lotterypatentpending.models.User;
 import com.google.firebase.auth.FirebaseAuth;
 
+/**
+ * Class to represent a QR code
+ * @maintainer Erik
+ * @author Erik
+ */
+
 public class CreateUserFragment extends Fragment {
 
 
