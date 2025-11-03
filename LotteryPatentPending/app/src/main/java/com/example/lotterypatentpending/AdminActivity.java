@@ -63,6 +63,16 @@ public class AdminActivity extends AppCompatActivity {
                 Log.e("Admin", "Error loading users: " + e.getMessage());
             }
         });
+
+    }
+    public void removeEvent(String eventId, User currentUser) {
+        if (!currentUser.isAdmin()) {
+            Toast.makeText(this, "Only admins can remove events", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        FirebaseManager.getInstance().deleteEvent(eventId);
+        Toast.makeText(this, "Event removed successfully", Toast.LENGTH_SHORT).show();
     }
 
 }
