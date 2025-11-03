@@ -17,7 +17,6 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QuerySnapshot;
-import com.google.firebase.firestore.auth.User;
 
 public class FirebaseManager {
     // --- Firebase Instances ---
@@ -242,7 +241,7 @@ public class FirebaseManager {
                 .addOnFailureListener(callback::onFailure);
     }
 
-    // for lsteners
+    // for listeners
     public interface FirebaseCallback<T> {
         void onSuccess(T result);
         void onFailure(Exception e);

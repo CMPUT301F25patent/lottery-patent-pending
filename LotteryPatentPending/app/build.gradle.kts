@@ -55,7 +55,7 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:34.5.0"))
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-firestore")
-    implementation(libs.firebase.firestore)
+    implementation("com.google.firebase:firebase-installations")
     implementation(libs.firebase.storage)
 
     // QR

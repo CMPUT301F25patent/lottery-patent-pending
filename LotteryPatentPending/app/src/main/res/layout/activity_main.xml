@@ -8,6 +8,13 @@
     android:gravity="center|top"
     android:padding="16dp">
 
+    <FrameLayout
+        android:id="@+id/createUserOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        />
+
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
