@@ -74,5 +74,27 @@ public class AdminActivity extends AppCompatActivity {
         FirebaseManager.getInstance().deleteEvent(eventId);
         Toast.makeText(this, "Event removed successfully", Toast.LENGTH_SHORT).show();
     }
+    public void browseAllEvents() {
+        FirebaseManager.getInstance().getAllEvents(new FirebaseManager.FirebaseCallback<QuerySnapshot>() {
+            @Override
+            public void onSuccess(QuerySnapshot result) {
+                List<Event> events = new ArrayList<>();
+                for (DocumentSnapshot doc : result) {
+                    Event event = new Event(
+                            doc.getString("title"),
+                            doc.getString("description"),
+                            ((Long) doc.get("capacity")).intValue()
+                    );
+                    events.add(event);
+                }
 
+                // TODO: display 'events' in  list
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Log.e("Admin", "Error loading events: " + e.getMessage());
+            }
+        });
+    }
 }
