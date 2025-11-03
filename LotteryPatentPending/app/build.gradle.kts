@@ -1,6 +1,6 @@
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.google.gms.google.services) // required for Firebase
+    alias(libs.plugins.google.gms.google.services)
 }
 
 android {
@@ -55,7 +55,8 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:34.5.0"))
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-firestore")
-    implementation("com.google.firebase:firebase-storage")
+    implementation(libs.firebase.firestore)
+    implementation(libs.firebase.storage)
 
     // QR
     implementation("com.google.zxing:core:3.5.3")
