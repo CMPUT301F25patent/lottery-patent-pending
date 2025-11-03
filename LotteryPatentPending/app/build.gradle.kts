@@ -1,6 +1,6 @@
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.google.gms.google.services) // needed for google-services.json
+    alias(libs.plugins.google.gms.google.services) // required for Firebase
 }
 
 android {
@@ -37,6 +37,7 @@ android {
 }
 
 dependencies {
+    // Use cataloged (no duplicate hard-coded Material)
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.activity)
@@ -50,8 +51,8 @@ dependencies {
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
 
-    // --- Firebase (via BoM; no per-artifact versions) ---
-    implementation(platform("com.google.firebase:firebase-bom:34.3.0"))
+    // Firebase via BoM
+    implementation(platform("com.google.firebase:firebase-bom:34.5.0"))
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-firestore")
     implementation("com.google.firebase:firebase-storage")
