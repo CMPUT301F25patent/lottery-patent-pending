@@ -1,6 +1,5 @@
 package com.example.lotterypatentpending.models;
 
-import com.example.lotterypatentpending.User;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -185,23 +184,23 @@ public class Event {
         this.qrcode = qrcode;
     }
 
-    private void addToWaitingList(Entrant entrant){
-        waitingList.addEntrant(entrant);
-    }
-
-    private void removeFromWaitingList(Entrant entrant){
-//        waitingList.removeEntrant(entrant);
-    }
-
-    /**
-     * logic to add a user/entrant to an event or the waiting list
-     * @param entrant
-     */
-    private void joinEvent(Entrant entrant){
-        if(entrants.size() < capacity){
-            entrants.add(entrant);
-        }else{
-            addToWaitingList(entrant);
-        }
-    }
+//    private void addToWaitingList(Entrant entrant){
+//        waitingList.addEntrant(entrant);
+//    }
+//
+//    private void removeFromWaitingList(Entrant entrant){
+////        waitingList.removeEntrant(entrant);
+//    }
+//
+//    /**
+//     * logic to add a user/entrant to an event or the waiting list
+//     * @param entrant
+//     */
+//    private void joinEvent(Entrant entrant){
+//        if(entrants.size() < capacity){
+//            entrants.add(entrant);
+//        }else{
+//            addToWaitingList(entrant);
+//        }
+//    }
 }
