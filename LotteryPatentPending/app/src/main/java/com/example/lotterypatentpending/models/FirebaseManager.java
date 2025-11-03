@@ -1,4 +1,4 @@
-package com.example.lotterypatentpending;
+package com.example.lotterypatentpending.models;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -9,9 +9,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QuerySnapshot;
-import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.auth.User;
-import com.google.firebase.storage.FirebaseStorage;
 
 public class FirebaseManager {
     // --- Firebase Instances ---
