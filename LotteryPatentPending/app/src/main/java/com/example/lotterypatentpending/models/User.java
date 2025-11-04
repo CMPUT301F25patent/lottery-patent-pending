@@ -3,9 +3,7 @@ package com.example.lotterypatentpending.models;
 import java.util.List;
 import java.util.ArrayList;
 
-/**
- * @Updated Erik
- */
+
 public class User {
 
     // Firestore will bind the doc id into this field automatically

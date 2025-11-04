@@ -9,15 +9,22 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
 
 
+import com.example.lotterypatentpending.models.FirebaseManager;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.Source;
+import com.google.firebase.firestore.DocumentSnapshot;
+
+/**
+ * Class MainActivity
+ * @maintainer Erik
+ * @author Erik
+ */
+
 
 public class MainActivity extends AppCompatActivity
         implements CreateUserFragment.OnProfileSaved {
 
-    private FirebaseFirestore db;
+    private FirebaseManager firebaseManager;
     private String uid;
 
     @Override
@@ -35,7 +42,7 @@ public class MainActivity extends AppCompatActivity
                 startActivity(new Intent(this, AdminActivity.class)));
 
         FirebaseApp.initializeApp(this);
-        db = FirebaseFirestore.getInstance();
+        firebaseManager = FirebaseManager.getInstance();
 
         FirebaseAuth.getInstance().signInAnonymously()
                 .addOnSuccessListener(r -> {
@@ -46,13 +53,20 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void ensureUserDocOrOnboard() {
-        db.collection("users").document(uid)
-                .get(com.google.firebase.firestore.Source.SERVER) // avoid cache
-                .addOnSuccessListener(snap -> {
-                    boolean needProfile = !snap.exists();
-                    if (needProfile) showOverlay();
-                })
-                .addOnFailureListener(e -> showOverlay());
+        firebaseManager.getUser(uid, new FirebaseManager.FirebaseCallback<DocumentSnapshot>() {
+            @Override
+            public void onSuccess(DocumentSnapshot snap) {
+                if (!snap.exists()) {
+                    showOverlay();
+                }
+                // else: user doc exists, do nothing
+            }
+            @Override
+            public void onFailure(Exception e) {
+                // if something goes wrong, just onboard
+                showOverlay();
+            }
+        });
     }
 
     private void showOverlay() {

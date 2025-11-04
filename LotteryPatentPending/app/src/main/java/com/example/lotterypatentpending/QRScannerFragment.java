@@ -21,6 +21,12 @@ import com.budiyev.android.codescanner.CodeScanner;
 import com.budiyev.android.codescanner.CodeScannerView;
 import com.example.lotterypatentpending.models.QRCode;
 
+/**
+ * Class MainActivity
+ * @maintainer Erik
+ * @author Erik
+ */
+
 public class QRScannerFragment extends Fragment {
 
     private CodeScanner codeScanner;

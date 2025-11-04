@@ -21,6 +21,8 @@ import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.example.lotterypatentpending.models.FirebaseManager.FirebaseCallback;
 
 public class FirebaseManager {
     // --- Firebase Instances ---

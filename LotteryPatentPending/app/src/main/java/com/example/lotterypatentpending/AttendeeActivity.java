@@ -14,17 +14,30 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
 import com.example.lotterypatentpending.User_interface.Inbox.InboxActivity;
+import com.example.lotterypatentpending.models.FirebaseManager;
 import com.example.lotterypatentpending.models.NotificationRepository;
 import com.example.lotterypatentpending.models.Notification;
+import com.example.lotterypatentpending.models.User;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.ListenerRegistration;
 
+/**
+ * Class AttendeeActivity
+ * @maintainer Erik
+ * @author Erik
+ */
+
 public class AttendeeActivity extends AppCompatActivity {
+
+
+    private User user;
+    private FirebaseManager  firebaseManager;
     private NotificationRepository repo;
     private ListenerRegistration unreadReg;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -37,10 +50,17 @@ public class AttendeeActivity extends AppCompatActivity {
         toolbar.setNavigationIcon(R.drawable.ic_home);
         toolbar.setNavigationOnClickListener(v -> finish());
 
+        //Firebasemanager
+        firebaseManager = FirebaseManager.getInstance();
+
+        //Get user
+
+
         // default tab = events
         setTitle("Events");
         load(new AttendeeEventsFragment());
 
+        //creates bottom nav bar and listeners
         bottomNav.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
             if (id == R.id.nav_events) {
@@ -70,6 +90,8 @@ public class AttendeeActivity extends AppCompatActivity {
         MaterialToolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setTitle(t);
     }
+
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_attendee, menu);

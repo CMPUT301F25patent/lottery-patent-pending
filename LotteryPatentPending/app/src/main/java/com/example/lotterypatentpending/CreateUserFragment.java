@@ -18,7 +18,7 @@ import com.example.lotterypatentpending.models.User;
 import com.google.firebase.auth.FirebaseAuth;
 
 /**
- * Class to represent a QR code
+ * The create user fragment that appears and adds new user to DB
  * @maintainer Erik
  * @author Erik
  */
@@ -28,7 +28,7 @@ public class CreateUserFragment extends Fragment {
 
     public interface OnProfileSaved { void onProfileSaved(); }
 
-    private EditText nameEt, emailEt;
+    private EditText nameEt, emailEt, phoneEt;
     private Button saveBtn;
 
     @Override
@@ -42,6 +42,7 @@ public class CreateUserFragment extends Fragment {
         super.onViewCreated(v, savedInstanceState);
         nameEt = v.findViewById(R.id.et_name);
         emailEt = v.findViewById(R.id.et_email);
+        phoneEt = v.findViewById(R.id.et_phone);
         saveBtn = v.findViewById(R.id.btn_save);
         saveBtn.setOnClickListener(view -> save());
     }
@@ -49,10 +50,12 @@ public class CreateUserFragment extends Fragment {
     private void save() {
         String name  = nameEt.getText().toString().trim();
         String email = emailEt.getText().toString().trim();
+        String phone = phoneEt.getText().toString().trim();
 
         boolean ok = true;
         if (TextUtils.isEmpty(name))  { nameEt.setError("Required");  ok = false; }
         if (TextUtils.isEmpty(email)) { emailEt.setError("Required"); ok = false; }
+        if (TextUtils.isEmpty(phone)) { emailEt = null; }
         if (!ok) return;
 
         var current = FirebaseAuth.getInstance().getCurrentUser();
@@ -62,7 +65,7 @@ public class CreateUserFragment extends Fragment {
         }
 
         String authUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        User user = new User(authUid, name, email, null, false);
+        User user = new User(authUid, name, email, phone, false);
 
         saveBtn.setEnabled(false);
         FirebaseManager.getInstance().addOrUpdateUser(user);

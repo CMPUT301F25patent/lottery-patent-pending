@@ -10,7 +10,7 @@ import com.google.zxing.qrcode.QRCodeWriter;
 
 
 /**
- * Class to represent a QR code
+ * Class to represent a QR code generator
  * @maintainer Erik
  * @author Erik
  */
