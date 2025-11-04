@@ -12,17 +12,17 @@ public class LotterySystem {
      * @param list list of entrants
      * @param num number of entrants to select
      */
-    public static void lotterySelect(List<Pair<Entrant, WaitingListState>> list, Integer num) {
+    public static void lotterySelect(List<Pair<User, WaitingListState>> list, Integer num) {
         Collections.shuffle(list);
         for (int i = 0; i < list.size(); i++) {
-            Pair<Entrant, WaitingListState> pair = list.get(i);
+            Pair<User, WaitingListState> pair = list.get(i);
             WaitingListState newState = (i < num) ? WaitingListState.SELECTED : WaitingListState.NOT_SELECTED;
             list.set(i, new Pair<>(pair.first, newState));
         }
         list.sort(Comparator.comparing(pair -> pair.first.getName()));
     }
 
-    public static void lotteryReselect(List<Pair<Entrant, WaitingListState>> list, Integer num) {
+    public static void lotteryReselect(List<Pair<User, WaitingListState>> list, Integer num) {
 
     }
 }

@@ -5,14 +5,14 @@ import android.util.Pair;
 import java.util.ArrayList;
 
 public class WaitingList {
-    private ArrayList<Pair<Entrant, WaitingListState>> list;
+    private ArrayList<Pair<User, WaitingListState>> list;
 
     public WaitingList() {
         list = new ArrayList<>();
     }
 
-    public void addEntrant(Entrant entrant) {
-        list.add(new Pair<Entrant, WaitingListState>(entrant, WaitingListState.ENTERED));
+    public void addEntrant(User entrant) {
+        list.add(new Pair<User, WaitingListState>(entrant, WaitingListState.ENTERED));
     }
 
     /**

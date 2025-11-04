@@ -1,4 +1,4 @@
-package com.example.lotterypatentpending;
+package com.example.lotterypatentpending.models;
 import java.util.List;
 import java.util.ArrayList;
 
