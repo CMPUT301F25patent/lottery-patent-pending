@@ -174,6 +174,14 @@ public class Event {
         this.qrcode = qrcode;
     }
 
+    public void addToWaitingList(User entrant) {
+        this.waitingList.addEntrant(entrant);
+    }
+
+    public void removeFromWaitingList(User entrant) {
+        this.waitingList.removeEntrant(entrant);
+    }
+
 //    private void addToWaitingList(Entrant entrant){
 //        waitingList.addEntrant(entrant);
 //    }

@@ -2,6 +2,9 @@ package com.example.lotterypatentpending.models;
 
 import android.util.Pair;
 
+import com.example.lotterypatentpending.exceptions.UserInListException;
+import com.example.lotterypatentpending.exceptions.UserNotInListException;
+
 import java.util.ArrayList;
 
 public class WaitingList {
@@ -19,11 +22,25 @@ public class WaitingList {
                 break;
             }
         }
-        if (exists) {
+        if (!exists) {
             list.add(new Pair<User, WaitingListState>(entrant, WaitingListState.ENTERED));
         }
         else {
-            throw new IllegalArgumentException();
+            throw new UserInListException("User already in list.");
+        }
+    }
+
+    public void removeEntrant(User entrant) {
+        boolean removed = false;
+        for (int i = 0; i < this.list.size(); i++) {
+            if (this.list.get(i).first.equals(entrant)) {
+                removed = true;
+                this.list.remove(i);
+                break;
+            }
+        }
+        if (!removed) {
+            throw new UserNotInListException("User not found in list.");
         }
     }
 
