@@ -22,6 +22,7 @@ import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.ListenerRegistration;
 
 /**
@@ -42,7 +43,10 @@ public class AttendeeActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_attendee);
+
         repo = new com.example.lotterypatentpending.models.NotificationRepository();
+
+        //Create toolbar and navbar
         MaterialToolbar toolbar = findViewById(R.id.toolbar);
         BottomNavigationView bottomNav = findViewById(R.id.bottomNav);
 
@@ -50,13 +54,32 @@ public class AttendeeActivity extends AppCompatActivity {
         toolbar.setNavigationIcon(R.drawable.ic_home);
         toolbar.setNavigationOnClickListener(v -> finish());
 
-        //Firebasemanager
+        //Firebasemanager get db instance
         firebaseManager = FirebaseManager.getInstance();
 
         //Get user
+        FirebaseUser authUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (authUser == null) {
+            finish();
+            return;
+        }
 
+        String uid = authUser.getUid();
 
-        // default tab = events
+        firebaseManager.getUser(uid, new FirebaseManager.FirebaseCallback<DocumentSnapshot>() {
+            @Override
+            public void onSuccess(DocumentSnapshot result) {
+                if (!result.exists()) return;
+
+                user = result.toObject(User.class);
+            }
+            @Override
+            public void onFailure(Exception e) {
+                finish();
+            }
+        });
+
+        //Set default events tabs
         setTitle("Events");
         load(new AttendeeEventsFragment());
 
@@ -139,4 +162,7 @@ public class AttendeeActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    public User getUser(){
+        return user;
+    }
 }
