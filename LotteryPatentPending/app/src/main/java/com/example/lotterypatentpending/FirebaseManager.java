@@ -9,17 +9,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 
-import com.example.lotterypatentpending.models.Notifications;
+import com.example.lotterypatentpending.models.Notification;
 import com.example.lotterypatentpending.models.WaitingListState;
+import com.example.lotterypatentpending.models.RecipientRef;
+import com.example.lotterypatentpending.models.Event;
+import com.example.lotterypatentpending.models.NotificationRepository;
+import com.example.lotterypatentpending.models.WaitingList;
+import com.example.lotterypatentpending.models.Entrant;
+import com.example.lotterypatentpending.User;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QuerySnapshot;
-import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.auth.User;
-import com.google.firebase.storage.FirebaseStorage;
+//import com.google.firebase.firestore.auth.User;
 
 public class FirebaseManager {
     // --- Firebase Instances ---
@@ -207,7 +211,7 @@ public class FirebaseManager {
 
 
     // generic notification add, will updated after looking at notification class
-    public void logNotification(Notifications notification) {
+    public void logNotification(Notification notification) {
         // If the notification already has an ID, reuse it; otherwise Firestore generates one.
         DocumentReference docRef;
         if (notification.getId() != null && !notification.getId().isEmpty()) {
@@ -229,14 +233,14 @@ public class FirebaseManager {
                         Log.e("FirebaseManager", "Error logging notification: " + e.getMessage()));
     }
 
-    public void getAllNotifications(FirebaseCallback<List<Notifications>> callback) {
+    public void getAllNotifications(FirebaseCallback<List<Notification>> callback) {
         db.collection("notifications")
                 .orderBy("createdAt") // optional if stored as a Timestamp
                 .get()
                 .addOnSuccessListener(querySnapshot -> {
-                    List<Notifications> notifications = new ArrayList<>();
+                    List<Notification> notifications = new ArrayList<>();
                     for (DocumentSnapshot doc : querySnapshot) {
-                        Notifications notif = doc.toObject(Notifications.class);
+                        Notification notif = doc.toObject(Notification.class);
                         notifications.add(notif);
                     }
                     callback.onSuccess(notifications);

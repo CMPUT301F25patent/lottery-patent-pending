@@ -4,7 +4,7 @@ import com.google.firebase.firestore.DocumentId;
 import com.google.firebase.Timestamp;
 import java.util.*;
 
-public class Notifications {
+public class Notification {
     //Entrant is the primary recipient of messages
 
     //Organizer is the Sender of updates(event logistics and participant status)
@@ -41,13 +41,18 @@ public class Notifications {
     private Timestamp deliverAt;
 
     //Additional: keeping track of users who have read their notifications
+    private List<String> readBy;
 
     //Constructor
-    public Notifications(String type, String title, String body, String senderId){
+    public Notification(){}  //For Firebase
+    public Notification(String type, String title, String body, String senderId, List<RecipientRef> recipients){
         this.type = type;
         this.title = title;
         this.body = body;
         this.senderId = senderId;
+        this.status = "PENDING";
+        this.createdAt = Timestamp.now();
+        this.readBy = new ArrayList<>();
     }
     //Getters
     public String getId(){
@@ -77,6 +82,7 @@ public class Notifications {
     public Timestamp getDeliveredAt(){
         return deliverAt;
     }
+    public List<String> getReadBy() { return readBy; }
 
     //Setters
     public void setId(String id){
@@ -106,6 +112,7 @@ public class Notifications {
     public void setDeliverAt(Timestamp deliverAt){
         this.deliverAt = deliverAt;
     }
+    public void setReadBy(List<String> readBy) { this.readBy = readBy; }
 
 
 }

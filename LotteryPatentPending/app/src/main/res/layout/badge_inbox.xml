@@ -1,0 +1,23 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/inboxIcon"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_gravity="center"
+        android:contentDescription="@string/notificationImage"
+        android:src="@drawable/ic_notifications_black_24dp"/>
+
+    <TextView
+        android:id="@+id/badgeText"
+        android:layout_width="18dp"
+        android:layout_height="18dp"
+        android:layout_gravity="end|top"
+        android:gravity="center"
+        android:textSize="12sp"
+        android:textColor="@android:color/white"
+        android:background="@drawable/bg_badge_circle"
+        android:visibility="gone"/>
+</FrameLayout>
