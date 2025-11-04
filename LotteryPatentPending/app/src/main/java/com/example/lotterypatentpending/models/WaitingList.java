@@ -12,7 +12,19 @@ public class WaitingList {
     }
 
     public void addEntrant(User entrant) {
-        list.add(new Pair<User, WaitingListState>(entrant, WaitingListState.ENTERED));
+        boolean exists = false;
+        for (Pair<User, WaitingListState> pair : this.list) {
+            if (pair.first.equals(entrant)) {
+                exists = true;
+                break;
+            }
+        }
+        if (exists) {
+            list.add(new Pair<User, WaitingListState>(entrant, WaitingListState.ENTERED));
+        }
+        else {
+            throw new IllegalArgumentException();
+        }
     }
 
     /**
