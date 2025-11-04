@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="10dp">
+
+    <TextView
+        android:id="@+id/eventTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Event Title"
+        android:textStyle="bold"
+        android:textSize="18sp" />
+
+    <TextView
+        android:id="@+id/eventDescription"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Description"
+        android:textSize="14sp" />
+
+    <TextView
+        android:id="@+id/eventLocation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Location"
+        android:textSize="13sp" />
+
+    <TextView
+        android:id="@+id/eventCapacity"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Capacity"
+        android:textSize="13sp" />
+
+    <TextView
+        android:id="@+id/eventOrganizer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Organizer"
+        android:textSize="13sp" />
+</LinearLayout>
