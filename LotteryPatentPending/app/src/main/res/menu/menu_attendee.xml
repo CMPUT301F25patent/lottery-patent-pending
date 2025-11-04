@@ -1,0 +1,11 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/action_inbox"
+        android:title="@string/inbox"
+        android:icon="@drawable/ic_notifications_black_24dp"
+        app:showAsAction="always"
+        android:actionLayout="@layout/badge_inbox"
+    />
+</menu>

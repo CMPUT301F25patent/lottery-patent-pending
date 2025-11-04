@@ -5,6 +5,7 @@ import java.util.ArrayList;
 
 public class User {
 
+    // Firestore will bind the doc id into this field automatically
 
     private String userId;
     private String name;
@@ -17,6 +18,10 @@ public class User {
     private List<String> declinedEventIds = new ArrayList<>();
     private List<String> pastEventIds = new ArrayList<>();      // optional history
     private boolean notificationsOptIn = true;
+
+
+    //For firebase, needs empty constructor
+    public User(){}
 
     public User(String userId, String name, String email, String contactInfo, boolean isAdmin) {
         this.userId = userId;

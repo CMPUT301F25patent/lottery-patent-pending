@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "673494824761",
+    "project_id": "lottery-patent-pending",
+    "storage_bucket": "lottery-patent-pending.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:673494824761:android:64097aa719d970003b1ae8",
+        "android_client_info": {
+          "package_name": "com.example.lotterypatentpending"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCn6oFrrDa1EqrL0oUMep2urn-k56sowLU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
