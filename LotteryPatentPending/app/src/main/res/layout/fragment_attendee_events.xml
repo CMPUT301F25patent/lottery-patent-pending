@@ -1,16 +1,54 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     tools:context=".AttendeeEventsFragment">
 
-    <!-- TODO: Update blank fragment layout -->
+
+    <EditText
+        android:id="@+id/editTextText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:inputType="text"
+        android:text="Filter" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="10dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/browseEventsBtn"
+            android:text="@string/browse_events"
+            android:textSize="12sp"
+            android:textColor="@color/black"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/white_grey"
+            android:layout_weight="1"
+            android:layout_margin="3dp"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/historyEventsBtn"
+            android:text="@string/event_history"
+            android:textSize="12sp"
+            android:textColor="@color/black"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/white_grey"
+            android:layout_weight="1"
+            android:layout_margin="3dp"/>
+
+
+    </LinearLayout>
     <!--QR code test, can remove    -->
     <ImageView
         android:id="@+id/qrPreview"
-        android:layout_width="200dp"
-        android:layout_height="200dp"
-        android:contentDescription="@string/qr_preview"/>
+        android:layout_width="match_parent"
+        android:layout_height="435dp"
+        android:contentDescription="@string/qr_preview" />
 
-</FrameLayout>
+</LinearLayout>

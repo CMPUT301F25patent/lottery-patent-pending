@@ -18,6 +18,7 @@
             android:layout_gravity="center"/>
 
         <EditText
+            android:padding="3dp"
             android:id="@+id/et_name"
             android:hint="Full name"
             android:background="@color/white_grey"
@@ -26,13 +27,26 @@
             android:layout_height="wrap_content"/>
 
         <EditText
+            android:padding="3dp"
             android:id="@+id/et_email"
             android:hint="Email"
             android:background="@color/white_grey"
             android:inputType="textEmailAddress"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"/>
+            android:layout_marginTop="12dp"
+            />
+
+        <EditText
+            android:padding="3dp"
+            android:id="@+id/et_phone"
+            android:hint="Phone Number"
+            android:background="@color/white_grey"
+            android:inputType="phone"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_save"

@@ -28,3 +28,6 @@ local.properties
 /app/build/
 **/build/
 
+# Firebase secrets
+app/google-services.json
+
