@@ -2,32 +2,73 @@ package com.example.lotterypatentpending;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
+import androidx.fragment.app.FragmentManager;
 
-public class MainActivity extends AppCompatActivity {
+
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Source;
+
+public class MainActivity extends AppCompatActivity
+        implements CreateUserFragment.OnProfileSaved {
+
+    private FirebaseFirestore db;
+    private String uid;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
-        findViewById(R.id.btnAttendee).setOnClickListener(v ->
-                startActivity(new Intent(this, AttendeeActivity.class)));
 
-        findViewById(R.id.btnOrganizer).setOnClickListener(v ->
-                startActivity(new Intent(this, OrganizerActivity.class)));
+        FirebaseApp.initializeApp(this);
+        db = FirebaseFirestore.getInstance();
 
-        findViewById(R.id.btnAdmin).setOnClickListener(v ->
-                startActivity(new Intent(this, AdminActivity.class)));
+        FirebaseAuth.getInstance().signInAnonymously()
+                .addOnSuccessListener(r -> {
+                    uid = r.getUser().getUid();
+                    ensureUserDocOrOnboard();
+                })
+                .addOnFailureListener(e -> showOverlay());
+    }
+
+    private void ensureUserDocOrOnboard() {
+        db.collection("users").document(uid)
+                .get(com.google.firebase.firestore.Source.SERVER) // avoid cache
+                .addOnSuccessListener(snap -> {
+                    boolean needProfile = !snap.exists();
+                    if (needProfile) showOverlay();
+                })
+                .addOnFailureListener(e -> showOverlay());
+    }
+
+    private void showOverlay() {
+        int containerId = R.id.createUserOverlay; // make sure this exists in activity_main.xml
+        View container = findViewById(containerId);
+        if (container == null) return;
+        container.setVisibility(View.VISIBLE);
+
+        FragmentManager fm = getSupportFragmentManager();
+        if (fm.findFragmentById(containerId) == null) {
+            fm.beginTransaction()
+                    .replace(containerId, new CreateUserFragment())
+                    .commit();
+        }
+    }
+
+    @Override
+    public void onProfileSaved() {
+        int containerId = R.id.createUserOverlay;
+        FragmentManager fm = getSupportFragmentManager();
+        if (fm.findFragmentById(containerId) != null) {
+            fm.beginTransaction().remove(fm.findFragmentById(containerId)).commit();
+        }
+        View container = findViewById(containerId);
+        if (container != null) container.setVisibility(View.GONE);
     }
 }
