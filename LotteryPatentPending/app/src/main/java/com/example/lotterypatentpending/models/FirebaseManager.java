@@ -1,4 +1,4 @@
-package com.example.lotterypatentpending;
+package com.example.lotterypatentpending.models;
 
 import android.util.Log;
 
@@ -190,22 +190,22 @@ public class FirebaseManager {
                         System.err.println("Error deleting event: " + e.getMessage()));
     }
     //
-    public void addEntrantToWaitingList(String eventId, WaitingListEntry entry) {
-        Map<String, Object> data = new HashMap<>();
-        data.put("entrantId", entry.getEntrantId());
-        data.put("entrantName", entry.getEntrantName());
-        data.put("state", entry.getState().name());  // store enum as String
-
-        db.collection("events")
-                .document(eventId)
-                .collection("waitingList")
-                .document(entry.getEntrantId())
-                .set(data)
-                .addOnSuccessListener(aVoid ->
-                        System.out.println("Entrant added to waiting list: " + entry.getEntrantName()))
-                .addOnFailureListener(e ->
-                        System.err.println("Error adding entrant: " + e.getMessage()));
-    }
+//    public void addEntrantToWaitingList(String eventId, WaitingListEntry entry) {
+//        Map<String, Object> data = new HashMap<>();
+//        data.put("entrantId", entry.getEntrantId());
+//        data.put("entrantName", entry.getEntrantName());
+//        data.put("state", entry.getState().name());  // store enum as String
+//
+//        db.collection("events")
+//                .document(eventId)
+//                .collection("waitingList")
+//                .document(entry.getEntrantId())
+//                .set(data)
+//                .addOnSuccessListener(aVoid ->
+//                        System.out.println("Entrant added to waiting list: " + entry.getEntrantName()))
+//                .addOnFailureListener(e ->
+//                        System.err.println("Error adding entrant: " + e.getMessage()));
+//    }
 
     //Updates an entrant’s waiting list state (e.g., SELECTED, ACCEPTED, DECLINED).
 

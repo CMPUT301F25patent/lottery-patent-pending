@@ -28,7 +28,7 @@ import java.util.Map;
 
 public class AdminActivity extends AppCompatActivity {
     private User currentUser;  // holds the logged-in user
-    private com.example.lotterypatentpending.FirebaseManager firebaseManager; // Firebase interface
+    private com.example.lotterypatentpending.models.FirebaseManager firebaseManager; // Firebase interface
     private NotificationRepository repo;
     private NotificationAdapter adapter;
     private ListenerRegistration reg;
@@ -39,7 +39,7 @@ public class AdminActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_admin_notif);
 
-        firebaseManager = com.example.lotterypatentpending.FirebaseManager.getInstance();
+        firebaseManager = com.example.lotterypatentpending.models.FirebaseManager.getInstance();
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -65,7 +65,7 @@ public class AdminActivity extends AppCompatActivity {
         Toast.makeText(this, "User profile removed", Toast.LENGTH_SHORT).show();
     }
     public void browseAllUsers() {
-        com.example.lotterypatentpending.FirebaseManager.getInstance().getAllUsers(new com.example.lotterypatentpending.FirebaseManager.FirebaseCallback<QuerySnapshot>() {
+        com.example.lotterypatentpending.models.FirebaseManager.getInstance().getAllUsers(new com.example.lotterypatentpending.models.FirebaseManager.FirebaseCallback<QuerySnapshot>() {
             @Override
             public void onSuccess(QuerySnapshot result) {
                 List<User> users = new ArrayList<User>();
@@ -90,11 +90,11 @@ public class AdminActivity extends AppCompatActivity {
             return;
         }
 
-        com.example.lotterypatentpending.FirebaseManager.getInstance().deleteEvent(eventId);
+        com.example.lotterypatentpending.models.FirebaseManager.getInstance().deleteEvent(eventId);
         Toast.makeText(this, "Event removed successfully", Toast.LENGTH_SHORT).show();
     }
     public void browseAllEvents() {
-        com.example.lotterypatentpending.FirebaseManager.getInstance().getAllEvents(new com.example.lotterypatentpending.FirebaseManager.FirebaseCallback<QuerySnapshot>() {
+        com.example.lotterypatentpending.models.FirebaseManager.getInstance().getAllEvents(new com.example.lotterypatentpending.models.FirebaseManager.FirebaseCallback<QuerySnapshot>() {
             @Override
             public void onSuccess(QuerySnapshot result) {
                 List<Event> events = new ArrayList<>();
@@ -153,7 +153,7 @@ public class AdminActivity extends AppCompatActivity {
             return;
         }
 
-        firebaseManager.getAllNotifications(new com.example.lotterypatentpending.FirebaseManager.FirebaseCallback<List<Notification>>() {
+        firebaseManager.getAllNotifications(new com.example.lotterypatentpending.models.FirebaseManager.FirebaseCallback<List<Notification>>() {
             @Override
             public void onSuccess(List<Notification> notifications) {
                 StringBuilder sb = new StringBuilder("=== Notification Logs ===\n\n");
@@ -187,7 +187,7 @@ public class AdminActivity extends AppCompatActivity {
             return;
         }
 
-        com.example.lotterypatentpending.FirebaseManager.getInstance().getEventById(eventId, new com.example.lotterypatentpending.FirebaseManager.FirebaseCallback<DocumentSnapshot>() {
+        com.example.lotterypatentpending.models.FirebaseManager.getInstance().getEventById(eventId, new com.example.lotterypatentpending.models.FirebaseManager.FirebaseCallback<DocumentSnapshot>() {
             @Override
             public void onSuccess(DocumentSnapshot doc) {
                 if (!doc.exists()) {
@@ -201,7 +201,7 @@ public class AdminActivity extends AppCompatActivity {
                 }
 
                 User organizer = event.getOrganizer();
-                com.example.lotterypatentpending.FirebaseManager.getInstance().deleteUser(organizer.getUserId());
+                com.example.lotterypatentpending.models.FirebaseManager.getInstance().deleteUser(organizer.getUserId());
                 Toast.makeText(AdminActivity.this, "Organizer removed successfully", Toast.LENGTH_SHORT).show();
             }
 
