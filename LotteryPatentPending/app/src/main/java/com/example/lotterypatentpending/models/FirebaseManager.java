@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.HashMap;
 
 import com.example.lotterypatentpending.models.Event;
-import com.example.lotterypatentpending.models.Notifications;
+import com.example.lotterypatentpending.models.Notification;
 import com.example.lotterypatentpending.models.User;
 import com.example.lotterypatentpending.models.WaitingListState;
 import com.google.firebase.Timestamp;
@@ -247,7 +247,7 @@ public class FirebaseManager {
 
 
     // generic notification add, will updated after looking at notification class
-    public void logNotification(Notifications notification) {
+    public void logNotification(Notification notification) {
         // If the notification already has an ID, reuse it; otherwise Firestore generates one.
         DocumentReference docRef;
         if (notification.getId() != null && !notification.getId().isEmpty()) {
@@ -269,14 +269,14 @@ public class FirebaseManager {
                         Log.e("FirebaseManager", "Error logging notification: " + e.getMessage()));
     }
 
-    public void getAllNotifications(FirebaseCallback<List<Notifications>> callback) {
+    public void getAllNotifications(FirebaseCallback<List<Notification>> callback) {
         db.collection("notifications")
                 .orderBy("createdAt") // optional if stored as a Timestamp
                 .get()
                 .addOnSuccessListener(querySnapshot -> {
-                    List<Notifications> notifications = new ArrayList<>();
+                    List<Notification> notifications = new ArrayList<>();
                     for (DocumentSnapshot doc : querySnapshot) {
-                        Notifications notif = doc.toObject(Notifications.class);
+                        Notification notif = doc.toObject(Notification.class);
                         notifications.add(notif);
                     }
                     callback.onSuccess(notifications);

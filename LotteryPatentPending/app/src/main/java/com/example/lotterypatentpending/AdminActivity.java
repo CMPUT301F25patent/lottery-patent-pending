@@ -9,16 +9,19 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.lotterypatentpending.User_interface.Inbox.NotificationAdapter;
 import com.example.lotterypatentpending.models.Event;
-import com.example.lotterypatentpending.models.Notifications;
+import com.example.lotterypatentpending.models.Notification;
+import com.example.lotterypatentpending.models.NotificationRepository;
 import com.example.lotterypatentpending.models.RecipientRef;
 import com.example.lotterypatentpending.models.User;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QuerySnapshot;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -26,12 +29,15 @@ import java.util.Map;
 public class AdminActivity extends AppCompatActivity {
     private User currentUser;  // holds the logged-in user
     private com.example.lotterypatentpending.FirebaseManager firebaseManager; // Firebase interface
+    private NotificationRepository repo;
+    private NotificationAdapter adapter;
+    private ListenerRegistration reg;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_admin);
+        setContentView(R.layout.activity_admin_notif);
 
         firebaseManager = com.example.lotterypatentpending.FirebaseManager.getInstance();
 
@@ -40,7 +46,13 @@ public class AdminActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
-
+        repo = new NotificationRepository();
+        RecyclerView rv = findViewById(R.id.recycler);
+        rv.setLayoutManager(new LinearLayoutManager(this));
+        adapter = new NotificationAdapter(n -> {
+            // Admin tap could open a details screen; no markRead here.
+        });
+        rv.setAdapter(adapter);
 
     }
     public void removeUserProfile(String userId, User currentUser) {
@@ -141,11 +153,11 @@ public class AdminActivity extends AppCompatActivity {
             return;
         }
 
-        firebaseManager.getAllNotifications(new com.example.lotterypatentpending.FirebaseManager.FirebaseCallback<List<Notifications>>() {
+        firebaseManager.getAllNotifications(new com.example.lotterypatentpending.FirebaseManager.FirebaseCallback<List<Notification>>() {
             @Override
-            public void onSuccess(List<Notifications> notifications) {
+            public void onSuccess(List<Notification> notifications) {
                 StringBuilder sb = new StringBuilder("=== Notification Logs ===\n\n");
-                for (Notifications n : notifications) {
+                for (Notification n : notifications) {
                     sb.append("Title: ").append(n.getTitle())
                             .append("\nType: ").append(n.getType())
                             .append("\nSender ID: ").append(n.getSenderId())

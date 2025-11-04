@@ -23,4 +23,5 @@
         android:layout_height="match_parent"
         android:divider="@android:color/darker_gray"
         android:dividerHeight="1dp"/>
+
 </LinearLayout>
