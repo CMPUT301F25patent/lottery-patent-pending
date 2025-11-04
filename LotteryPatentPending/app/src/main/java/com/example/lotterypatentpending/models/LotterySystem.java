@@ -23,10 +23,11 @@ public class LotterySystem {
             Pair<User, WaitingListState> pair = list.get(i);
             WaitingListState newState = (i < num) ? WaitingListState.SELECTED : WaitingListState.NOT_SELECTED;
             list.set(i, new Pair<>(pair.first, newState));
+        }
+    }
 
     private void notifyLotteryResults(String organizerId, String eventId, String eventTitle,
                                       List<String> winnerIds, List<String> loserIds) {
-
         NotificationRepository nRepo = new NotificationRepository();
         LotteryResultNotifier notifier = new LotteryResultNotifier(nRepo);
 
@@ -38,10 +39,6 @@ public class LotterySystem {
         if (loserIds != null && !loserIds.isEmpty()) {
             tasks.add(notifier.notifyLosers(organizerId, eventId, eventTitle, loserIds));
         }
-
-    public static void lotteryReselect(List<Pair<User, WaitingListState>> list, Integer num) {
-                }
-
         com.google.android.gms.tasks.Tasks.whenAllComplete(tasks)
                 .addOnSuccessListener(results -> {
                     int ok = 0, fail = 0;
@@ -55,6 +52,10 @@ public class LotterySystem {
                 .addOnFailureListener(e -> {
                     android.util.Log.e("LotteryNotify", "Failed to send notifications", e);
                 });
+    }
+
+    public static void lotteryReselect(List<Pair<User, WaitingListState>> list, Integer num){
+
     }
 
 }
