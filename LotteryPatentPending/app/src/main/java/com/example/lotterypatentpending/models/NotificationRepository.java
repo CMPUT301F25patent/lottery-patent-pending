@@ -4,7 +4,7 @@ import androidx.annotation.NonNull;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.*;
-import com.example.lotterypatentpending.FirebaseManager;
+import com.example.lotterypatentpending.models.FirebaseManager;
 import com.example.lotterypatentpending.models.Notification;
 
 import java.util.*;

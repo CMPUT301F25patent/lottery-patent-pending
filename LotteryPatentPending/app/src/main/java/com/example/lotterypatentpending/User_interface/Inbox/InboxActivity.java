@@ -14,7 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.lotterypatentpending.R;
 import com.example.lotterypatentpending.models.NotificationRepository;
 import com.example.lotterypatentpending.models.Notification;
-import com.example.lotterypatentpending.FirebaseManager;
+import com.example.lotterypatentpending.models.FirebaseManager;
 
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.firebase.auth.FirebaseAuth;

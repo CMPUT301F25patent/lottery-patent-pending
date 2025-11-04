@@ -26,6 +26,14 @@ public class MainActivity extends AppCompatActivity
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
+        // Buttons
+        findViewById(R.id.btnAttendee).setOnClickListener(v ->
+                startActivity(new Intent(this, AttendeeActivity.class)));
+        findViewById(R.id.btnOrganizer).setOnClickListener(v ->
+                startActivity(new Intent(this, OrganizerActivity.class)));
+        findViewById(R.id.btnAdmin).setOnClickListener(v ->
+                startActivity(new Intent(this, AdminActivity.class)));
+
         FirebaseApp.initializeApp(this);
         db = FirebaseFirestore.getInstance();
 
