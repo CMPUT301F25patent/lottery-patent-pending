@@ -43,7 +43,10 @@ public class AttendeeActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_attendee);
+
         repo = new com.example.lotterypatentpending.models.NotificationRepository();
+
+        //Create toolbar and navbar
         MaterialToolbar toolbar = findViewById(R.id.toolbar);
         BottomNavigationView bottomNav = findViewById(R.id.bottomNav);
 
@@ -159,4 +162,7 @@ public class AttendeeActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    public User getUser(){
+        return user;
+    }
 }
