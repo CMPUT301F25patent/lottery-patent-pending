@@ -10,13 +10,17 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.example.lotterypatentpending.models.Event;
 import com.example.lotterypatentpending.models.Notifications;
 import com.example.lotterypatentpending.models.RecipientRef;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class AdminActivity extends AppCompatActivity {
     private User currentUser;  // holds the logged-in user
@@ -81,16 +85,47 @@ public class AdminActivity extends AppCompatActivity {
             @Override
             public void onSuccess(QuerySnapshot result) {
                 List<Event> events = new ArrayList<>();
+
                 for (DocumentSnapshot doc : result) {
-                    Event event = new Event(
-                            doc.getString("title"),
-                            doc.getString("description"),
-                            ((Long) doc.get("capacity")).intValue()
-                    );
-                    events.add(event);
+                    try {
+                        // Title, description, and capacity
+                        String title = doc.getString("title");
+                        String description = doc.getString("description");
+
+                        Long capLong = doc.getLong("capacity");
+                        int capacity = (capLong != null) ? capLong.intValue() : 0;
+
+                        // Organizer — stored as a subdocument or simple map
+                        User organizer = null;
+                        Map<String, Object> organizerMap = (Map<String, Object>) doc.get("organizer");
+                        if (organizerMap != null) {
+                            String organizerId = (String) organizerMap.get("userId");
+                            String organizerName = (String) organizerMap.get("name");
+                            String organizerEmail = (String) organizerMap.get("email");
+                            String contactInfo = (String) organizerMap.get("contactInfo");
+
+                            organizer = new User(organizerId, organizerName, organizerEmail, contactInfo, false);
+                        }
+
+                        Event event = new Event(title, description, capacity, organizer);
+
+                        // Optional
+                        String dateStr = doc.getString("date");
+                        String timeStr = doc.getString("time");
+                        String location = doc.getString("location");
+                        event.setLocation(location);
+
+
+                        events.add(event);
+
+                    } catch (Exception e) {
+                        Log.e("Admin", "Error parsing event: " + e.getMessage());
+                    }
                 }
 
-                // TODO: display 'events' in  list
+                Log.d("Admin", "Loaded " + events.size() + " events");
+
+                // TODO: display 'events' in a list or
             }
 
             @Override
@@ -101,7 +136,7 @@ public class AdminActivity extends AppCompatActivity {
     }
     private void viewAllNotifications() {
         if (currentUser == null || !currentUser.isAdmin()) {
-            Toast.makeText(context, "Access denied: Admin privileges required", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Access denied: Admin privileges required", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -116,7 +151,7 @@ public class AdminActivity extends AppCompatActivity {
                             .append("\nRecipients: ");
                     if (n.getRecipients() != null) {
                         for (RecipientRef r : n.getRecipients()) {
-                            sb.append(r.getRecipientId()).append(" ");
+                            sb.append(r.getUserId()).append(" ");
                         }
                     }
                     sb.append("\nStatus: ").append(n.getStatus())
@@ -125,12 +160,42 @@ public class AdminActivity extends AppCompatActivity {
                 }
 
                 Log.d("AdminNotifications", sb.toString());
-                Toast.makeText(context, "Fetched " + notifications.size() + " notifications", Toast.LENGTH_SHORT).show();
             }
 
             @Override
             public void onFailure(Exception e) {
                 Log.e("Admin", "Error fetching notifications: " + e.getMessage());
+            }
+        });
+    }
+    public void removeOrganizerByEvent(String eventId, User currentUser) {
+        if (currentUser == null || !currentUser.isAdmin()) {
+            Toast.makeText(this, "Access denied: Admin privileges required", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        FirebaseManager.getInstance().getEventById(eventId, new FirebaseManager.FirebaseCallback<DocumentSnapshot>() {
+            @Override
+            public void onSuccess(DocumentSnapshot doc) {
+                if (!doc.exists()) {
+                    Toast.makeText(AdminActivity.this, "Event not found", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                Event event = doc.toObject(Event.class);
+                if (event == null || event.getOrganizer() == null) {
+                    Toast.makeText(AdminActivity.this, "Event has no linked organizer", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                User organizer = event.getOrganizer();
+                FirebaseManager.getInstance().deleteUser(organizer.getUserId());
+                Toast.makeText(AdminActivity.this, "Organizer removed successfully", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Log.e("Admin", "Error fetching event: " + e.getMessage());
+                Toast.makeText(AdminActivity.this, "Failed to retrieve event", Toast.LENGTH_SHORT).show();
             }
         });
     }

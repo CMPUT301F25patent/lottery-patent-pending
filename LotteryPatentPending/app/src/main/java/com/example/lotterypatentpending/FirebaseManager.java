@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 
+import com.example.lotterypatentpending.models.Event;
 import com.example.lotterypatentpending.models.Notifications;
 import com.example.lotterypatentpending.models.WaitingListState;
 import com.google.firebase.Timestamp;
@@ -18,7 +19,6 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.auth.User;
 import com.google.firebase.storage.FirebaseStorage;
 
 public class FirebaseManager {
@@ -66,56 +66,94 @@ public class FirebaseManager {
 
 
 // mapping event objects to firestore
-    private Map<String, Object> eventToMap(Event event) {
-        Map<String, Object> data = new HashMap<>();
-        data.put("title", event.getTitle());
-        data.put("description", event.getDescription());
-        data.put("capacity", event.getCapacity());
-        data.put("location", event.getLocation());
+private Map<String, Object> eventToMap(Event event) {
+    Map<String, Object> data = new HashMap<>();
 
-        // Convert LocalDate and LocalTime to Strings for Firebase
-        data.put("date", event.getDate() != null ? event.getDate().toString() : null);
-        data.put("time", event.getTime() != null ? event.getTime().toString() : null);
-        data.put("regStartDate", event.getRegStartDate() != null ? event.getRegStartDate().toString() : null);
-        data.put("regStartTime", event.getRegStartTime() != null ? event.getRegStartTime().toString() : null);
-        data.put("regEndDate", event.getRegEndDate() != null ? event.getRegEndDate().toString() : null);
-        data.put("regEndTime", event.getRegEndTime() != null ? event.getRegEndTime().toString() : null);
+    data.put("id", event.getId());
+    data.put("title", event.getTitle());
+    data.put("description", event.getDescription());
+    data.put("capacity", event.getCapacity());
+    data.put("location", event.getLocation());
 
-        return data;
+    // Dates & times as strings
+    data.put("date", event.getDate() != null ? event.getDate().toString() : null);
+    data.put("time", event.getTime() != null ? event.getTime().toString() : null);
+    data.put("regStartDate", event.getRegStartDate() != null ? event.getRegStartDate().toString() : null);
+    data.put("regStartTime", event.getRegStartTime() != null ? event.getRegStartTime().toString() : null);
+    data.put("regEndDate", event.getRegEndDate() != null ? event.getRegEndDate().toString() : null);
+    data.put("regEndTime", event.getRegEndTime() != null ? event.getRegEndTime().toString() : null);
+
+    // Organizer is just a User
+    if (event.getOrganizer() != null) {
+        Map<String, Object> organizerMap = new HashMap<>();
+        organizerMap.put("userId", event.getOrganizer().getUserId());
+        organizerMap.put("name", event.getOrganizer().getName());
+        organizerMap.put("email", event.getOrganizer().getEmail());
+        organizerMap.put("contactInfo", event.getOrganizer().getContactInfo());
+        organizerMap.put("isAdmin", event.getOrganizer().isAdmin());
+        data.put("organizer", organizerMap);
+    } else {
+        data.put("organizer", null);
     }
+
+    return data;
+}
+
 
     //Converts Firestore data back into an Event object
     private Event mapToEvent(Map<String, Object> data) {
+        if (data == null) return null;
+
         String title = (String) data.get("title");
         String description = (String) data.get("description");
         String location = (String) data.get("location");
-        int capacity = ((Long) data.get("capacity")).intValue();
 
-        Event event = new Event(title, description, capacity);
+        int capacity = 0;
+        Object capObj = data.get("capacity");
+        if (capObj instanceof Long) capacity = ((Long) capObj).intValue();
+        else if (capObj instanceof Integer) capacity = (Integer) capObj;
+
+        // Organizer is a User
+        User organizer = null;
+        Map<String, Object> organizerMap = (Map<String, Object>) data.get("organizer");
+        if (organizerMap != null) {
+            String id = (String) organizerMap.get("userId");
+            String name = (String) organizerMap.get("name");
+            String email = (String) organizerMap.get("email");
+            String contact = (String) organizerMap.get("contactInfo");
+            boolean isAdmin = organizerMap.get("isAdmin") != null && (boolean) organizerMap.get("isAdmin");
+
+            organizer = new User(id, name, email, contact, isAdmin);
+        }
+
+        Event event = new Event(title, description, capacity, organizer);
         event.setLocation(location);
 
-        // Convert Strings back to LocalDate and LocalTime
-        if (data.get("date") != null) event.setDate(LocalDate.parse((String) data.get("date")));
-        if (data.get("time") != null) event.setTime(LocalTime.parse((String) data.get("time")));
-        if (data.get("regStartDate") != null) event.setRegStartDate(LocalDate.parse((String) data.get("regStartDate")));
-        if (data.get("regStartTime") != null) event.setRegStartTime(LocalTime.parse((String) data.get("regStartTime")));
-        if (data.get("regEndDate") != null) event.setRegEndDate(LocalDate.parse((String) data.get("regEndDate")));
-        if (data.get("regEndTime") != null) event.setRegEndTime(LocalTime.parse((String) data.get("regEndTime")));
+
+
+        if (data.get("id") != null)
+            event.setId((String) data.get("id"));
 
         return event;
     }
 
 
+
     //
 
     public void addOrUpdateEvent(String eventId, Event event) {
+        if (eventId == null || eventId.isEmpty()) {
+            eventId = event.getId(); // fallback to event’s own ID
+        }
+
         Map<String, Object> eventData = eventToMap(event);
         db.collection("events").document(eventId).set(eventData)
                 .addOnSuccessListener(aVoid ->
-                        System.out.println("Event saved successfully: " + event.getTitle()))
+                        Log.d("FirebaseManager", "Event saved successfully: " + event.getTitle()))
                 .addOnFailureListener(e ->
-                        System.err.println("Error saving event: " + e.getMessage()));
+                        Log.e("FirebaseManager", "Error saving event: " + e.getMessage()));
     }
+
 
 
 
@@ -136,6 +174,7 @@ public class FirebaseManager {
                 })
                 .addOnFailureListener(callback::onFailure);
     }
+
 
     public void getAllEvents(FirebaseCallback<QuerySnapshot> callback) {
         db.collection("events").get()
@@ -243,6 +282,17 @@ public class FirebaseManager {
                 })
                 .addOnFailureListener(callback::onFailure);
     }
+
+    // fetches events by event ID, utilized for deleting organizers by event
+    public void getEventById(String eventId, FirebaseCallback<DocumentSnapshot> callback) {
+        db.collection("events")
+                .document(eventId)
+                .get()
+                .addOnSuccessListener(callback::onSuccess)
+                .addOnFailureListener(callback::onFailure);
+    }
+
+
 
     // for lsteners
     public interface FirebaseCallback<T> {
