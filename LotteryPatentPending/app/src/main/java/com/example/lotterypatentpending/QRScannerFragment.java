@@ -72,14 +72,20 @@ public class QRScannerFragment extends Fragment {
 
             if (qr != null) {
                 launched = true;
+
                 String eventId = qr.getEventId();
+
                 // Tell the host activity to show the event tab (or navigate)
                 if (codeScanner != null) {
                     codeScanner.releaseResources();
                 }
-                // Event will be a new activity
-                startActivity(new Intent(requireContext(), EventDetailsActivity.class)
-                        .putExtra("event_id", eventId));
+
+                //create the fragment with eventId
+                Fragment f = new AttendeeEventDetailsFragment();
+                // Launches new fragment
+                    requireActivity().getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.attendeeContainer, f)
+                        .commit();
             } else {
                 Toast.makeText(requireContext(), "Not an event QR for this app", Toast.LENGTH_SHORT).show();
                 codeScanner.startPreview();

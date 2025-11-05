@@ -11,7 +11,8 @@ import androidx.fragment.app.FragmentManager;
 
 import com.example.lotterypatentpending.models.FirebaseManager;
 import com.example.lotterypatentpending.models.User;
-import com.example.lotterypatentpending.viewmodels.UserEventRepository;
+import com.example.lotterypatentpending.viewModels.UserEventRepository;
+import com.example.lotterypatentpending.viewModels.UserRepository;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -26,6 +27,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 public class MainActivity extends AppCompatActivity
         implements CreateUserFragment.OnProfileSaved {
     private UserEventRepository userEventRepo;
+
     private FirebaseManager firebaseManager;
     private String uid;
 
@@ -69,7 +71,8 @@ public class MainActivity extends AppCompatActivity
                 }
                 else {
                     User user = snap.toObject(User.class);
-                    userEventRepo.setUser(user);
+                    UserRepository repo = UserRepository.getInstance();
+                    repo.setUser(user);
                 }
             }
             @Override

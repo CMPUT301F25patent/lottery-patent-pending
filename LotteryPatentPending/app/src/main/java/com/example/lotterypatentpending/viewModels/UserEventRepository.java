@@ -1,4 +1,4 @@
-package com.example.lotterypatentpending.viewmodels;
+package com.example.lotterypatentpending.viewModels;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
