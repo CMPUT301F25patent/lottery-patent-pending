@@ -2,6 +2,7 @@ package com.example.lotterypatentpending;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -12,6 +13,7 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.example.lotterypatentpending.models.NotificationFactory;
 import com.example.lotterypatentpending.models.NotificationRepository;
+import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.List;
 
@@ -28,6 +30,12 @@ public class OrganizerActivity extends AppCompatActivity {
             return insets;
         });
         notifRepo = new NotificationRepository();
+
+        Button create_event = findViewById(R.id.create_event);
+        Button view_events = findViewById(R.id.view_events);
+
+        var current = FirebaseAuth.getInstance().getCurrentUser();
+
     }
     // Call this when the organizer clicks the "Send" button.
     private void sendMessageToSelectedUsers(String organizerId,

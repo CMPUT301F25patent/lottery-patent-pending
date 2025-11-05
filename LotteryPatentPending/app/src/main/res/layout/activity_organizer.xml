@@ -9,7 +9,7 @@
     tools:context=".OrganizerActivity">
 
     <TextView
-        android:id="@+id/textView2"
+        android:id="@+id/organizer_main_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="#1F1F1F"
@@ -36,7 +36,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView2" />
+        app:layout_constraintTop_toBottomOf="@+id/organizer_main_title" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/create_event"
