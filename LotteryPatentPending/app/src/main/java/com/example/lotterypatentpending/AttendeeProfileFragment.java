@@ -6,17 +6,16 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.fragment.app.Fragment;
 
-import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.lotterypatentpending.models.FirebaseManager;
 import com.example.lotterypatentpending.models.User;
-import com.google.firebase.Firebase;
+import com.example.lotterypatentpending.viewModels.UserEventRepository;
+import com.example.lotterypatentpending.viewModels.UserRepository;
+
 
 /**
  * Class AttendeeActivity
@@ -53,7 +52,8 @@ public class AttendeeProfileFragment extends Fragment {
         AttendeeActivity activity = (AttendeeActivity) requireActivity();
 
         //get user for fragment
-        user = activity.getUser();
+
+        user = UserRepository.getInstance().getUser();
 
         name.setText(user.getName());
         email.setText(user.getEmail());

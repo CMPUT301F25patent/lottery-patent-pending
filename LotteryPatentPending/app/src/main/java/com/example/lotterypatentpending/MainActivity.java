@@ -10,6 +10,9 @@ import androidx.fragment.app.FragmentManager;
 
 
 import com.example.lotterypatentpending.models.FirebaseManager;
+import com.example.lotterypatentpending.models.User;
+import com.example.lotterypatentpending.viewModels.UserEventRepository;
+import com.example.lotterypatentpending.viewModels.UserRepository;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -23,6 +26,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 
 public class MainActivity extends AppCompatActivity
         implements CreateUserFragment.OnProfileSaved {
+    private UserEventRepository userEventRepo;
 
     private FirebaseManager firebaseManager;
     private String uid;
@@ -32,6 +36,9 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
+
+        // get user event repo instance
+        userEventRepo = UserEventRepository.getInstance();
 
         // Buttons
         findViewById(R.id.btnAttendee).setOnClickListener(v ->
@@ -52,6 +59,7 @@ public class MainActivity extends AppCompatActivity
                     ensureUserDocOrOnboard();
                 })
                 .addOnFailureListener(e -> showOverlay());
+
     }
 
     private void ensureUserDocOrOnboard() {
@@ -61,7 +69,12 @@ public class MainActivity extends AppCompatActivity
                 if (!snap.exists()) {
                     showOverlay();
                 }
-                // else: user doc exists, do nothing
+                else {
+                    //User already exists gets its name
+                    User user = snap.toObject(User.class);
+                    UserRepository.getInstance().setUser(user);
+
+                }
             }
             @Override
             public void onFailure(Exception e) {
@@ -71,18 +84,18 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
+    //This will show the create User Overlay if new user
     private void showOverlay() {
-        int containerId = R.id.createUserOverlay; // make sure this exists in activity_main.xml
-        View container = findViewById(containerId);
-        if (container == null) return;
-        container.setVisibility(View.VISIBLE);
+        int containerId = R.id.createUserOverlay;
 
-        FragmentManager fm = getSupportFragmentManager();
-        if (fm.findFragmentById(containerId) == null) {
-            fm.beginTransaction()
-                    .replace(containerId, new CreateUserFragment())
-                    .commit();
-        }
+        View container = findViewById(R.id.createUserOverlay);
+        if (container == null) return;
+
+        container.setVisibility(View.VISIBLE);
+        getSupportFragmentManager().beginTransaction()
+                .replace(containerId, new CreateUserFragment())
+                .commit();
+
     }
 
     @Override

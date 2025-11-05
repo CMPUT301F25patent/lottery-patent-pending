@@ -14,4 +14,6 @@
     <string name="qr_preview">QR preview</string>
     <string name="event_history">Event History</string>
     <string name="browse_events">Browse Events</string>
+    <string name="join">Join</string>
+    <string name="placeholder_text">Placeholder Text</string>
 </resources>

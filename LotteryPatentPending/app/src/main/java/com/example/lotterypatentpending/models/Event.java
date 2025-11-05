@@ -21,7 +21,6 @@ public class Event {
     private int capacity;
     private String location;
     private WaitingList waitingList;
-    private List<User> entrants;
     private User organizer;
     private LocalDate regStartDate;
     private LocalTime regStartTime;
@@ -47,7 +46,6 @@ public class Event {
         this.time = null;
         this.location = null;
         this.waitingList = new WaitingList();
-        this.entrants = new ArrayList<>();
         this.regStartDate = null;
         this.regEndDate = null;
         this.regStartTime = null;
@@ -160,14 +158,6 @@ public class Event {
         this.waitingList = waitingList;
     }
 
-    public List<User> getEntrants() {
-        return entrants;
-    }
-
-    public void setEntrants(List<User> entrants) {
-        this.entrants = entrants;
-    }
-
     public User getOrganizer() {
         return organizer;
     }
@@ -182,6 +172,14 @@ public class Event {
 
     public void setQrcode(QRCode qrcode) {
         this.qrcode = qrcode;
+    }
+
+    public void addToWaitingList(User entrant) {
+        this.waitingList.addEntrant(entrant);
+    }
+
+    public void removeFromWaitingList(User entrant) {
+        this.waitingList.removeEntrant(entrant);
     }
 
 //    private void addToWaitingList(Entrant entrant){
