@@ -53,7 +53,9 @@ public class AttendeeQRScannerFragment extends Fragment {
 
         codeScanner.setDecodeCallback(result -> requireActivity().runOnUiThread(() -> {
 
+            //qr was already scanned
             if (launched) return;
+
             launched = true;
 
             String text = result.getText();              // e.g., "EVT:abc123"
