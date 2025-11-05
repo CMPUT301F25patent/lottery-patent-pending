@@ -33,14 +33,20 @@ public class AttendeeActivity extends AppCompatActivity {
     private NotificationRepository repo;
     private ListenerRegistration unreadReg;
 
+    private Fragment eventsFragment;
+    private Fragment profileFragment;
+    private Fragment scanFragment;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_attendee);
 
+
         userEventRepo = UserEventRepository.getInstance();
         repo = new com.example.lotterypatentpending.models.NotificationRepository();
 
+        //Create toolbar and navbar
         MaterialToolbar toolbar = findViewById(R.id.toolbar);
         BottomNavigationView bottomNav = findViewById(R.id.bottomNav);
 
@@ -48,31 +54,32 @@ public class AttendeeActivity extends AppCompatActivity {
         toolbar.setNavigationIcon(R.drawable.ic_home);
         toolbar.setNavigationOnClickListener(v -> finish());
 
-        // Firebasemanager
+        //Firebasemanager get db instance
         firebaseManager = FirebaseManager.getInstance();
 
-        // default tab = events
+
+        eventsFragment = new AttendeeEventsFragment();
+        profileFragment = new AttendeeProfileFragment();
+        scanFragment = new AttendeeQRScannerFragment();
+
+        // default tab
         setTitle("Events");
-        Fragment default_frag = new AttendeeEventsFragment();
-        load(default_frag);
+        load(eventsFragment);
 
         //creates bottom nav bar and listeners
         bottomNav.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
             if (id == R.id.nav_events) {
                 setTitle("Events");
-                Fragment frag = new AttendeeEventsFragment();
-                return load(frag);
+                return load(eventsFragment);
             }
             if (id == R.id.nav_profile) {
                 setTitle("Profile");
-                Fragment frag = new AttendeeProfileFragment();
-                return load(frag);
+                return load(profileFragment);
             }
             if (id == R.id.nav_scan) {
                 setTitle("Scan");
-                Fragment frag = new AttendeeQRScannerFragment();
-                return load(frag);
+                return load(scanFragment);
             }
             return false;
         });

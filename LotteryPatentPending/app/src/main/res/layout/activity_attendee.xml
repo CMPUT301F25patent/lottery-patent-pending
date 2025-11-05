@@ -9,12 +9,15 @@
 
     <!-- header with home button -->
     <com.google.android.material.appbar.MaterialToolbar
-        android:padding="15dp"
+        android:paddingTop="30dp"
+        android:paddingBottom="10dp"
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:navigationIcon="@drawable/ic_home"
+        app:navigationContentDescription="Home"
         app:title="Events"
+        app:titleCentered="true"
         app:titleTextColor="@color/white"
         android:background="@color/dark_grey"/>
 

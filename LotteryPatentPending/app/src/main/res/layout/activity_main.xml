@@ -22,7 +22,8 @@
         android:text="Patent Pending"
         android:textColor="@color/white"
         android:gravity="center|top"
-        android:paddingBottom="400dp"
+        android:paddingTop="40dp"
+        android:paddingBottom="300dp"
         />
 
     <TextView

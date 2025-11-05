@@ -47,6 +47,8 @@ public class MainActivity extends AppCompatActivity implements MainRegisterNewUs
         FirebaseApp.initializeApp(this);
         fm = FirebaseManager.getInstance();
 
+        // Sign in user to firebase anonymously
+        // get the uid from firebase
         FirebaseAuth.getInstance().signInAnonymously()
                 .addOnSuccessListener(r -> {
                     String uid = r.getUser().getUid();
@@ -68,7 +70,12 @@ public class MainActivity extends AppCompatActivity implements MainRegisterNewUs
                 if (!snap.exists()) {
                     registerNewUserOverlay();
                 }
-                // else: user doc exists, do nothing
+                else {
+                    //User already exists gets its name
+                    User user = snap.toObject(User.class);
+                    UserEventRepository.getInstance().setUser(user);
+
+                }
             }
             @Override
             public void onFailure(Exception e) {
@@ -82,6 +89,7 @@ public class MainActivity extends AppCompatActivity implements MainRegisterNewUs
         int containerId = R.id.createUserOverlay; // make sure this exists in activity_main.xml
         View container = findViewById(containerId);
         if (container == null) return;
+
         container.setVisibility(View.VISIBLE);
 
         FragmentManager fm = getSupportFragmentManager();

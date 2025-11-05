@@ -15,6 +15,7 @@ import android.widget.Toast;
 
 import com.example.lotterypatentpending.models.FirebaseManager;
 import com.example.lotterypatentpending.models.User;
+import com.example.lotterypatentpending.models.UserEventRepository;
 import com.google.firebase.auth.FirebaseAuth;
 
 /**
@@ -60,8 +61,13 @@ public class MainRegisterNewUserFragment extends Fragment {
             return;
         }
 
+        //get userID
         String authUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        //create new user
         User user = new User(authUid, name, email, phone, false);
+
+        //save to instance
+        UserEventRepository.getInstance().setUser(user);
 
         saveBtn.setEnabled(false);
         FirebaseManager.getInstance().addOrUpdateUser(user);
