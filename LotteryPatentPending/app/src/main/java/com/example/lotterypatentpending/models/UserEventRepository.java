@@ -1,10 +1,7 @@
-package com.example.lotterypatentpending.viewModels;
+package com.example.lotterypatentpending.models;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
-
-import com.example.lotterypatentpending.models.Event;
-import com.example.lotterypatentpending.models.User;
 
 public class UserEventRepository {
     public static User getUser;
@@ -40,15 +37,23 @@ public class UserEventRepository {
     }
 
     public void joinEvent() {
+
+
         User currentUser = user.getValue();
         Event currentEvent = event.getValue();
 
         if (currentUser != null && currentEvent != null) {
+            FirebaseManager fm = FirebaseManager.getInstance();
+            fm.addJoinedEventToEntrant(currentEvent, currentUser.getUserId());
+            fm.addEntrantToWaitingList(currentUser, WaitingListState.ENTERED, currentEvent.getId());
+
             currentEvent.addToWaitingList(currentUser);
             currentUser.addJoinedEvent(currentEvent.getId());
 
             user.setValue(currentUser);
             event.setValue(currentEvent);
+
+
         }
     }
 }

@@ -42,14 +42,7 @@ public class Event {
         this.description = description;
         this.capacity = capacity;
         this.organizer = organizer;
-        this.date = null;
-        this.time = null;
-        this.location = null;
         this.waitingList = new WaitingList();
-        this.regStartDate = null;
-        this.regEndDate = null;
-        this.regStartTime = null;
-        this.regEndTime = null;
         this.qrcode = new QRCode(this.id);
     }
 
@@ -182,23 +175,4 @@ public class Event {
         this.waitingList.removeEntrant(entrant);
     }
 
-//    private void addToWaitingList(Entrant entrant){
-//        waitingList.addEntrant(entrant);
-//    }
-//
-//    private void removeFromWaitingList(Entrant entrant){
-////        waitingList.removeEntrant(entrant);
-//    }
-//
-//    /**
-//     * logic to add a user/entrant to an event or the waiting list
-//     * @param entrant
-//     */
-//    private void joinEvent(Entrant entrant){
-//        if(entrants.size() < capacity){
-//            entrants.add(entrant);
-//        }else{
-//            addToWaitingList(entrant);
-//        }
-//    }
 }

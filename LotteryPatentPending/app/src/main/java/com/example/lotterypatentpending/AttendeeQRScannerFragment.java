@@ -27,22 +27,37 @@ import com.example.lotterypatentpending.models.QRCode;
  * @author Erik
  */
 
-public class QRScannerFragment extends Fragment {
+public class AttendeeQRScannerFragment extends Fragment {
 
     private CodeScanner codeScanner;
     private boolean launched = false;
 
-    public QRScannerFragment() {
-        super(R.layout.fragment_qr_scanner);
+    // Ask for CAMERA at runtime
+    private final ActivityResultLauncher<String> askCamera =
+            registerForActivityResult(new RequestPermission(), isGranted -> {
+                if (isGranted) startScanner();
+                else
+                    Toast.makeText(requireContext(), "Camera permission required", Toast.LENGTH_SHORT).show();
+            });
+
+    public AttendeeQRScannerFragment() {
+        super(R.layout.fragment_attendee_qr_scanner);
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         launched = false;
-        startScanner();
 
+        // Permission check
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA)
+                == PackageManager.PERMISSION_GRANTED) {
+            startScanner();
+        } else {
+            askCamera.launch(Manifest.permission.CAMERA);
+        }
     }
+
     private void startScanner() {
         View v = requireView();
         CodeScannerView scannerView = v.findViewById(R.id.scanner_view);
@@ -95,6 +110,5 @@ public class QRScannerFragment extends Fragment {
         if (codeScanner != null) codeScanner.releaseResources();
         super.onPause();
     }
-
 
 }

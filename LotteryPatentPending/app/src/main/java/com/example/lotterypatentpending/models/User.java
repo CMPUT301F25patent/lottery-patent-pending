@@ -34,19 +34,25 @@ public class User {
     public User(String userId, String name, String email, String contactInfo) {
         this(userId, name, email, contactInfo, false);
     }
+
     public boolean isNotificationsOptIn() { return notificationsOptIn; }
+
     public void setNotificationsOptIn(boolean notificationsOptIn) { this.notificationsOptIn = notificationsOptIn; }
 
     public List<String> getJoinedEventIds() { return joinedEventIds; }
+
     public void setJoinedEventIds(List<String> joinedEventIds) { this.joinedEventIds = joinedEventIds; }
 
     public List<String> getAcceptedEventIds() { return acceptedEventIds; }
+
     public void setAcceptedEventIds(List<String> acceptedEventIds) { this.acceptedEventIds = acceptedEventIds; }
 
     public List<String> getDeclinedEventIds() { return declinedEventIds; }
+
     public void setDeclinedEventIds(List<String> declinedEventIds) { this.declinedEventIds = declinedEventIds; }
 
     public List<String> getPastEventIds() { return pastEventIds; }
+
     public void setPastEventIds(List<String> pastEventIds) { this.pastEventIds = pastEventIds; }
 
     public String getUserId() {

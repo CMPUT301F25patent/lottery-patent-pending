@@ -13,8 +13,7 @@ import android.widget.Toast;
 
 import com.example.lotterypatentpending.models.FirebaseManager;
 import com.example.lotterypatentpending.models.User;
-import com.example.lotterypatentpending.viewModels.UserEventRepository;
-import com.example.lotterypatentpending.viewModels.UserRepository;
+import com.example.lotterypatentpending.models.UserEventRepository;
 
 
 /**
@@ -24,8 +23,6 @@ import com.example.lotterypatentpending.viewModels.UserRepository;
  */
 
 public class AttendeeProfileFragment extends Fragment {
-
-    private User user;
     private TextView name;
     private TextView email;
     private TextView phone;
@@ -53,7 +50,7 @@ public class AttendeeProfileFragment extends Fragment {
 
         //get user for fragment
 
-        user = UserRepository.getInstance().getUser();
+        user = UserEventRepository.getInstance().getUser();
 
         name.setText(user.getName());
         email.setText(user.getEmail());

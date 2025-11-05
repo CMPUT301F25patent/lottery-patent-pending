@@ -8,7 +8,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import com.example.lotterypatentpending.viewModels.UserEventRepository;
+import com.example.lotterypatentpending.models.UserEventRepository;
 
 public class AttendeeEventDetailsFragment extends Fragment {
     private UserEventRepository userEventRepo;

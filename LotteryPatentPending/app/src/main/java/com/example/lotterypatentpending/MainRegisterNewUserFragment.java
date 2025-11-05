@@ -15,7 +15,7 @@ import android.widget.Toast;
 
 import com.example.lotterypatentpending.models.FirebaseManager;
 import com.example.lotterypatentpending.models.User;
-import com.example.lotterypatentpending.viewModels.UserRepository;
+import com.example.lotterypatentpending.models.UserEventRepository;
 import com.google.firebase.auth.FirebaseAuth;
 
 /**
@@ -23,12 +23,8 @@ import com.google.firebase.auth.FirebaseAuth;
  * @maintainer Erik
  * @author Erik
  */
-
-public class CreateUserFragment extends Fragment {
-
-
+public class MainRegisterNewUserFragment extends Fragment {
     public interface OnProfileSaved { void onProfileSaved(); }
-
     private EditText nameEt, emailEt, phoneEt;
     private Button saveBtn;
 
@@ -71,7 +67,7 @@ public class CreateUserFragment extends Fragment {
         User user = new User(authUid, name, email, phone, false);
 
         //save to instance
-        UserRepository.getInstance().setUser(user);
+        UserEventRepository.getInstance().setUser(user);
 
         saveBtn.setEnabled(false);
         FirebaseManager.getInstance().addOrUpdateUser(user);
