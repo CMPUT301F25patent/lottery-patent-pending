@@ -51,7 +51,6 @@ public class AttendeeActivity extends AppCompatActivity {
         BottomNavigationView bottomNav = findViewById(R.id.bottomNav);
 
         // home button in header: go back to Main
-        toolbar.setNavigationIcon(R.drawable.ic_home);
         toolbar.setNavigationOnClickListener(v -> finish());
 
         //Firebasemanager get db instance

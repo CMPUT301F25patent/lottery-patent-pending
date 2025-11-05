@@ -44,6 +44,8 @@ public class MainActivity extends AppCompatActivity
         FirebaseApp.initializeApp(this);
         firebaseManager = FirebaseManager.getInstance();
 
+        // Sign in user to firebase anonymously
+        // get the uid from firebase
         FirebaseAuth.getInstance().signInAnonymously()
                 .addOnSuccessListener(r -> {
                     uid = r.getUser().getUid();
