@@ -22,7 +22,7 @@ import com.budiyev.android.codescanner.CodeScannerView;
 import com.example.lotterypatentpending.models.QRCode;
 
 /**
- * Class MainActivity
+ * Class QRScannerFragment
  * @maintainer Erik
  * @author Erik
  */
@@ -33,12 +33,7 @@ public class QRScannerFragment extends Fragment {
     private boolean launched = false;
 
     // Ask for CAMERA at runtime
-    private final ActivityResultLauncher<String> askCamera =
-            registerForActivityResult(new RequestPermission(), isGranted -> {
-                if (isGranted) startScanner();
-                else
-                    Toast.makeText(requireContext(), "Camera permission required", Toast.LENGTH_SHORT).show();
-            });
+
 
     public QRScannerFragment() {
         super(R.layout.fragment_qr_scanner);
@@ -47,16 +42,10 @@ public class QRScannerFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        launched = false;
+        startScanner();
 
-        // Permission check
-        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA)
-                == PackageManager.PERMISSION_GRANTED) {
-            startScanner();
-        } else {
-            askCamera.launch(Manifest.permission.CAMERA);
-        }
     }
-
     private void startScanner() {
         View v = requireView();
         CodeScannerView scannerView = v.findViewById(R.id.scanner_view);
@@ -66,20 +55,21 @@ public class QRScannerFragment extends Fragment {
         codeScanner.setDecodeCallback(result -> requireActivity().runOnUiThread(() -> {
 
             if (launched) return;
+            launched = true;
 
             String text = result.getText();              // e.g., "EVT:abc123"
             QRCode qr = QRCode.fromPayload(text);       // -> QRCode or null
 
             if (qr != null) {
-                launched = true;
-
                 String eventId = qr.getEventId();
 
                 // Tell the host activity to show the event tab (or navigate)
                 if (codeScanner != null) {
                     codeScanner.releaseResources();
+                    codeScanner = null;
                 }
 
+                Toast.makeText(requireContext(), "QR scanned", Toast.LENGTH_SHORT).show();
                 //create the fragment with eventId
                 Fragment f = new AttendeeEventDetailsFragment();
                 // Launches new fragment
@@ -99,6 +89,7 @@ public class QRScannerFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        launched = false;
         if (codeScanner != null) codeScanner.startPreview();
     }
 
@@ -107,5 +98,6 @@ public class QRScannerFragment extends Fragment {
         if (codeScanner != null) codeScanner.releaseResources();
         super.onPause();
     }
+
 
 }

@@ -70,9 +70,10 @@ public class MainActivity extends AppCompatActivity
                     showOverlay();
                 }
                 else {
+                    //User already exists gets its name
                     User user = snap.toObject(User.class);
-                    UserRepository repo = UserRepository.getInstance();
-                    repo.setUser(user);
+                    UserRepository.getInstance().setUser(user);
+
                 }
             }
             @Override
@@ -83,18 +84,18 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
+    //This will show the create User Overlay if new user
     private void showOverlay() {
-        int containerId = R.id.createUserOverlay; // make sure this exists in activity_main.xml
-        View container = findViewById(containerId);
-        if (container == null) return;
-        container.setVisibility(View.VISIBLE);
+        int containerId = R.id.createUserOverlay;
 
-        FragmentManager fm = getSupportFragmentManager();
-        if (fm.findFragmentById(containerId) == null) {
-            fm.beginTransaction()
-                    .replace(containerId, new CreateUserFragment())
-                    .commit();
-        }
+        View container = findViewById(R.id.createUserOverlay);
+        if (container == null) return;
+
+        container.setVisibility(View.VISIBLE);
+        getSupportFragmentManager().beginTransaction()
+                .replace(containerId, new CreateUserFragment())
+                .commit();
+
     }
 
     @Override
