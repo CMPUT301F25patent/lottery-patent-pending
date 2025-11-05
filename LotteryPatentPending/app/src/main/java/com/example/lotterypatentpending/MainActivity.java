@@ -58,9 +58,6 @@ public class MainActivity extends AppCompatActivity
                 })
                 .addOnFailureListener(e -> showOverlay());
 
-        // TODO: get user info
-        User user = new User();
-        userEventRepo.setUser(user);
     }
 
     private void ensureUserDocOrOnboard() {
@@ -70,7 +67,10 @@ public class MainActivity extends AppCompatActivity
                 if (!snap.exists()) {
                     showOverlay();
                 }
-                // else: user doc exists, do nothing
+                else {
+                    User user = snap.toObject(User.class);
+                    userEventRepo.setUser(user);
+                }
             }
             @Override
             public void onFailure(Exception e) {

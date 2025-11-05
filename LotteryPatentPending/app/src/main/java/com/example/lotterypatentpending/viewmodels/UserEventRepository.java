@@ -7,6 +7,7 @@ import com.example.lotterypatentpending.models.Event;
 import com.example.lotterypatentpending.models.User;
 
 public class UserEventRepository {
+    public static User getUser;
     private static UserEventRepository instance;
     private final MutableLiveData<User> user = new MutableLiveData<>();
     private final MutableLiveData<Event> event = new MutableLiveData<>();

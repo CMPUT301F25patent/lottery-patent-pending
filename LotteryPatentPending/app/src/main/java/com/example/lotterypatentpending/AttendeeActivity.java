@@ -33,6 +33,10 @@ public class AttendeeActivity extends AppCompatActivity {
     private NotificationRepository repo;
     private ListenerRegistration unreadReg;
 
+    private Fragment eventsFragment;
+    private Fragment profileFragment;
+    private Fragment scanFragment;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,31 +56,28 @@ public class AttendeeActivity extends AppCompatActivity {
         //Firebasemanager get db instance
         firebaseManager = FirebaseManager.getInstance();
 
-        //Get user
 
+        eventsFragment = new AttendeeEventsFragment();
+        profileFragment = new AttendeeProfileFragment();
+        scanFragment = new QRScannerFragment();
 
-        // default tab = events
+        // default tab
         setTitle("Events");
-        Fragment default_frag = new AttendeeEventsFragment();
-        load(default_frag);
+        load(eventsFragment);
 
-        //creates bottom nav bar and listeners
         bottomNav.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
             if (id == R.id.nav_events) {
                 setTitle("Events");
-                Fragment frag = new AttendeeEventsFragment();
-                return load(frag);
+                return load(eventsFragment);
             }
             if (id == R.id.nav_profile) {
                 setTitle("Profile");
-                Fragment frag = new AttendeeProfileFragment();
-                return load(frag);
+                return load(profileFragment);
             }
             if (id == R.id.nav_scan) {
                 setTitle("Scan");
-                Fragment frag = new QRScannerFragment();
-                return load(frag);
+                return load(scanFragment);
             }
             return false;
         });

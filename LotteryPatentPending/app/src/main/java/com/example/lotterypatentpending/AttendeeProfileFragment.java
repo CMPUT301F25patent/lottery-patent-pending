@@ -16,6 +16,7 @@ import android.widget.Toast;
 
 import com.example.lotterypatentpending.models.FirebaseManager;
 import com.example.lotterypatentpending.models.User;
+import com.example.lotterypatentpending.viewmodels.UserEventRepository;
 import com.google.firebase.Firebase;
 
 /**
@@ -53,7 +54,7 @@ public class AttendeeProfileFragment extends Fragment {
         AttendeeActivity activity = (AttendeeActivity) requireActivity();
 
         //get user for fragment
-        user = activity.getUser();
+        user = UserEventRepository.getUser;
 
         name.setText(user.getName());
         email.setText(user.getEmail());
