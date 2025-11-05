@@ -1,5 +1,4 @@
 package com.example.lotterypatentpending.models;
-
 import java.util.List;
 import java.util.ArrayList;
 
@@ -156,6 +155,29 @@ public class User {
                 ", notificationsOptIn=" + notificationsOptIn +
                 ", isAdmin=" + isAdmin +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || this.getClass() != o.getClass()) {
+            return false;
+        }
+        User other = (User)o;
+        if (this.userId == null && other.userId == null) {
+            return true;
+        }
+        if (this.userId == null || other.userId == null) {
+            return false;
+        }
+        return this.userId.equals(other.userId);
+    }
+
+    @Override
+    public int hashCode() {
+        return userId != null ? userId.hashCode() : 0;
     }
 }
 
