@@ -54,13 +54,8 @@ public class MainActivity extends AppCompatActivity implements MainRegisterNewUs
                     String uid = r.getUser().getUid();
                     checkUserDoc(uid);
                 })
-                .addOnFailureListener(e -> {
-                    registerNewUserOverlay();
-                });
+                .addOnFailureListener(e -> registerNewUserOverlay());
 
-        // TODO: get user info
-        User user = new User();
-        userEventRepo.setUser(user);
     }
 
     private void checkUserDoc(String uid) {
@@ -71,10 +66,9 @@ public class MainActivity extends AppCompatActivity implements MainRegisterNewUs
                     registerNewUserOverlay();
                 }
                 else {
-                    //User already exists gets its name
+                    //Stores user from firebase and puts it into UserEventRepository
                     User user = snap.toObject(User.class);
                     UserEventRepository.getInstance().setUser(user);
-
                 }
             }
             @Override
