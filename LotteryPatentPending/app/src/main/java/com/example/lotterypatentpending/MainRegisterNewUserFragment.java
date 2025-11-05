@@ -22,12 +22,8 @@ import com.google.firebase.auth.FirebaseAuth;
  * @maintainer Erik
  * @author Erik
  */
-
-public class CreateUserFragment extends Fragment {
-
-
+public class MainRegisterNewUserFragment extends Fragment {
     public interface OnProfileSaved { void onProfileSaved(); }
-
     private EditText nameEt, emailEt, phoneEt;
     private Button saveBtn;
 

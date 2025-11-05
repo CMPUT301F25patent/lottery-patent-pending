@@ -1,7 +1,6 @@
 package com.example.lotterypatentpending;
 
 import android.Manifest;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.widget.Toast;
@@ -13,9 +12,7 @@ import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 
 import com.budiyev.android.codescanner.CodeScanner;
 import com.budiyev.android.codescanner.CodeScannerView;
@@ -27,7 +24,7 @@ import com.example.lotterypatentpending.models.QRCode;
  * @author Erik
  */
 
-public class QRScannerFragment extends Fragment {
+public class AttendeeQRScannerFragment extends Fragment {
 
     private CodeScanner codeScanner;
     private boolean launched = false;
@@ -40,8 +37,8 @@ public class QRScannerFragment extends Fragment {
                     Toast.makeText(requireContext(), "Camera permission required", Toast.LENGTH_SHORT).show();
             });
 
-    public QRScannerFragment() {
-        super(R.layout.fragment_qr_scanner);
+    public AttendeeQRScannerFragment() {
+        super(R.layout.fragment_attendee_qr_scanner);
     }
 
     @Override
@@ -77,9 +74,9 @@ public class QRScannerFragment extends Fragment {
                 if (codeScanner != null) {
                     codeScanner.releaseResources();
                 }
-                // Event will be a new activity
-                startActivity(new Intent(requireContext(), EventDetailsActivity.class)
-                        .putExtra("event_id", eventId));
+                // TODO: change to fragment
+//                startActivity(new Intent(requireContext(), EventDetailsActivity.class)
+//                        .putExtra("event_id", eventId));
             } else {
                 Toast.makeText(requireContext(), "Not an event QR for this app", Toast.LENGTH_SHORT).show();
                 codeScanner.startPreview();

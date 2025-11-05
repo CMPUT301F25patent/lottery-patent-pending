@@ -14,7 +14,7 @@ import androidx.fragment.app.Fragment;
 import com.example.lotterypatentpending.User_interface.Inbox.InboxActivity;
 import com.example.lotterypatentpending.models.FirebaseManager;
 import com.example.lotterypatentpending.models.NotificationRepository;
-import com.example.lotterypatentpending.viewmodels.UserEventRepository;
+import com.example.lotterypatentpending.models.UserEventRepository;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
@@ -71,7 +71,7 @@ public class AttendeeActivity extends AppCompatActivity {
             }
             if (id == R.id.nav_scan) {
                 setTitle("Scan");
-                Fragment frag = new QRScannerFragment();
+                Fragment frag = new AttendeeQRScannerFragment();
                 return load(frag);
             }
             return false;

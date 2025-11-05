@@ -11,7 +11,7 @@ import androidx.fragment.app.FragmentManager;
 
 import com.example.lotterypatentpending.models.FirebaseManager;
 import com.example.lotterypatentpending.models.User;
-import com.example.lotterypatentpending.viewmodels.UserEventRepository;
+import com.example.lotterypatentpending.models.UserEventRepository;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -23,11 +23,9 @@ import com.google.firebase.firestore.DocumentSnapshot;
  */
 
 
-public class MainActivity extends AppCompatActivity
-        implements CreateUserFragment.OnProfileSaved {
+public class MainActivity extends AppCompatActivity implements MainRegisterNewUserFragment.OnProfileSaved {
     private UserEventRepository userEventRepo;
-    private FirebaseManager firebaseManager;
-    private String uid;
+    private FirebaseManager fm;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,38 +45,40 @@ public class MainActivity extends AppCompatActivity
                 startActivity(new Intent(this, AdminActivity.class)));
 
         FirebaseApp.initializeApp(this);
-        firebaseManager = FirebaseManager.getInstance();
+        fm = FirebaseManager.getInstance();
 
         FirebaseAuth.getInstance().signInAnonymously()
                 .addOnSuccessListener(r -> {
-                    uid = r.getUser().getUid();
-                    ensureUserDocOrOnboard();
+                    String uid = r.getUser().getUid();
+                    checkUserDoc(uid);
                 })
-                .addOnFailureListener(e -> showOverlay());
+                .addOnFailureListener(e -> {
+                    registerNewUserOverlay();
+                });
 
         // TODO: get user info
         User user = new User();
         userEventRepo.setUser(user);
     }
 
-    private void ensureUserDocOrOnboard() {
-        firebaseManager.getUser(uid, new FirebaseManager.FirebaseCallback<DocumentSnapshot>() {
+    private void checkUserDoc(String uid) {
+        fm.getUser(uid, new FirebaseManager.FirebaseCallback<DocumentSnapshot>() {
             @Override
             public void onSuccess(DocumentSnapshot snap) {
                 if (!snap.exists()) {
-                    showOverlay();
+                    registerNewUserOverlay();
                 }
                 // else: user doc exists, do nothing
             }
             @Override
             public void onFailure(Exception e) {
                 // if something goes wrong, just onboard
-                showOverlay();
+                registerNewUserOverlay();
             }
         });
     }
 
-    private void showOverlay() {
+    private void registerNewUserOverlay() {
         int containerId = R.id.createUserOverlay; // make sure this exists in activity_main.xml
         View container = findViewById(containerId);
         if (container == null) return;
@@ -87,7 +87,7 @@ public class MainActivity extends AppCompatActivity
         FragmentManager fm = getSupportFragmentManager();
         if (fm.findFragmentById(containerId) == null) {
             fm.beginTransaction()
-                    .replace(containerId, new CreateUserFragment())
+                    .replace(containerId, new MainRegisterNewUserFragment())
                     .commit();
         }
     }
