@@ -18,19 +18,21 @@
             android:layout_gravity="center"/>
 
         <EditText
-            android:padding="3dp"
+            android:padding="4dp"
             android:id="@+id/et_name"
             android:hint="Full name"
-            android:background="@color/white_grey"
+            android:textColorHint="@color/white_grey"
+            android:textColor="@color/white"
             android:inputType="textPersonName"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content" />
 
         <EditText
-            android:padding="3dp"
+            android:padding="4dp"
             android:id="@+id/et_email"
             android:hint="Email"
-            android:background="@color/white_grey"
+            android:textColorHint="@color/white_grey"
+            android:textColor="@color/white"
             android:inputType="textEmailAddress"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -38,10 +40,11 @@
             />
 
         <EditText
-            android:padding="3dp"
+            android:padding="4dp"
             android:id="@+id/et_phone"
-            android:hint="Phone Number"
-            android:background="@color/white_grey"
+            android:hint="Phone Number(optional)"
+            android:textColorHint="@color/white_grey"
+            android:textColor="@color/white"
             android:inputType="phone"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

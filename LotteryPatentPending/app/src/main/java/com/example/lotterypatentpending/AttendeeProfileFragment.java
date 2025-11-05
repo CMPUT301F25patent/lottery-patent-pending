@@ -18,6 +18,11 @@ import com.example.lotterypatentpending.models.FirebaseManager;
 import com.example.lotterypatentpending.models.User;
 import com.google.firebase.Firebase;
 
+/**
+ * Class AttendeeActivity
+ * @maintainer Erik
+ * @author Erik
+ */
 
 public class AttendeeProfileFragment extends Fragment {
 
