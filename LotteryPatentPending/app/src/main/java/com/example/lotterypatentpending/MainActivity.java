@@ -66,7 +66,7 @@ public class MainActivity extends AppCompatActivity implements MainRegisterNewUs
                     registerNewUserOverlay();
                 }
                 else {
-                    //Stores user from firebase and puts it into UserRepository
+                    //Stores user from firebase and puts it into UserEventRepository
                     User user = snap.toObject(User.class);
                     UserEventRepository.getInstance().setUser(user);
                 }
