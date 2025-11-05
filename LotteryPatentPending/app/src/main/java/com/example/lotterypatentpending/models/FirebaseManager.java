@@ -26,20 +26,19 @@ import com.example.lotterypatentpending.models.FirebaseManager.FirebaseCallback;
 
 public class FirebaseManager {
     // --- Firebase Instances ---
+    private static FirebaseManager instance;
     private final FirebaseFirestore db;
 
-
-    private static FirebaseManager instance;
     private FirebaseManager() {
         db = FirebaseFirestore.getInstance();
     }
+
     public static FirebaseManager getInstance() {
         if (instance == null) {
             instance = new FirebaseManager();
         }
         return instance;
     }
-
 
     // generic user methods, will be updated when user class is looked at
 
@@ -141,9 +140,6 @@ public class FirebaseManager {
     }
 
 
-
-    //
-
     public void addOrUpdateEvent(String eventId, Event event) {
         if (eventId == null || eventId.isEmpty()) {
             eventId = event.getId(); // fallback to event’s own ID
@@ -156,9 +152,6 @@ public class FirebaseManager {
                 .addOnFailureListener(e ->
                         Log.e("FirebaseManager", "Error saving event: " + e.getMessage()));
     }
-
-
-
 
     public void getEvent(String eventId, FirebaseCallback<Event> callback) {
         db.collection("events").document(eventId).get()
@@ -178,12 +171,12 @@ public class FirebaseManager {
                 .addOnFailureListener(callback::onFailure);
     }
 
-
     public void getAllEvents(FirebaseCallback<QuerySnapshot> callback) {
         db.collection("events").get()
                 .addOnSuccessListener(callback::onSuccess)
                 .addOnFailureListener(callback::onFailure);
     }
+
     public void deleteEvent(String eventId) {
         db.collection("events").document(eventId).delete()
                 .addOnSuccessListener(aVoid ->
@@ -191,26 +184,25 @@ public class FirebaseManager {
                 .addOnFailureListener(e ->
                         System.err.println("Error deleting event: " + e.getMessage()));
     }
-    //
-//    public void addEntrantToWaitingList(String eventId, WaitingListEntry entry) {
-//        Map<String, Object> data = new HashMap<>();
-//        data.put("entrantId", entry.getEntrantId());
-//        data.put("entrantName", entry.getEntrantName());
-//        data.put("state", entry.getState().name());  // store enum as String
-//
-//        db.collection("events")
-//                .document(eventId)
-//                .collection("waitingList")
-//                .document(entry.getEntrantId())
-//                .set(data)
-//                .addOnSuccessListener(aVoid ->
-//                        System.out.println("Entrant added to waiting list: " + entry.getEntrantName()))
-//                .addOnFailureListener(e ->
-//                        System.err.println("Error adding entrant: " + e.getMessage()));
-//    }
 
-    //Updates an entrant’s waiting list state (e.g., SELECTED, ACCEPTED, DECLINED).
+    public void addEntrantToWaitingList(User entrant, WaitingListState state, String eventId) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("userId", entrant.getUserId());
+        data.put("name", entrant.getName());
+        data.put("state", state.toString());  // store enum as String
 
+        db.collection("events")
+                .document(eventId)
+                .collection("waitingList")
+                .document(entrant.getUserId())
+                .set(data)
+                .addOnSuccessListener(aVoid ->
+                        System.out.println("Entrant added to waiting list: " + entrant.getName()))
+                .addOnFailureListener(e ->
+                        System.err.println("Error adding entrant: " + e.getMessage()));
+    }
+
+    // Updates an entrant’s waiting list state (e.g., SELECTED, ACCEPTED, DECLINED).
     public void updateEntrantState(String eventId, String entrantId, WaitingListState newState) {
         db.collection("events")
                 .document(eventId)
@@ -245,6 +237,20 @@ public class FirebaseManager {
                         System.out.println("Entrant removed from waiting list: " + entrantId))
                 .addOnFailureListener(e ->
                         System.err.println("Error removing entrant: " + e.getMessage()));
+    }
+
+    public void addJoinedEventToEntrant(Event event, String userId) {
+        db.collection("users")
+                .document(userId)
+                .collection("joinedEventIds")
+                .document(event.getId())
+                .set(event.getId())
+                .addOnSuccessListener(aVoid -> {
+                    System.out.println("Event added to entrant's joined list");
+                })
+                .addOnFailureListener(e -> {
+                    System.err.println("Error adding event to entrant's joined list: " + e.getMessage());
+                });
     }
 
 

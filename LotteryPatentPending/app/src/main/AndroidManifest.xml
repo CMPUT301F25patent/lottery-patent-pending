@@ -20,9 +20,6 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.LotteryPatentPending">
         <activity
-            android:name=".EventDetailsActivity"
-            android:exported="false" />
-        <activity
             android:name=".AdminActivity"
             android:exported="false" />
         <activity

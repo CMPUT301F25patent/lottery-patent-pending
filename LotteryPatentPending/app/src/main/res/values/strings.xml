@@ -15,4 +15,6 @@
     <string name="event_history">Event History</string>
     <string name="browse_events">Browse Events</string>
     <string name="create_event">Create Event</string>
+    <string name="join">Join</string>
+    <string name="placeholder_text">Placeholder Text</string>
 </resources>

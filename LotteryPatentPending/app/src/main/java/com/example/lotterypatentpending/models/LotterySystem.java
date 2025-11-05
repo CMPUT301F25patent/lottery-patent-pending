@@ -12,27 +12,22 @@ import java.util.Comparator;
 import java.util.List;
 
 public class LotterySystem {
-//    /**
-//     * Selects random entrants by shuffling the list and picking the first n entrants, then sorting the list
-//     * @param list list of entrants
-//     * @param num number of entrants to select
-//     */
-//    public static void lotterySelect(List<Pair<Entrant, WaitingListState>> list, Integer num) {
-//        Collections.shuffle(list);
-//        for (int i = 0; i < list.size(); i++) {
-//            Pair<Entrant, WaitingListState> pair = list.get(i);
-//            WaitingListState newState = (i < num) ? WaitingListState.SELECTED : WaitingListState.NOT_SELECTED;
-//            list.set(i, new Pair<>(pair.first, newState));
-//        }
-//        list.sort(Comparator.comparing(pair -> pair.first.getName()));
-//    }
-//
-//    public static void lotteryReselect(List<Pair<Entrant, WaitingListState>> list, Integer num) {
-//
-//    }
+    /**
+     * Selects random entrants by shuffling the list and picking the first n entrants, then sorting the list
+     * @param list list of entrants
+     * @param num number of entrants to select
+     */
+    public static void lotterySelect(List<Pair<User, WaitingListState>> list, Integer num) {
+        Collections.shuffle(list);
+        for (int i = 0; i < list.size(); i++) {
+            Pair<User, WaitingListState> pair = list.get(i);
+            WaitingListState newState = (i < num) ? WaitingListState.SELECTED : WaitingListState.NOT_SELECTED;
+            list.set(i, new Pair<>(pair.first, newState));
+        }
+    }
+
     private void notifyLotteryResults(String organizerId, String eventId, String eventTitle,
                                       List<String> winnerIds, List<String> loserIds) {
-
         NotificationRepository nRepo = new NotificationRepository();
         LotteryResultNotifier notifier = new LotteryResultNotifier(nRepo);
 
@@ -44,8 +39,6 @@ public class LotterySystem {
         if (loserIds != null && !loserIds.isEmpty()) {
             tasks.add(notifier.notifyLosers(organizerId, eventId, eventTitle, loserIds));
         }
-
-
         com.google.android.gms.tasks.Tasks.whenAllComplete(tasks)
                 .addOnSuccessListener(results -> {
                     int ok = 0, fail = 0;
@@ -59,6 +52,10 @@ public class LotterySystem {
                 .addOnFailureListener(e -> {
                     android.util.Log.e("LotteryNotify", "Failed to send notifications", e);
                 });
+    }
+
+    public static void lotteryReselect(List<Pair<User, WaitingListState>> list, Integer num){
+
     }
 
 }
