@@ -32,9 +32,6 @@ public class QRScannerFragment extends Fragment {
     private CodeScanner codeScanner;
     private boolean launched = false;
 
-    // Ask for CAMERA at runtime
-
-
     public QRScannerFragment() {
         super(R.layout.fragment_qr_scanner);
     }
