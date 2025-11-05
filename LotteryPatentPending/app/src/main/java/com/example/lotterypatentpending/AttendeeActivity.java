@@ -2,22 +2,19 @@ package com.example.lotterypatentpending;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
 import com.example.lotterypatentpending.User_interface.Inbox.InboxActivity;
 import com.example.lotterypatentpending.models.FirebaseManager;
 import com.example.lotterypatentpending.models.NotificationRepository;
-import com.example.lotterypatentpending.models.Notification;
-import com.example.lotterypatentpending.models.User;
+import com.example.lotterypatentpending.viewmodels.UserEventRepository;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
@@ -31,9 +28,7 @@ import com.google.firebase.firestore.ListenerRegistration;
  */
 
 public class AttendeeActivity extends AppCompatActivity {
-
-
-    private User user;
+    private UserEventRepository userEventRepo;
     private FirebaseManager  firebaseManager;
     private NotificationRepository repo;
     private ListenerRegistration unreadReg;
@@ -42,7 +37,10 @@ public class AttendeeActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_attendee);
+
+        userEventRepo = UserEventRepository.getInstance();
         repo = new com.example.lotterypatentpending.models.NotificationRepository();
+
         MaterialToolbar toolbar = findViewById(R.id.toolbar);
         BottomNavigationView bottomNav = findViewById(R.id.bottomNav);
 
@@ -50,30 +48,31 @@ public class AttendeeActivity extends AppCompatActivity {
         toolbar.setNavigationIcon(R.drawable.ic_home);
         toolbar.setNavigationOnClickListener(v -> finish());
 
-        //Firebasemanager
+        // Firebasemanager
         firebaseManager = FirebaseManager.getInstance();
-
-        //Get user
-
 
         // default tab = events
         setTitle("Events");
-        load(new AttendeeEventsFragment());
+        Fragment default_frag = new AttendeeEventsFragment();
+        load(default_frag);
 
         //creates bottom nav bar and listeners
         bottomNav.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
             if (id == R.id.nav_events) {
                 setTitle("Events");
-                return load(new AttendeeEventsFragment());
+                Fragment frag = new AttendeeEventsFragment();
+                return load(frag);
             }
             if (id == R.id.nav_profile) {
                 setTitle("Profile");
-                return load(new AttendeeProfileFragment());
+                Fragment frag = new AttendeeProfileFragment();
+                return load(frag);
             }
             if (id == R.id.nav_scan) {
                 setTitle("Scan");
-                return load(new QRScannerFragment());
+                Fragment frag = new QRScannerFragment();
+                return load(frag);
             }
             return false;
         });

@@ -10,6 +10,8 @@ import androidx.fragment.app.FragmentManager;
 
 
 import com.example.lotterypatentpending.models.FirebaseManager;
+import com.example.lotterypatentpending.models.User;
+import com.example.lotterypatentpending.viewmodels.UserEventRepository;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -23,7 +25,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 
 public class MainActivity extends AppCompatActivity
         implements CreateUserFragment.OnProfileSaved {
-
+    private UserEventRepository userEventRepo;
     private FirebaseManager firebaseManager;
     private String uid;
 
@@ -32,6 +34,9 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
+
+        // get user event repo instance
+        userEventRepo = UserEventRepository.getInstance();
 
         // Buttons
         findViewById(R.id.btnAttendee).setOnClickListener(v ->
@@ -50,6 +55,10 @@ public class MainActivity extends AppCompatActivity
                     ensureUserDocOrOnboard();
                 })
                 .addOnFailureListener(e -> showOverlay());
+
+        // TODO: get user info
+        User user = new User();
+        userEventRepo.setUser(user);
     }
 
     private void ensureUserDocOrOnboard() {
