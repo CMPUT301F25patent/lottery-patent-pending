@@ -1,10 +1,13 @@
-package com.example.lotterypatentpending.models;
+package com.example.lotterypatentpending.viewModels;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-public class UserEventRepository {
+import com.example.lotterypatentpending.models.Event;
+import com.example.lotterypatentpending.models.User;
 
+public class UserEventRepository {
+    public static User getUser;
     private static UserEventRepository instance;
     private final MutableLiveData<User> user = new MutableLiveData<>();
     private final MutableLiveData<Event> event = new MutableLiveData<>();
@@ -36,4 +39,16 @@ public class UserEventRepository {
         return this.event;
     }
 
+    public void joinEvent() {
+        User currentUser = user.getValue();
+        Event currentEvent = event.getValue();
+
+        if (currentUser != null && currentEvent != null) {
+            currentEvent.addToWaitingList(currentUser);
+            currentUser.addJoinedEvent(currentEvent.getId());
+
+            user.setValue(currentUser);
+            event.setValue(currentEvent);
+        }
+    }
 }

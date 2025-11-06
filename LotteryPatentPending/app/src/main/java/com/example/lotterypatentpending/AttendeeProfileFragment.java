@@ -23,6 +23,8 @@ import com.example.lotterypatentpending.models.UserEventRepository;
  */
 
 public class AttendeeProfileFragment extends Fragment {
+
+    private User user;
     private TextView name;
     private TextView email;
     private TextView phone;
@@ -50,7 +52,7 @@ public class AttendeeProfileFragment extends Fragment {
 
         //get user for fragment
 
-        user = UserEventRepository.getInstance().getUser();
+        user = UserEventRepository.getInstance().getUser().getValue();
 
         name.setText(user.getName());
         email.setText(user.getEmail());

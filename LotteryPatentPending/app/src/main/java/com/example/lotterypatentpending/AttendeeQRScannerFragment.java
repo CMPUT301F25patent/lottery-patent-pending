@@ -32,13 +32,6 @@ public class AttendeeQRScannerFragment extends Fragment {
     private CodeScanner codeScanner;
     private boolean launched = false;
 
-    // Ask for CAMERA at runtime
-    private final ActivityResultLauncher<String> askCamera =
-            registerForActivityResult(new RequestPermission(), isGranted -> {
-                if (isGranted) startScanner();
-                else
-                    Toast.makeText(requireContext(), "Camera permission required", Toast.LENGTH_SHORT).show();
-            });
 
     public AttendeeQRScannerFragment() {
         super(R.layout.fragment_attendee_qr_scanner);
@@ -48,14 +41,8 @@ public class AttendeeQRScannerFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         launched = false;
+        startScanner();
 
-        // Permission check
-        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA)
-                == PackageManager.PERMISSION_GRANTED) {
-            startScanner();
-        } else {
-            askCamera.launch(Manifest.permission.CAMERA);
-        }
     }
 
     private void startScanner() {
@@ -66,7 +53,9 @@ public class AttendeeQRScannerFragment extends Fragment {
 
         codeScanner.setDecodeCallback(result -> requireActivity().runOnUiThread(() -> {
 
+            //qr was already scanned
             if (launched) return;
+
             launched = true;
 
             String text = result.getText();              // e.g., "EVT:abc123"

@@ -43,21 +43,14 @@ public class MainActivity extends AppCompatActivity implements MainRegisterNewUs
 
         FirebaseAuth auth = FirebaseAuth.getInstance();
 
-        // if user already signed in
-        if (auth.getCurrentUser() != null) {
-            String uid = auth.getCurrentUser().getUid();
-            checkUserDoc(uid);
-        }
-        else {
-            auth.signInAnonymously()
-                    .addOnSuccessListener(r -> {
-                        String uid = r.getUser().getUid();
-                        checkUserDoc(uid);
-                    })
-                    .addOnFailureListener(e -> {
-                        registerNewUserOverlay();
-                    });
-        }
+        // Sign in user to firebase anonymously
+        // get the uid from firebase
+        FirebaseAuth.getInstance().signInAnonymously()
+                .addOnSuccessListener(r -> {
+                    String uid = r.getUser().getUid();
+                    checkUserDoc(uid);
+                })
+                .addOnFailureListener(e -> registerNewUserOverlay());
 
     }
 
@@ -69,6 +62,8 @@ public class MainActivity extends AppCompatActivity implements MainRegisterNewUs
                     registerNewUserOverlay();
                 }
                 else {
+                    //Stores user from firebase and puts it into UserEventRepository
+                    User user = snap.toObject(User.class);
                     UserEventRepository.getInstance().setUser(user);
                 }
             }
