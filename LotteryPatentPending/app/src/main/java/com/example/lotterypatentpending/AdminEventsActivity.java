@@ -100,39 +100,28 @@ public class AdminEventsActivity extends AppCompatActivity {
 
 
     private void loadEventsFromFirebase() {
-        firebaseManager.getAllEvents(new FirebaseManager.FirebaseCallback<QuerySnapshot>() {
+        firebaseManager.getAllEvents(new FirebaseManager.FirebaseCallback<ArrayList<Event>>() {
             @Override
-            public void onSuccess(QuerySnapshot result) {
+            public void onSuccess(ArrayList<Event> result) {
                 eventList.clear();
                 eventDisplayList.clear();
 
-                for (DocumentSnapshot doc : result) {
-                    try {
-                        // Convert Firestore document to Event
-                        Map<String, Object> data = doc.getData();
-                        if (data == null) continue;
+                for (Event event : result) {
+                    if (event == null) continue;
 
-                        Event event = firebaseManager.mapToEvent(data);
-                        if (event == null) continue;
+                    eventList.add(event);
 
-                        eventList.add(event);
+                    String organizerName = (event.getOrganizer() != null)
+                            ? event.getOrganizer().getName()
+                            : "Unknown Organizer";
 
-                        // Build a readable display string
-                        String organizerName = (event.getOrganizer() != null)
-                                ? event.getOrganizer().getName()
-                                : "Unknown Organizer";
+                    String display = event.getTitle() +
+                            "\nBy: " + organizerName +
+                            "\n" + event.getDescription() +
+                            "\nLocation: " + event.getLocation() +
+                            " | Capacity: " + event.getCapacity();
 
-                        String display = event.getTitle() +
-                                "\nBy: " + organizerName +
-                                "\n" + event.getDescription() +
-                                "\nLocation: " + event.getLocation() +
-                                " | Capacity: " + event.getCapacity();
-
-                        eventDisplayList.add(display);
-
-                    } catch (Exception e) {
-                        Log.e("BrowseEvents", "Error parsing event: " + e.getMessage());
-                    }
+                    eventDisplayList.add(display);
                 }
 
                 adapter.notifyDataSetChanged();
@@ -145,5 +134,6 @@ public class AdminEventsActivity extends AppCompatActivity {
             }
         });
     }
+
 
 }
