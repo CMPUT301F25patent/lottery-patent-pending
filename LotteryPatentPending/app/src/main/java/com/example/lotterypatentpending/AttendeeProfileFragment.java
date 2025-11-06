@@ -1,5 +1,6 @@
 package com.example.lotterypatentpending;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -14,6 +15,7 @@ import android.widget.Toast;
 import com.example.lotterypatentpending.models.FirebaseManager;
 import com.example.lotterypatentpending.models.User;
 import com.example.lotterypatentpending.models.UserEventRepository;
+import com.google.firebase.auth.FirebaseAuth;
 
 
 /**
@@ -93,6 +95,12 @@ public class AttendeeProfileFragment extends Fragment {
                     .setPositiveButton("Delete", (dialog, which) -> {
                         FirebaseManager.getInstance().deleteUser(user.getUserId());
                         Toast.makeText(requireContext(), "User deleted", Toast.LENGTH_SHORT).show();
+                        FirebaseAuth.getInstance().signOut();
+
+                        Intent intent = new Intent(requireContext(), MainActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        startActivity(intent);
+
                         requireActivity().finish();
                     })
                     .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
