@@ -118,7 +118,7 @@ public class FirebaseManager {
 
 
     //Converts Firestore data back into an Event object
-    private Event mapToEvent(Map<String, Object> data) {
+    public Event mapToEvent(Map<String, Object> data) {
         if (data == null) return null;
 
         String title = (String) data.get("title");
