@@ -253,45 +253,6 @@ public class FirebaseManager {
                 });
     }
 
-
-    // generic notification add, will updated after looking at notification class
-    public void logNotification(Notification notification) {
-        // If the notification already has an ID, reuse it; otherwise Firestore generates one.
-        DocumentReference docRef;
-        if (notification.getId() != null && !notification.getId().isEmpty()) {
-            docRef = db.collection("notifications").document(notification.getId());
-        } else {
-            docRef = db.collection("notifications").document();
-            notification.setId(docRef.getId());
-        }
-
-        // Ensure timestamps are filled if not already
-        if (notification.getCreatedAt() == null) {
-            notification.setCreatedAt(Timestamp.now());
-        }
-
-        docRef.set(notification)
-                .addOnSuccessListener(aVoid ->
-                        Log.d("FirebaseManager", "Notification logged: " + notification.getId()))
-                .addOnFailureListener(e ->
-                        Log.e("FirebaseManager", "Error logging notification: " + e.getMessage()));
-    }
-
-    public void getAllNotifications(FirebaseCallback<List<Notification>> callback) {
-        db.collection("notifications")
-                .orderBy("createdAt") // optional if stored as a Timestamp
-                .get()
-                .addOnSuccessListener(querySnapshot -> {
-                    List<Notification> notifications = new ArrayList<>();
-                    for (DocumentSnapshot doc : querySnapshot) {
-                        Notification notif = doc.toObject(Notification.class);
-                        notifications.add(notif);
-                    }
-                    callback.onSuccess(notifications);
-                })
-                .addOnFailureListener(callback::onFailure);
-    }
-
     // fetches events by event ID, utilized for deleting organizers by event
     public void getEventById(String eventId, FirebaseCallback<DocumentSnapshot> callback) {
         db.collection("events")

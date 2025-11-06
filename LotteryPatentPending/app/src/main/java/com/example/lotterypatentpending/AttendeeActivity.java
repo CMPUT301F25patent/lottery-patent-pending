@@ -13,6 +13,7 @@ import androidx.fragment.app.Fragment;
 
 import com.example.lotterypatentpending.User_interface.Inbox.InboxActivity;
 import com.example.lotterypatentpending.models.FirebaseManager;
+import com.example.lotterypatentpending.models.FirestoreNotificationRepository;
 import com.example.lotterypatentpending.models.NotificationRepository;
 import com.example.lotterypatentpending.models.UserEventRepository;
 import com.google.android.material.appbar.MaterialToolbar;
@@ -44,7 +45,7 @@ public class AttendeeActivity extends AppCompatActivity {
 
 
         userEventRepo = UserEventRepository.getInstance();
-        repo = new com.example.lotterypatentpending.models.NotificationRepository();
+        repo = new FirestoreNotificationRepository();
 
         //Create toolbar and navbar
         MaterialToolbar toolbar = findViewById(R.id.toolbar);
@@ -98,37 +99,33 @@ public class AttendeeActivity extends AppCompatActivity {
     }
 
 
+    // Toolbar menu with inbox badge
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_attendee, menu);
+
+        // custom action layout with badge
         MenuItem inboxItem = menu.findItem(R.id.action_inbox);
         View actionView = inboxItem.getActionView();
 
         ImageView icon = actionView.findViewById(R.id.inboxIcon);
-        TextView badge = actionView.findViewById(R.id.badgeText);
+        TextView badge  = actionView.findViewById(R.id.badgeText);
 
         // open inbox on tap
         actionView.setOnClickListener(v -> onOptionsItemSelected(inboxItem));
 
         // listen to unread count
-        String userId;
         FirebaseUser current = FirebaseAuth.getInstance().getCurrentUser();
-        if (current == null) {
-            finish(); // or navigate to login
-            return true;
-        }
-        userId = current.getUid();
+        if (current == null) { finish(); return true; }
+        String userId = current.getUid();
 
-        // listen to unread count and keep a reference to remove later
+        // keep a reference so we can remove() in onStop()
         unreadReg = repo.listenUnreadCount(
                 userId,
                 count -> {
-                    if (count == null || count <= 0) {
-                        badge.setVisibility(android.view.View.GONE);
-                    } else {
-                        badge.setVisibility(android.view.View.VISIBLE);
-                        badge.setText(String.valueOf(count));
-                    }
+                    int c = (count == null) ? 0 : count;
+                    badge.setVisibility(c <= 0 ? View.GONE : View.VISIBLE);
+                    if (c > 0) badge.setText(String.valueOf(c));
                 },
                 err -> android.util.Log.e("Inbox", "listenUnreadCount", err)
         );
@@ -145,4 +142,9 @@ public class AttendeeActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (unreadReg != null) { unreadReg.remove(); unreadReg = null; }
+    }
 }

@@ -1,37 +1,57 @@
 package com.example.lotterypatentpending;
 
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.lotterypatentpending.User_interface.Inbox.NotificationAdapter;
 import com.example.lotterypatentpending.models.Event;
+import com.example.lotterypatentpending.models.FirebaseManager;
+import com.example.lotterypatentpending.models.FirestoreAdminLogRepository;
 import com.example.lotterypatentpending.models.Notification;
+import com.example.lotterypatentpending.models.NotificationLog;
 import com.example.lotterypatentpending.models.NotificationRepository;
 import com.example.lotterypatentpending.models.RecipientRef;
 import com.example.lotterypatentpending.models.User;
+import com.google.android.material.appbar.MaterialToolbar;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QuerySnapshot;
 
+import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
 public class AdminActivity extends AppCompatActivity {
     private User currentUser;  // holds the logged-in user
-    private com.example.lotterypatentpending.models.FirebaseManager firebaseManager; // Firebase interface
-    private NotificationRepository repo;
-    private NotificationAdapter adapter;
-    private ListenerRegistration reg;
+    // --- UI ---
+    private SwipeRefreshLayout swipe;
+    private RecyclerView recycler;
+    private View emptyState;
+    private View progress;
+
+    // --- Data ---
+    private final FirestoreAdminLogRepository repo = new FirestoreAdminLogRepository();
+    private final AdminNotifAdapter adapter = new AdminNotifAdapter();
+    private FirebaseManager firebaseManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,20 +59,28 @@ public class AdminActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_admin_notif);
 
-        firebaseManager = com.example.lotterypatentpending.models.FirebaseManager.getInstance();
+        // Toolbar w/ back arrow (the XML should set app:navigationIcon or you can set it here)
+        MaterialToolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        toolbar.setNavigationOnClickListener(v -> finish());
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
-        repo = new NotificationRepository();
-        RecyclerView rv = findViewById(R.id.recycler);
-        rv.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new NotificationAdapter(n -> {
-            // Admin tap could open a details screen; no markRead here.
-        });
-        rv.setAdapter(adapter);
+        // Views
+        swipe = findViewById(R.id.swipe);
+        recycler = findViewById(R.id.recycler);
+        emptyState = findViewById(R.id.emptyState);
+        progress = findViewById(R.id.progress);
+
+        // Recycler setup
+        recycler.setLayoutManager(new LinearLayoutManager(this));
+        recycler.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
+        recycler.setAdapter(adapter);
+        recycler.setHasFixedSize(true);
+
+        // Pull-to-refresh
+        swipe.setOnRefreshListener(this::loadData);
+
+        // Initial load
+        loadData();
 
     }
     public void removeUserProfile(String userId, User currentUser) {
@@ -147,40 +175,6 @@ public class AdminActivity extends AppCompatActivity {
             }
         });
     }
-    private void viewAllNotifications() {
-        if (currentUser == null || !currentUser.isAdmin()) {
-            Toast.makeText(this, "Access denied: Admin privileges required", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        firebaseManager.getAllNotifications(new com.example.lotterypatentpending.models.FirebaseManager.FirebaseCallback<List<Notification>>() {
-            @Override
-            public void onSuccess(List<Notification> notifications) {
-                StringBuilder sb = new StringBuilder("=== Notification Logs ===\n\n");
-                for (Notification n : notifications) {
-                    sb.append("Title: ").append(n.getTitle())
-                            .append("\nType: ").append(n.getType())
-                            .append("\nSender ID: ").append(n.getSenderId())
-                            .append("\nRecipients: ");
-                    if (n.getRecipients() != null) {
-                        for (RecipientRef r : n.getRecipients()) {
-                            sb.append(r.getUserId()).append(" ");
-                        }
-                    }
-                    sb.append("\nStatus: ").append(n.getStatus())
-                            .append("\nCreated At: ").append(n.getCreatedAt())
-                            .append("\n\n");
-                }
-
-                Log.d("AdminNotifications", sb.toString());
-            }
-
-            @Override
-            public void onFailure(Exception e) {
-                Log.e("Admin", "Error fetching notifications: " + e.getMessage());
-            }
-        });
-    }
     public void removeOrganizerByEvent(String eventId, User currentUser) {
         if (currentUser == null || !currentUser.isAdmin()) {
             Toast.makeText(this, "Access denied: Admin privileges required", Toast.LENGTH_SHORT).show();
@@ -212,4 +206,91 @@ public class AdminActivity extends AppCompatActivity {
             }
         });
     }
+    /**
+     * Fetch logs from Firestore and bind to the list.
+     * Shows/hides progress + empty states appropriately.
+     */
+    private void loadData() {
+        showLoading(true);
+        repo.getAllLogs()
+                .thenAccept(logs -> runOnUiThread(() -> {
+                    List<NotificationLog> safe = (logs == null) ? new ArrayList<>() : logs;
+                    adapter.submit(safe);
+                    showLoading(false);
+                    showEmpty(safe.isEmpty());
+                    swipe.setRefreshing(false);
+                }))
+                .exceptionally(err -> {
+                    runOnUiThread(() -> {
+                        showLoading(false);
+                        showEmpty(true);
+                        swipe.setRefreshing(false);
+                        Toast.makeText(this, "Failed to load logs", Toast.LENGTH_SHORT).show();
+                    });
+                    return null;
+                });
+    }
+
+    private void showLoading(boolean show) {
+        progress.setVisibility(show ? View.VISIBLE : View.GONE);
+        // keep list visible during swipe refresh; progress is for first load or manual refresh
+    }
+
+    private void showEmpty(boolean show) {
+        emptyState.setVisibility(show ? View.VISIBLE : View.GONE);
+        recycler.setVisibility(show ? View.GONE : View.VISIBLE);
+    }
+
+    // ---------------- Adapter ----------------
+    private static class AdminNotifAdapter extends RecyclerView.Adapter<AdminNotifAdapter.VH> {
+        private final List<NotificationLog> data = new ArrayList<>();
+        private final DateFormat df = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT);
+
+        void submit(@NonNull List<NotificationLog> items) {
+            data.clear();
+            data.addAll(items);
+            notifyDataSetChanged();
+        }
+
+        @NonNull
+        @Override
+        public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            View row = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.item_admin_notif, parent, false);
+            return new VH(row);
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull VH h, int position) {
+            NotificationLog n = data.get(position);
+
+            // Title: Category • EventId
+            String cat = (n.getCategory() == null) ? "" : n.getCategory().name();
+            String evt = (n.getEventId() == null) ? "" : n.getEventId();
+            String title = cat.isEmpty() ? evt : (evt.isEmpty() ? cat : (cat + " • " + evt));
+            h.title.setText(title);
+
+            // Body: payload preview
+            h.body.setText(n.getPayloadPreview() == null ? "" : n.getPayloadPreview());
+
+            // Meta: organizerId • when
+            String who = (n.getOrganizerId() == null) ? "" : n.getOrganizerId();
+            String when = (n.getCreatedAt() == null) ? "" : df.format(n.getCreatedAt());
+            h.meta.setText(TextUtils.isEmpty(who) ? when : (who + " • " + when));
+        }
+
+        @Override
+        public int getItemCount() { return data.size(); }
+
+        static class VH extends RecyclerView.ViewHolder {
+            final TextView title, body, meta;
+            VH(@NonNull View itemView) {
+                super(itemView);
+                title = itemView.findViewById(R.id.title);
+                body  = itemView.findViewById(R.id.body);
+                meta  = itemView.findViewById(R.id.meta);
+            }
+        }
+    }
+
 }
