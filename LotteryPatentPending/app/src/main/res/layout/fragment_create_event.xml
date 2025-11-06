@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#2B2B2B">
+
+
+        <!-- Title -->
+        <TextView
+            android:id="@+id/titleText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#1F1F1F"
+            android:text="Organizer Page"
+            android:textAlignment="center"
+            android:textColor="@android:color/white"
+            android:gravity="center|top"
+            android:paddingTop="10sp"
+            android:paddingBottom="10sp"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+
+        <TextView
+            android:id="@+id/createNewEventText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Create New Event"
+            android:textColor="@android:color/white"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            app:layout_constraintTop_toBottomOf="@+id/titleText"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="20dp" />
+
+
+        <!-- Image Placeholder -->
+        <ImageView
+            android:id="@+id/posterImage"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:background="#3A3A3A"
+            android:padding="16dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_launcher_foreground"
+            app:layout_constraintTop_toBottomOf="@+id/createNewEventText"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="20dp" />
+
+
+        <TextView
+            android:id="@+id/imagePrompt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Choose Image for Event Poster"
+            android:textColor="@android:color/white"
+            android:textSize="14sp"
+            app:layout_constraintTop_toBottomOf="@+id/posterImage"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="8dp" />
+
+
+        <!-- Event Name Input -->
+        <EditText
+            android:id="@+id/titleEt"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:background="#555555"
+            android:padding="10dp"
+            android:textColor="@android:color/white"
+            android:hint="Event Name:"
+            android:textColorHint="#BBBBBB"
+            app:layout_constraintTop_toBottomOf="@+id/imagePrompt"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="20dp"
+            android:layout_marginHorizontal="20dp" />
+
+
+        <!-- Event Description Input -->
+        <EditText
+            android:id="@+id/descriptionEt"
+            android:layout_width="0dp"
+            android:layout_height="100dp"
+            android:background="#555555"
+            android:padding="10dp"
+            android:textColor="@android:color/white"
+            android:hint="Event Description:"
+            android:textColorHint="#BBBBBB"
+            android:gravity="top"
+            app:layout_constraintTop_toBottomOf="@+id/titleEt"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="20dp"
+            android:layout_marginHorizontal="20dp" />
+
+        <EditText
+            android:id="@+id/eventDateEt"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:background="#555555"
+            android:padding="10dp"
+            android:textColor="@android:color/white"
+            android:hint="Event Date: DD/MM/YYYY 00:00 AM/PM"
+            android:textColorHint="#BBBBBB"
+            app:layout_constraintTop_toBottomOf="@+id/descriptionEt"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="20dp"
+            android:layout_marginHorizontal="20dp" />
+
+        <!-- Registration Deadline -->
+        <EditText
+            android:id="@+id/registrationStartDate"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:background="#555555"
+            android:padding="10dp"
+            android:textColor="@android:color/white"
+            android:hint="Reg. Start: DD/MM/YYYY 00:00 AM/PM"
+            android:textColorHint="#BBBBBB"
+            app:layout_constraintTop_toBottomOf="@+id/eventDateEt"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="20dp"
+            android:layout_marginHorizontal="20dp" />
+
+        <!-- Registration End Date -->
+        <EditText
+            android:id="@+id/registrationEndDate"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:background="#555555"
+            android:padding="10dp"
+            android:textColor="@android:color/white"
+            android:hint="Reg. End: DD/MM/YYYY 00:00 AM/PM"
+            android:textColorHint="#BBBBBB"
+            app:layout_constraintTop_toBottomOf="@+id/registrationStartDate"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="20dp"
+            android:layout_marginHorizontal="20dp" />
+
+
+        <!-- Max Entrants -->
+        <EditText
+            android:id="@+id/maxEntrantsInput"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:background="#555555"
+            android:padding="10dp"
+            android:textColor="@android:color/white"
+            android:hint="Event Capacity:"
+            android:textColorHint="#BBBBBB"
+            app:layout_constraintTop_toBottomOf="@+id/registrationEndDate"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="20dp"
+            android:layout_marginHorizontal="20dp" />
+
+        <!-- Max Entrants -->
+        <EditText
+            android:id="@+id/waitingListCapInput"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:background="#555555"
+            android:padding="10dp"
+            android:textColor="@android:color/white"
+            android:hint="Waiting List Cap (Enter N/A for no cap):"
+            android:textColorHint="#BBBBBB"
+            app:layout_constraintTop_toBottomOf="@+id/maxEntrantsInput"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="20dp"
+            android:layout_marginHorizontal="20dp" />
+
+
+        <!-- Cancel Button -->
+        <Button
+            android:id="@+id/cancelButton"
+            android:layout_width="0dp"
+            android:layout_height="60dp"
+            android:background="#000000"
+            android:text="Cancel"
+            android:textColor="@android:color/white"
+            android:textSize="18sp"
+            app:layout_constraintTop_toBottomOf="@+id/waitingListCapInput"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/createEventButton"
+            android:layout_marginTop="30dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="10dp" />
+
+
+        <!-- Create Button -->
+        <Button
+            android:id="@+id/createEventButton"
+            android:layout_width="0dp"
+            android:layout_height="60dp"
+            android:background="#2C64FF"
+            android:text="Create Event"
+            android:textColor="@android:color/white"
+            android:textSize="18sp"
+            app:layout_constraintTop_toBottomOf="@+id/waitingListCapInput"
+            app:layout_constraintStart_toEndOf="@+id/cancelButton"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="30dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="20dp" />
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.core.widget.NestedScrollView>

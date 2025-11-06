@@ -1,8 +1,10 @@
 package com.example.lotterypatentpending.models;
 
 
-import java.time.LocalDate;
-import java.time.LocalTime;
+import android.os.Build;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -16,17 +18,18 @@ public class Event {
     private String id;
     private String title;
     private String description;
-    private LocalDate date;
-    private LocalTime time;
+    private LocalDateTime date;
     private int capacity;
+    private int waitingListCapacity;
     private String location;
     private WaitingList waitingList;
+    private List<User> entrants;
     private User organizer;
-    private LocalDate regStartDate;
-    private LocalTime regStartTime;
-    private LocalDate regEndDate;
-    private LocalTime regEndTime;
-    private QRCode qrcode;
+    private LocalDateTime regStartDate;
+    private LocalDateTime regEndDate;
+    private QRCode qrCode;
+    private QRGenerator qrGenerator;
+    private boolean active;
 
     /**
      * Constructor instantiates the minimal basic information for an event and sets the rest to the default
@@ -42,8 +45,15 @@ public class Event {
         this.description = description;
         this.capacity = capacity;
         this.organizer = organizer;
+        this.date = null;
+        this.location = null;
         this.waitingList = new WaitingList();
-        this.qrcode = new QRCode(this.id);
+        this.entrants = new ArrayList<>();
+        this.regStartDate = null;
+        this.regEndDate = null;
+        this.qrCode = new QRCode(this.id);
+        this.active = false;
+        this.waitingListCapacity = -1;
     }
 
 
@@ -71,20 +81,12 @@ public class Event {
         this.description = description;
     }
 
-    public LocalDate getDate() {
+    public LocalDateTime getDate() {
         return date;
     }
 
-    public void setDate(LocalDate date) {
+    public void setDate(LocalDateTime date) {
         this.date = date;
-    }
-
-    public LocalTime getTime() {
-        return time;
-    }
-
-    public void setTime(LocalTime time) {
-        this.time = time;
     }
 
     public int getCapacity() {
@@ -103,36 +105,20 @@ public class Event {
         this.location = location;
     }
 
-    public LocalDate getRegStartDate() {
+    public LocalDateTime getRegStartDate() {
         return regStartDate;
     }
 
-    public void setRegStartDate(LocalDate regStartDate) {
+    public void setRegStartDate(LocalDateTime regStartDate) {
         this.regStartDate = regStartDate;
     }
 
-    public LocalTime getRegStartTime() {
-        return regStartTime;
-    }
-
-    public void setRegStartTime(LocalTime regStartTime) {
-        this.regStartTime = regStartTime;
-    }
-
-    public LocalDate getRegEndDate() {
+    public LocalDateTime getRegEndDate() {
         return regEndDate;
     }
 
-    public void setRegEndDate(LocalDate regEndDate) {
+    public void setRegEndDate(LocalDateTime regEndDate) {
         this.regEndDate = regEndDate;
-    }
-
-    public LocalTime getRegEndTime() {
-        return regEndTime;
-    }
-
-    public void setRegEndTime(LocalTime regEndTime) {
-        this.regEndTime = regEndTime;
     }
 
     public String getId() {
@@ -151,6 +137,14 @@ public class Event {
         this.waitingList = waitingList;
     }
 
+    public List<User> getEntrants() {
+        return entrants;
+    }
+
+    public void setEntrants(List<User> entrants) {
+        this.entrants = entrants;
+    }
+
     public User getOrganizer() {
         return organizer;
     }
@@ -159,22 +153,56 @@ public class Event {
         this.organizer = organizer;
     }
 
-    public QRCode getQrcode() {
-        return qrcode;
+    public QRCode getQrCode() {
+        return qrCode;
     }
 
-    public void setQrcode(QRCode qrcode) {
-        this.qrcode = qrcode;
+    public void setQrCode(QRCode qrCode) {
+        this.qrCode = qrCode;
     }
 
-    public void addToWaitingList(User entrant) {
-        this.waitingList.addEntrant(entrant);
+    public int getWaitingListCapacity() {
+        return waitingListCapacity;
     }
 
-    public void removeFromWaitingList(User entrant) {
-        this.waitingList.removeEntrant(entrant);
+    public void setWaitingListCapacity(int waitingListCapacity) {
+        this.waitingListCapacity = waitingListCapacity;
     }
 
+    public boolean isActive(){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+        }
+
+        LocalDateTime now = null;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            now = LocalDateTime.now();
+        }
+
+        active = now.isAfter(regStartDate) && now.isBefore(regEndDate);
+        return active;
+    }
+
+    public void addToWaitingList(User entrant){
+        waitingList.addEntrant(entrant);
+    }
+
+    public void removeFromWaitingList(User entrant){
+        waitingList.removeEntrant(entrant);
+    }
+
+
+   /**
+     * logic to add a user/entrant to the event lottery or the waiting list
+     * @param entrant
+    * */
+    public void joinEvent(User entrant){
+       if(entrants.size() < capacity){
+           entrants.add(entrant);
+        }else{
+            addToWaitingList(entrant);
+        }
+    }
     public boolean inWaitingList(User entrant) {
         return this.waitingList.checkEntrant(entrant);
     }

@@ -18,6 +18,7 @@ public class User {
     private List<String> declinedEventIds = new ArrayList<>();
     private List<String> pastEventIds = new ArrayList<>();      // optional history
     private boolean notificationsOptIn = true;
+    private List<Event> organizedEvents = new ArrayList<Event>();
 
 
     //For firebase, needs empty constructor
@@ -148,6 +149,20 @@ public class User {
         }
     }
 
+    public List<Event> getOrganizedEvents(){
+        return organizedEvents;
+    }
+
+    public void addOrganizedEvent(Event event){
+        organizedEvents.add(event);
+    }
+
+    public Event createEvent(String title, String description, int capacity){
+        Event newEvent = new Event(title, description, capacity, this);
+        addOrganizedEvent(newEvent);
+        return newEvent;
+    }
+
     @Override
     public String toString() {
         return "User{" +
@@ -160,6 +175,7 @@ public class User {
                 ", pastEventIds=" + pastEventIds +
                 ", notificationsOptIn=" + notificationsOptIn +
                 ", isAdmin=" + isAdmin +
+                ", organizedEvents=" + organizedEvents +
                 '}';
     }
 
