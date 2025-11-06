@@ -14,13 +14,11 @@ import androidx.fragment.app.Fragment;
 import com.example.lotterypatentpending.User_interface.Inbox.InboxActivity;
 import com.example.lotterypatentpending.models.FirebaseManager;
 import com.example.lotterypatentpending.models.NotificationRepository;
-import com.example.lotterypatentpending.models.User;
 import com.example.lotterypatentpending.models.UserEventRepository;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.ListenerRegistration;
 
 /**
