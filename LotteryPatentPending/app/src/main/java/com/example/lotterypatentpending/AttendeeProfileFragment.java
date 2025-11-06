@@ -79,6 +79,25 @@ public class AttendeeProfileFragment extends Fragment {
             Toast.makeText(requireContext(), "Profile saved", Toast.LENGTH_SHORT).show();
 
         });
+        Button deleteBtn;
+        deleteBtn = v.findViewById(R.id.profileDeleteBtn);
+        deleteBtn.setOnClickListener(view -> {
+            if (user == null) {
+                Toast.makeText(requireContext(), "No user loaded", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            new androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                    .setTitle("Delete Account")
+                    .setMessage("Are you sure you want to delete this account? This action cannot be undone.")
+                    .setPositiveButton("Delete", (dialog, which) -> {
+                        FirebaseManager.getInstance().deleteUser(user.getUserId());
+                        Toast.makeText(requireContext(), "User deleted", Toast.LENGTH_SHORT).show();
+                        requireActivity().finish();
+                    })
+                    .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
+                    .show();
+        });
 
     }
 }
