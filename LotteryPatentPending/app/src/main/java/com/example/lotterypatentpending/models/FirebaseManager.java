@@ -264,23 +264,12 @@ public class FirebaseManager {
 
     public void deleteEvent(String eventId) {
         db.collection("events")
-                .whereEqualTo("id", eventId)
-                .get()
-                .addOnSuccessListener(querySnapshot -> {
-                    if (querySnapshot.isEmpty()) {
-                        Log.w("FirebaseManager", "No document found for id field: " + eventId);
-                        return;
-                    }
-                    for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
-                        doc.getReference().delete()
-                                .addOnSuccessListener(aVoid ->
-                                        Log.i("FirebaseManager", "Event deleted successfully: " + eventId))
-                                .addOnFailureListener(e ->
-                                        Log.e("FirebaseManager", "Error deleting event: " + e.getMessage()));
-                    }
-                })
+                .document(eventId)
+                .delete()
+                .addOnSuccessListener(aVoid ->
+                        Log.i("FirebaseManager", "Event deleted successfully: " + eventId))
                 .addOnFailureListener(e ->
-                        Log.e("FirebaseManager", "Query failed before deletion: " + e.getMessage()));
+                        Log.e("FirebaseManager", "Error deleting event: " + e.getMessage()));
     }
 
 
