@@ -1,14 +1,11 @@
 package com.example.lotterypatentpending.models;
 
 import android.util.Pair;
-import com.example.lotterypatentpending.models.Notification;
-import com.example.lotterypatentpending.models.NotificationRepository;
-import com.example.lotterypatentpending.models.LotteryResultNotifier;
-import com.example.lotterypatentpending.models.NotificationFactory;
-import android.content.Context;
-import android.widget.Toast;
+
+import com.google.android.gms.tasks.Task;
+
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 public class LotterySystem {
@@ -26,36 +23,32 @@ public class LotterySystem {
         }
     }
 
-    private void notifyLotteryResults(String organizerId, String eventId, String eventTitle,
-                                      List<String> winnerIds, List<String> loserIds) {
-        NotificationRepository nRepo = new NotificationRepository();
-        LotteryResultNotifier notifier = new LotteryResultNotifier(nRepo);
+    private void notifyLotteryResults(String organizerId,
+                                      String eventId,
+                                      String eventTitle,
+                                      List<String> allEntrantIds,   // << full pool considered by the draw
+                                      List<String> winnerIds) {
 
-        List<com.google.android.gms.tasks.Task<Void>> tasks = new java.util.ArrayList<>();
+        // Our facade (handles opt-in filtering + admin audit logging)
+        LotteryResultNotifier notifier = new LotteryResultNotifier();
 
+        List<Task<Void>> tasks = new ArrayList<>();
+
+        // 1) Winners
         if (winnerIds != null && !winnerIds.isEmpty()) {
             tasks.add(notifier.notifyWinners(organizerId, eventId, eventTitle, winnerIds));
         }
-        if (loserIds != null && !loserIds.isEmpty()) {
-            tasks.add(notifier.notifyLosers(organizerId, eventId, eventTitle, loserIds));
-        }
-        com.google.android.gms.tasks.Tasks.whenAllComplete(tasks)
-                .addOnSuccessListener(results -> {
-                    int ok = 0, fail = 0;
-                    for (com.google.android.gms.tasks.Task<?> t : results) {
-                        if (t.isSuccessful()) ok++; else fail++;
-                    }
-                    if (fail != 0) {
-                        android.util.Log.e("LotteryNotify", "Some notifications failed (" + fail + ")");
-                    }
-                })
-                .addOnFailureListener(e -> {
-                    android.util.Log.e("LotteryNotify", "Failed to send notifications", e);
-                });
-    }
 
+        // 2) Losers: compute from the pool (server will filter opt-in)
+        List<String> safeWinners = (winnerIds != null) ? winnerIds : Collections.emptyList();
+        if (allEntrantIds != null && !allEntrantIds.isEmpty()) {
+            tasks.add(notifier.notifyLosersFromPool(
+                    organizerId, eventId, eventTitle, allEntrantIds, safeWinners));
+        }
+    }
+    /*
     public static void lotteryReselect(List<Pair<User, WaitingListState>> list, Integer num){
 
     }
-
+    */
 }

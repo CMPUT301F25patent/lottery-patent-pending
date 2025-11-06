@@ -17,6 +17,8 @@ import com.example.lotterypatentpending.models.User;
 import com.example.lotterypatentpending.models.UserEventRepository;
 import com.google.firebase.auth.FirebaseAuth;
 
+import org.jspecify.annotations.Nullable;
+
 
 /**
  * Class AttendeeActivity
@@ -25,13 +27,12 @@ import com.google.firebase.auth.FirebaseAuth;
  */
 
 public class AttendeeProfileFragment extends Fragment {
-
-    private User user;
     private TextView name;
     private TextView email;
     private TextView phone;
     private SwitchCompat notificationsSwitch;
     private Button saveBtn;
+    private User user;
 
     public AttendeeProfileFragment(){
         super(R.layout.fragment_attendee_profile);
