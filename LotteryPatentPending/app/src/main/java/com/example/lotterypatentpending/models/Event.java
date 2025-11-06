@@ -183,23 +183,24 @@ public class Event {
         return active;
     }
 
-//    private void addToWaitingList(Entrant entrant){
-//        waitingList.addEntrant(entrant);
-//    }
-//
-//    private void removeFromWaitingList(Entrant entrant){
-////        waitingList.removeEntrant(entrant);
-//    }
-//
-//    /**
-//     * logic to add a user/entrant to an event or the waiting list
-//     * @param entrant
-//     */
-//    private void joinEvent(Entrant entrant){
-//        if(entrants.size() < capacity){
-//            entrants.add(entrant);
-//        }else{
-//            addToWaitingList(entrant);
-//        }
-//    }
+    public void addToWaitingList(User entrant){
+        waitingList.addEntrant(entrant);
+    }
+
+    public void removeFromWaitingList(User entrant){
+        waitingList.removeEntrant(entrant);
+    }
+
+
+   /**
+     * logic to add a user/entrant to the event lottery or the waiting list
+     * @param entrant
+    * */
+    public void joinEvent(User entrant){
+       if(entrants.size() < capacity){
+           entrants.add(entrant);
+        }else{
+            addToWaitingList(entrant);
+        }
+    }
 }

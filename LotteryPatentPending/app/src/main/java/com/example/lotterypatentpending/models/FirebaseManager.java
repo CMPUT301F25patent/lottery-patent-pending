@@ -78,12 +78,12 @@ public class FirebaseManager {
         data.put("location", event.getLocation());
 
         // Dates & times as strings
-        data.put("date", event.getDate() != null ? event.getDate().toString() : null);
-        data.put("time", event.getTime() != null ? event.getTime().toString() : null);
+        data.put("date_time", event.getDate() != null ? event.getDate().toString() : null);
+//        data.put("time", event.getTime() != null ? event.getTime().toString() : null);
         data.put("regStartDate", event.getRegStartDate() != null ? event.getRegStartDate().toString() : null);
-        data.put("regStartTime", event.getRegStartTime() != null ? event.getRegStartTime().toString() : null);
+//        data.put("regStartTime", event.getRegStartTime() != null ? event.getRegStartTime().toString() : null);
         data.put("regEndDate", event.getRegEndDate() != null ? event.getRegEndDate().toString() : null);
-        data.put("regEndTime", event.getRegEndTime() != null ? event.getRegEndTime().toString() : null);
+//        data.put("regEndTime", event.getRegEndTime() != null ? event.getRegEndTime().toString() : null);
 
         // Organizer is just a User
         if (event.getOrganizer() != null) {
@@ -303,7 +303,7 @@ public class FirebaseManager {
 
 
 
-    // for lsteners
+    // for listeners
     public interface FirebaseCallback<T> {
         void onSuccess(T result);
         void onFailure(Exception e);

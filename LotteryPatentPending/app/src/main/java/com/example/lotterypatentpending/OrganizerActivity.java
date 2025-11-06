@@ -10,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.fragment.app.Fragment;
 
 import com.example.lotterypatentpending.models.NotificationFactory;
 import com.example.lotterypatentpending.models.NotificationRepository;
@@ -23,18 +24,9 @@ public class OrganizerActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_organizer);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
+        setContentView(R.layout.activity_organizer_host);
         notifRepo = new NotificationRepository();
 
-        Button create_event = findViewById(R.id.create_event);
-        Button view_events = findViewById(R.id.view_events);
-
-        var current = FirebaseAuth.getInstance().getCurrentUser();
 
     }
     // Call this when the organizer clicks the "Send" button.

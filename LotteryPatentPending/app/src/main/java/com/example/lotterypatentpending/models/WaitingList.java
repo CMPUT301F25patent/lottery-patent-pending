@@ -9,13 +9,22 @@ import java.util.ArrayList;
 
 public class WaitingList {
     private ArrayList<Pair<User, WaitingListState>> list;
+    private int capacity;
 
     public WaitingList() {
         list = new ArrayList<>();
     }
 
+    public WaitingList(int capacity){
+        super();
+        this.capacity = capacity;
+    }
+
     public void addEntrant(User entrant) {
         boolean exists = false;
+        if(list.size() == capacity){
+            return;
+        }
         for (Pair<User, WaitingListState> pair : this.list) {
             if (pair.first.equals(entrant)) {
                 exists = true;
