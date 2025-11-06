@@ -4,8 +4,14 @@
     <item
         android:id="@+id/action_inbox"
         android:title="@string/inbox"
-        android:icon="@drawable/ic_notifications_black_24dp"
+        android:icon="@drawable/ic_notification_white_24dp"
         app:showAsAction="always"
         android:actionLayout="@layout/badge_inbox"
     />
+
+    <item
+        android:id="@+id/action_info"
+        android:title="Info"
+        android:icon="@drawable/ic_info"
+        app:showAsAction="always" />
 </menu>
