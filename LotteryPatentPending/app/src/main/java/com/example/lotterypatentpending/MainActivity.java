@@ -21,10 +21,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
  * @maintainer Erik
  * @author Erik
  */
-
-
 public class MainActivity extends AppCompatActivity implements MainRegisterNewUserFragment.OnProfileSaved {
-    private UserEventRepository userEventRepo;
     private FirebaseManager fm;
 
     @Override
@@ -34,7 +31,7 @@ public class MainActivity extends AppCompatActivity implements MainRegisterNewUs
         setContentView(R.layout.activity_main);
 
         // get user event repo instance
-        userEventRepo = UserEventRepository.getInstance();
+        UserEventRepository userEventRepo = UserEventRepository.getInstance();
 
         // Buttons
         findViewById(R.id.btnAttendee).setOnClickListener(v ->

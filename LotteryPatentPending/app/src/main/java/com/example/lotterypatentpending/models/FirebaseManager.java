@@ -171,10 +171,22 @@ public class FirebaseManager {
                 .addOnFailureListener(callback::onFailure);
     }
 
-    public void getAllEvents(FirebaseCallback<QuerySnapshot> callback) {
+    public void getAllEvents(FirebaseCallback<ArrayList<Event>> callback) {
         db.collection("events").get()
-                .addOnSuccessListener(callback::onSuccess)
-                .addOnFailureListener(callback::onFailure);
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    ArrayList<Event> events = new ArrayList<>();
+                    for (DocumentSnapshot doc : queryDocumentSnapshots.getDocuments()) {
+                        Event event = doc.toObject(Event.class);
+                        if (event != null) {
+                            event.setId(doc.getId());
+                            events.add(event);
+                        }
+                    }
+                    callback.onSuccess(events);
+                })
+                .addOnFailureListener(e -> {
+                    System.out.println("Error getting all events: " + e);
+                });
     }
 
     public void deleteEvent(String eventId) {
@@ -251,6 +263,10 @@ public class FirebaseManager {
                 .addOnFailureListener(e -> {
                     System.err.println("Error adding event to entrant's joined list: " + e.getMessage());
                 });
+    }
+
+    public void removeJoinedEventFromEntrant(String eventId, String entrantId) {
+
     }
 
 
