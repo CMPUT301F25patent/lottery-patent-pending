@@ -40,6 +40,7 @@ public class AttendeeEventDetailsFragment extends Fragment {
         title.setText(Objects.requireNonNull(userEventRepo.getEvent().getValue()).getTitle());
         description.setText(Objects.requireNonNull(userEventRepo.getEvent().getValue()).getDescription());
 
+        // TODO: Check if user in event first, make according button visible and other invisible
         join.setOnClickListener(v -> {
             this.joinEventHelper();
         });

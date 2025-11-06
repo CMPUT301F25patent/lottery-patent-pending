@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 
+import com.example.lotterypatentpending.exceptions.UserNotFoundException;
 import com.example.lotterypatentpending.models.Event;
 import com.example.lotterypatentpending.models.Notification;
 import com.example.lotterypatentpending.models.User;
@@ -49,9 +50,23 @@ public class FirebaseManager {
                 .addOnFailureListener(e -> System.err.println("Error saving user: " + e.getMessage()));
     }
 
-    public void getUser(String userId, FirebaseCallback<DocumentSnapshot> callback) {
+    public void getUser(String userId, FirebaseCallback<User> callback) {
         db.collection("users").document(userId).get()
-                .addOnSuccessListener(callback::onSuccess)
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        User user = documentSnapshot.toObject(User.class);
+                        if (user != null) {
+                            user.setUserId(documentSnapshot.getId());
+                            callback.onSuccess(user);
+                        }
+                        else {
+                            callback.onFailure(new UserNotFoundException("User not found."));
+                        }
+                    }
+                    else {
+                        callback.onFailure(new UserNotFoundException("User not found."));
+                    }
+                })
                 .addOnFailureListener(callback::onFailure);
     }
     public void getAllUsers(FirebaseCallback<QuerySnapshot> callback) {
