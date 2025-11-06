@@ -1,72 +1,54 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    android:orientation="vertical"
+    tools:context=".AttendeeEventsFragment">
 
-    <ListView
-        android:id="@+id/attendee_events_listview_events_list"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/attendee_events_linearlayout_search_bar">
 
-    </ListView>
-
-    <LinearLayout
-        android:id="@+id/attendee_events_linearlayout_search_bar"
+    <EditText
+        android:id="@+id/editTextText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintTop_toBottomOf="@id/attendee_events_listview_events_list"
-        app:layout_constraintBottom_toTopOf="@id/attendee_events_linearlayout_buttons_bar">
-
-        <EditText
-            android:id="@+id/attendee_events_edittext_search"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:hint="@string/filter">
-
-        </EditText>
-
-        <Button
-            android:id="@+id/attendee_events_button_search"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/search">
-
-        </Button>
-
-    </LinearLayout>
-
+        android:ems="10"
+        android:inputType="text"
+        android:text="Filter" />
 
     <LinearLayout
-        android:id="@+id/attendee_events_linearlayout_buttons_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintTop_toBottomOf="@id/attendee_events_linearlayout_search_bar"
-        app:layout_constraintBottom_toBottomOf="parent">
+        android:padding="10dp">
 
-        <Button
-            android:id="@+id/attendee_events_button_browse_events"
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/browseEventsBtn"
+            android:text="@string/browse_events"
+            android:textSize="12sp"
+            android:textColor="@color/black"
             android:layout_width="0dp"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/white_grey"
             android:layout_weight="1"
-            android:text="@string/browse_events">
+            android:layout_margin="3dp"/>
 
-        </Button>
-
-        <Button
-            android:id="@+id/attendee_events_button_event_history"
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/historyEventsBtn"
+            android:text="@string/event_history"
+            android:textSize="12sp"
+            android:textColor="@color/black"
             android:layout_width="0dp"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/white_grey"
             android:layout_weight="1"
-            android:text="@string/event_history">
+            android:layout_margin="3dp"/>
 
-        </Button>
 
     </LinearLayout>
+    <!--QR code test, can remove    -->
+    <ImageView
+        android:id="@+id/qrPreview"
+        android:layout_width="match_parent"
+        android:layout_height="435dp"
+        android:contentDescription="@string/qr_preview" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+</LinearLayout>
