@@ -298,7 +298,7 @@ public class FirebaseManager {
 
         // Ensure timestamps are filled if not already
         if (notification.getCreatedAt() == null) {
-            notification.setCreatedAt(Timestamp.now());
+            notification.setCreatedAt(Timestamp.now().toDate());
         }
 
         docRef.set(notification)

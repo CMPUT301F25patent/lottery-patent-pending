@@ -63,9 +63,12 @@ public class WaitingList {
     /**
      * Reselects people, caring about states as well
      */
+    /*
     public void lotteryReselect(Integer numSelect) {
         LotterySystem.lotteryReselect(this.list, numSelect);
     }
+
+     */
 
     public Integer getNumEntrants() {
         Integer n = 0;
