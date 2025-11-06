@@ -19,7 +19,8 @@
         app:title="Events"
         app:titleCentered="true"
         app:titleTextColor="@color/white"
-        android:background="@color/dark_grey"/>
+        android:background="@color/dark_grey"
+        app:menu="@menu/menu_attendee"/>
 
 
     <!-- the fragments-->
@@ -28,6 +29,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1" >
+
 
     </FrameLayout>
 
