@@ -49,6 +49,15 @@ public class AttendeeEventDetailsFragment extends Fragment {
         });
     }
 
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+
+        if (userEventRepo.getEvent().getValue() != null) {
+            userEventRepo.setEvent(null);
+        }
+    }
+
     private boolean joinEventHelper() {
         User currentUser = userEventRepo.getUser().getValue();
         Event currentEvent = userEventRepo.getEvent().getValue();

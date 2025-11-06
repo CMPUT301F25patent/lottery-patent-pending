@@ -14,13 +14,11 @@ import androidx.fragment.app.Fragment;
 import com.example.lotterypatentpending.User_interface.Inbox.InboxActivity;
 import com.example.lotterypatentpending.models.FirebaseManager;
 import com.example.lotterypatentpending.models.NotificationRepository;
-import com.example.lotterypatentpending.models.User;
 import com.example.lotterypatentpending.models.UserEventRepository;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.ListenerRegistration;
 
 /**
@@ -66,28 +64,28 @@ public class AttendeeActivity extends AppCompatActivity {
 
         // default tab
         setTitle("Events");
-        load(eventsFragment);
+        loadFragment(eventsFragment);
 
         //creates bottom nav bar and listeners
         bottomNav.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
             if (id == R.id.nav_events) {
                 setTitle("Events");
-                return load(eventsFragment);
+                return loadFragment(eventsFragment);
             }
             if (id == R.id.nav_profile) {
                 setTitle("Profile");
-                return load(profileFragment);
+                return loadFragment(profileFragment);
             }
             if (id == R.id.nav_scan) {
                 setTitle("Scan");
-                return load(scanFragment);
+                return loadFragment(scanFragment);
             }
             return false;
         });
     }
 
-    private boolean load(Fragment f) {
+    private boolean loadFragment(Fragment f) {
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.attendeeContainer, f)
                 .commit();
