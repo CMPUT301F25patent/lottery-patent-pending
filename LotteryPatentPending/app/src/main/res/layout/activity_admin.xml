@@ -8,20 +8,20 @@
     android:padding="16dp"
     tools:context=".AdminActivity">
 
-    <TextView
-        android:id="@+id/titleText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="All Events"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="8dp"/>
-
-    <ListView
-        android:id="@+id/eventListView"
+    <Button
+        android:id="@+id/btnBrowseUsers"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:divider="@android:color/darker_gray"
-        android:dividerHeight="1dp"/>
+        android:layout_height="wrap_content"
+        android:text="Browse Users"
+        android:layout_marginBottom="16dp"
+        android:textSize="18sp" />
+
+    <Button
+        android:id="@+id/btnBrowseEvents"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Browse Events"
+        android:textSize="18sp" />
 
 </LinearLayout>
+

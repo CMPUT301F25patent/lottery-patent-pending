@@ -1,77 +1,35 @@
 package com.example.lotterypatentpending.User_interface.Inbox;
 
+import android.view.*; import android.widget.TextView;
+import androidx.annotation.NonNull; import androidx.recyclerview.widget.*;
+import com.example.lotterypatentpending.R; import com.example.lotterypatentpending.models.Notification;
+import java.text.SimpleDateFormat; import java.util.Locale;
 
-import android.graphics.Typeface;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TextView;
+public class NotificationAdapter extends ListAdapter<Notification, NotificationAdapter.Holder> {
+    interface OnClick { void open(Notification n); }
+    private final OnClick onClick;
+    public NotificationAdapter(OnClick onClick){ super(DIFF); this.onClick=onClick; }
 
-import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
+    static DiffUtil.ItemCallback<Notification> DIFF = new DiffUtil.ItemCallback<>() {
+        public boolean areItemsTheSame(@NonNull Notification a,@NonNull Notification b){ return a.equals(b); }
+        public boolean areContentsTheSame(@NonNull Notification a,@NonNull Notification b){ return a.equals(b); }
+    };
 
-import com.example.lotterypatentpending.R;
-import com.example.lotterypatentpending.models.Notification;
-
-import java.text.DateFormat;
-import java.util.ArrayList;
-import java.util.List;
-
-public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapter.VH> {
-
-    // click callback used by your Activity/Fragment
-    public interface OnItemClick { void onClick(Notification n); }
-
-    private final OnItemClick onItemClick;
-    private List<Notification> items = new ArrayList<>();
-
-    public NotificationAdapter(@NonNull OnItemClick onItemClick) {
-        this.onItemClick = onItemClick;
+    static class Holder extends RecyclerView.ViewHolder {
+        TextView title, body, meta; Holder(View v){ super(v);
+            title=v.findViewById(R.id.title); body=v.findViewById(R.id.body); meta=v.findViewById(R.id.meta);}
     }
 
-    public void submit(@NonNull List<Notification> newItems) {
-        this.items = newItems;
-        notifyDataSetChanged();
-    }
-
-    @NonNull @Override
-    public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_notification, parent, false);
-        return new VH(v);
-    }
-
-    @Override
-    public void onBindViewHolder(@NonNull VH h, int position) {
-        Notification n = items.get(position);
+    @NonNull @Override public Holder onCreateViewHolder(@NonNull ViewGroup p,int v){
+        return new Holder(LayoutInflater.from(p.getContext()).inflate(R.layout.item_notification,p,false));}
+    @Override public void onBindViewHolder(@NonNull Holder h,int pos){
+        var n=getItem(pos);
         h.title.setText(n.getTitle());
         h.body.setText(n.getBody());
-
-        if (n.getCreatedAt() != null) {
-            h.time.setText(
-                    DateFormat.getDateTimeInstance().format(n.getCreatedAt().toDate())
-            );
-        } else {
-            h.time.setText("");
-        }
-
-        boolean isRead = "READ".equals(n.getStatus());
-        h.title.setTypeface(null, isRead ? Typeface.NORMAL : Typeface.BOLD);
-
-        h.itemView.setOnClickListener(v -> onItemClick.onClick(n));
-    }
-
-    @Override
-    public int getItemCount() { return items.size(); }
-
-    static class VH extends RecyclerView.ViewHolder {
-        final TextView title, body, time;
-        VH(@NonNull View itemView) {
-            super(itemView);
-            title = itemView.findViewById(R.id.title);
-            body  = itemView.findViewById(R.id.body);
-            time  = itemView.findViewById(R.id.time);
-        }
+        String ts = n.getCreatedAt()==null? "" : new SimpleDateFormat("MMM d, HH:mm", Locale.getDefault()).format(n.getCreatedAt());
+        h.meta.setText(n.getCategory()+" • "+ts);
+        h.itemView.setAlpha(n.isRead()?0.55f:1f);
+        h.itemView.setOnClickListener(v -> onClick.open(n));
     }
 }
 

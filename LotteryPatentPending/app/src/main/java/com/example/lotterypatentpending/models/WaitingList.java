@@ -32,7 +32,7 @@ public class WaitingList {
             }
         }
         if (!exists) {
-            list.add(new Pair<User, WaitingListState>(entrant, WaitingListState.ENTERED));
+            this.list.add(new Pair<User, WaitingListState>(entrant, WaitingListState.ENTERED));
         }
         else {
             throw new UserInListException("User already in list.");
@@ -53,6 +53,17 @@ public class WaitingList {
         }
     }
 
+    public boolean checkEntrant(User entrant) {
+        boolean in = false;
+        for (Pair<User, WaitingListState> pair : this.list) {
+            if (pair.first.equals(entrant)) {
+                in = true;
+                break;
+            }
+        }
+        return in;
+    }
+
     /**
      * Selects a number of people randomly with a lottery system
      */
@@ -63,9 +74,12 @@ public class WaitingList {
     /**
      * Reselects people, caring about states as well
      */
+    /*
     public void lotteryReselect(Integer numSelect) {
         LotterySystem.lotteryReselect(this.list, numSelect);
     }
+
+     */
 
     public Integer getNumEntrants() {
         Integer n = 0;

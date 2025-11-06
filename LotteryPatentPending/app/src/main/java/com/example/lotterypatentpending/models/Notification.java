@@ -1,118 +1,93 @@
 package com.example.lotterypatentpending.models;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import com.google.firebase.firestore.DocumentId;
-import com.google.firebase.Timestamp;
-import java.util.*;
+import com.google.firebase.firestore.ServerTimestamp;
+import java.util.Date;
+import java.util.List;
 
-public class Notification {
-    //Entrant is the primary recipient of messages
+/**
+ * User-facing notification stored under users/{userId}/notifications/{id}.
+ * Supports categories used in Entrant/Organizer stories (WIN/LOSE, WAITLIST, etc.).
+ */
+public class Notification implements Parcelable {
 
-    //Organizer is the Sender of updates(event logistics and participant status)
 
-    //LotterySystem generates automatic notifications following lottery draws to
-    //inform users of their selection status
+    public enum Category { CHOSEN_SIGNUP, WAITLIST, SELECTED, CANCELLED, WIN, LOSE, ORGANIZER_MESSAGE }
 
-    /*FirebaseManager ensures notifications are
-     * a)stored
-     * b)timestamped
-     * c)synchronized across devices through real-time database updates
-     */
-    @DocumentId
-    //id of the notification
-    private String id;
-    //type of notification
-    private String type;
-    //Title
-    private String title;
-    //Body/content of the notification
-    private String body;
-    private String senderId;
-    //List containing recipients of the notification
-    private List<RecipientRef> recipients;
+    @DocumentId private String id;
+    private String userId = "";
+    private String eventId = "";
+    // the logged-in user who organized the event
+    private String senderId = "";
+    private String title = "";
+    private String body = "";
+    private String status= "";
+    private Category category = Category.WAITLIST;
+    private List<RecipientRef>recipients;
+    private boolean read = false;
 
-    /*Status of the notification
-     * Either Pending, Sent or Read
-     * We can include An Inbox view for entrants afterwards
-     */
-    private String status;
 
-    //TimeStamp which is updated by Firebase
-    private Timestamp createdAt;
-    private Timestamp deliverAt;
+    @ServerTimestamp @Nullable private Date createdAt;
 
-    //Additional: keeping track of users who have read their notifications
-    private List<String> readBy;
+    /** Required by Firestore. */
+    public Notification() {}
 
-    //Constructor
-    public Notification(){}  //For Firebase
-    public Notification(String type, String title, String body, String senderId, List<RecipientRef> recipients){
-        this.type = type;
-        this.title = title;
-        this.body = body;
-        this.senderId = senderId;
-        this.status = "PENDING";
-        this.createdAt = Timestamp.now();
-        this.readBy = new ArrayList<>();
+    public Notification(@NonNull String userId, @NonNull String eventId, @NonNull String organizerId,
+                        @NonNull String title, @NonNull String body, @NonNull Category category) {
+        this.userId = userId; this.eventId = eventId; this.senderId = organizerId;
+        this.title = title; this.body = body; this.category = category;
     }
-    //Getters
-    public String getId(){
-        return id;
-    }
-    public String getType(){
-        return type;
-    }
-    public String getTitle(){
-        return title;
-    }
-    public String getBody(){
-        return body;
-    }
-    public String getSenderId(){
-        return senderId;
-    }
-    public List<RecipientRef> getRecipients(){
-        return recipients;
-    }
-    public String getStatus(){
-        return status;
-    }
-    public Timestamp getCreatedAt(){
-        return createdAt;
-    }
-    public Timestamp getDeliveredAt(){
-        return deliverAt;
-    }
-    public List<String> getReadBy() { return readBy; }
 
-    //Setters
-    public void setId(String id){
-        this.id = id;
-    }
-    public void setType(String type){
-        this.type = type;
-    }
-    public void setTitle(String title){
-        this.title = title;
-    }
-    public void setBody(String body){
-        this.body = body;
-    }
-    public void setSenderId(String senderId){
-        this.senderId = senderId;
-    }
-    public void setRecipients(List<RecipientRef> recipients){
-        this.recipients = recipients;
-    }
-    public void setStatus(String status){
-        this.status = status;
-    }
-    public void setCreatedAt(Timestamp createdAt){
-        this.createdAt = createdAt;
-    }
-    public void setDeliverAt(Timestamp deliverAt){
-        this.deliverAt = deliverAt;
-    }
-    public void setReadBy(List<String> readBy) { this.readBy = readBy; }
+    // getters/setters for Firestore
+    public String getId() { return id; } public void setId(String id){ this.id=id; }
+    public String getUserId(){ return userId; } public void setUserId(String v){ this.userId=v; }
+    public String getEventId(){ return eventId; } public void setEventId(String v){ this.eventId=v; }
+    public String getSenderId(){ return senderId; } public void setSenderId(String v){ this.senderId =v; }
+    public String getTitle(){ return title; } public void setTitle(String v){ this.title=v; }
+    public String getBody(){ return body; } public void setBody(String v){ this.body=v; }
+    public Category getCategory(){ return category; } public void setCategory(Category c){ this.category=c; }
+    public boolean isRead(){ return read; } public void setRead(boolean r){ this.read=r; }
+    public String getStatus(){ return status; } public void setStatus(@NonNull String status) { this.status = status;}
 
+    public List<RecipientRef> getRecipients() { return recipients;} public void setRecipients(List<RecipientRef> recipients) { this.recipients = recipients;}
+    public Date getCreatedAt(){ return createdAt; } public void setCreatedAt(Date d){ this.createdAt=d; }
+
+    // Parcelable
+    protected Notification(Parcel in){
+        id=in.readString(); userId=in.readString(); eventId=in.readString(); senderId =in.readString();
+        title=in.readString(); body=in.readString(); category=Category.valueOf(in.readString());
+        read=in.readByte()!=0; long ts=in.readLong(); createdAt=(ts==-1)?null:new Date(ts);
+    }
+    @Override public void writeToParcel(Parcel dest,int flags){
+        dest.writeString(id); dest.writeString(userId); dest.writeString(eventId); dest.writeString(senderId);
+        dest.writeString(title); dest.writeString(body); dest.writeString(category.name());
+        dest.writeString(recipients.toString());
+        dest.writeByte((byte)(read?1:0)); dest.writeLong(createdAt==null?-1:createdAt.getTime());
+    }
+    @Override public int describeContents(){ return 0; }
+    public static final Creator<Notification> CREATOR=new Creator<>() {
+        public Notification createFromParcel(Parcel in){ return new Notification(in); }
+        public Notification[] newArray(int size){ return new Notification[size]; }
+    };
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Notification n = (Notification) o;
+
+        // If you treat two notifications as equal only when their Firestore doc IDs match:
+        if (id == null || n.id == null) return false;
+        return id.equals(n.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return (id != null) ? id.hashCode() : 0;
+    }
 
 }

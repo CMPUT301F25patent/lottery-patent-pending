@@ -203,4 +203,8 @@ public class Event {
             addToWaitingList(entrant);
         }
     }
+    public boolean inWaitingList(User entrant) {
+        return this.waitingList.checkEntrant(entrant);
+    }
+
 }
