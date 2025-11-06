@@ -16,7 +16,7 @@
         android:gravity="center|top"
         android:paddingTop="10sp"
         android:paddingBottom="10sp"
-        android:text="TextView"
+        android:text="Organizer Page"
         android:textAlignment="center"
         android:textColor="@color/white"
         android:textSize="24sp"
@@ -71,16 +71,16 @@
         app:layout_constraintVertical_bias="0.074" />
 
     <!-- Bottom Navigation Buttons -->
-    <ImageButton
-        android:id="@+id/backButton"
-        android:layout_width="70dp"
-        android:layout_height="70dp"
-        android:background="#000000"
-        android:src="@drawable/baseline_arrow_back_24"
-        app:tint="@android:color/white"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        android:layout_margin="20dp" />
+<!--    <ImageButton-->
+<!--        android:id="@+id/backButton"-->
+<!--        android:layout_width="70dp"-->
+<!--        android:layout_height="70dp"-->
+<!--        android:background="#000000"-->
+<!--        android:src="@drawable/baseline_arrow_back_24"-->
+<!--        app:tint="@android:color/white"-->
+<!--        app:layout_constraintBottom_toBottomOf="parent"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        android:layout_margin="20dp" />-->
 
 
     <ImageButton
