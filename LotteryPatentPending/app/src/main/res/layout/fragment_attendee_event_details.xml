@@ -10,47 +10,26 @@
         android:layout_height="wrap_content"
         android:text="@string/placeholder_text"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/attendee_event_details_scrollview_description">
+        app:layout_constraintBottom_toTopOf="@id/attendee_event_details_textview_description">
 
     </TextView>
 
-    <ScrollView
-        android:id="@+id/attendee_event_details_scrollview_description"
+    <TextView
+        android:id="@+id/attendee_event_details_textview_description"
         android:layout_width="match_parent"
-        android:layout_height="200dp"
+        android:layout_height="wrap_content"
+        android:text="@string/placeholder_text"
         app:layout_constraintTop_toBottomOf="@id/attendee_event_details_textview_event_name"
         app:layout_constraintBottom_toTopOf="@id/attendee_event_details_button_join">
-        <TextView
-            android:id="@+id/attendee_event_details_textview_description"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:scrollbars="vertical"
-            android:text="@string/placeholder_text"
-            android:fadingEdge="vertical"
-            android:overScrollMode="ifContentScrolls">
 
-        </TextView>
-
-    </ScrollView>
+    </TextView>
 
     <Button
         android:id="@+id/attendee_event_details_button_join"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/join"
-        app:layout_constraintTop_toBottomOf="@id/attendee_event_details_scrollview_description"
-        app:layout_constraintBottom_toTopOf="@id/attendee_event_details_button_leave"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent">
-
-    </Button>
-
-    <Button
-        android:id="@+id/attendee_event_details_button_leave"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/leave"
-        app:layout_constraintTop_toBottomOf="@id/attendee_event_details_button_join"
+        app:layout_constraintTop_toBottomOf="@id/attendee_event_details_textview_description"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent">

@@ -37,7 +37,7 @@
         />
 
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/main_button_attendee"
+        android:id="@+id/btnAttendee"
         android:text="@string/attendee"
         android:textSize="20sp"
         android:textColor="@color/black"
@@ -46,7 +46,7 @@
         android:backgroundTint="@color/white_grey"/>
 
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/main_button_organizer"
+        android:id="@+id/btnOrganizer"
         android:text="@string/organizer"
         android:textSize="20sp"
         android:textColor="@color/black"
@@ -55,7 +55,7 @@
         android:backgroundTint="@color/white_grey"/>
 
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/main_button_admin"
+        android:id="@+id/btnAdmin"
         android:text="@string/admin"
         android:textSize="20sp"
         android:textColor="@color/black"

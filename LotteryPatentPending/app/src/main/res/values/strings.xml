@@ -16,7 +16,4 @@
     <string name="browse_events">Browse Events</string>
     <string name="join">Join</string>
     <string name="placeholder_text">Placeholder Text</string>
-    <string name="leave">Leave</string>
-    <string name="search">Search</string>
-    <string name="filter">Filter</string>
 </resources>

@@ -17,7 +17,6 @@ import com.example.lotterypatentpending.models.FirebaseManager;
 import com.example.lotterypatentpending.models.User;
 import com.example.lotterypatentpending.models.UserEventRepository;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 
 /**
  * The create user fragment that appears and adds new user to DB
@@ -26,7 +25,6 @@ import com.google.firebase.auth.FirebaseUser;
  */
 public class MainRegisterNewUserFragment extends Fragment {
     public interface OnProfileSaved { void onProfileSaved(); }
-
     private EditText nameEt, emailEt, phoneEt;
     private Button saveBtn;
 
@@ -39,16 +37,14 @@ public class MainRegisterNewUserFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View v, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(v, savedInstanceState);
-
         nameEt = v.findViewById(R.id.et_name);
         emailEt = v.findViewById(R.id.et_email);
         phoneEt = v.findViewById(R.id.et_phone);
         saveBtn = v.findViewById(R.id.btn_save);
-
-        saveBtn.setOnClickListener(view -> saveNewUser());
+        saveBtn.setOnClickListener(view -> save());
     }
 
-    private void saveNewUser() {
+    private void save() {
         String name  = nameEt.getText().toString().trim();
         String email = emailEt.getText().toString().trim();
         String phone = phoneEt.getText().toString().trim();
@@ -56,25 +52,26 @@ public class MainRegisterNewUserFragment extends Fragment {
         boolean ok = true;
         if (TextUtils.isEmpty(name))  { nameEt.setError("Required");  ok = false; }
         if (TextUtils.isEmpty(email)) { emailEt.setError("Required"); ok = false; }
-        if (TextUtils.isEmpty(phone)) { phoneEt.setError("Required"); ok = false; }
+        if (TextUtils.isEmpty(phone)) { emailEt = null; }
         if (!ok) return;
 
-        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-        if (currentUser == null) {
+        var current = FirebaseAuth.getInstance().getCurrentUser();
+        if (current == null) {
             Toast.makeText(requireContext(), "Not signed in", Toast.LENGTH_LONG).show();
             return;
         }
 
-        // create new user
-        String authUid = currentUser.getUid();
+        //get userID
+        String authUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        //create new user
         User user = new User(authUid, name, email, phone, false);
 
-        // set global user instance
+        //save to instance
         UserEventRepository.getInstance().setUser(user);
 
         saveBtn.setEnabled(false);
-
         FirebaseManager.getInstance().addOrUpdateUser(user);
+        saveBtn.setEnabled(true);
 
         Toast.makeText(requireContext(), "Profile saved", Toast.LENGTH_SHORT).show();
         if (getActivity() instanceof OnProfileSaved) {

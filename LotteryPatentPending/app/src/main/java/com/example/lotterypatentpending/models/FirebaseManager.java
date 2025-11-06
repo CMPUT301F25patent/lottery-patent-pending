@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 
-import com.example.lotterypatentpending.exceptions.UserNotFoundException;
 import com.example.lotterypatentpending.models.Event;
 import com.example.lotterypatentpending.models.Notification;
 import com.example.lotterypatentpending.models.User;
@@ -50,23 +49,9 @@ public class FirebaseManager {
                 .addOnFailureListener(e -> System.err.println("Error saving user: " + e.getMessage()));
     }
 
-    public void getUser(String userId, FirebaseCallback<User> callback) {
+    public void getUser(String userId, FirebaseCallback<DocumentSnapshot> callback) {
         db.collection("users").document(userId).get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    if (documentSnapshot.exists()) {
-                        User user = documentSnapshot.toObject(User.class);
-                        if (user != null) {
-                            user.setUserId(documentSnapshot.getId());
-                            callback.onSuccess(user);
-                        }
-                        else {
-                            callback.onFailure(new UserNotFoundException("User not found."));
-                        }
-                    }
-                    else {
-                        callback.onFailure(new UserNotFoundException("User not found."));
-                    }
-                })
+                .addOnSuccessListener(callback::onSuccess)
                 .addOnFailureListener(callback::onFailure);
     }
     public void getAllUsers(FirebaseCallback<QuerySnapshot> callback) {
@@ -186,22 +171,10 @@ public class FirebaseManager {
                 .addOnFailureListener(callback::onFailure);
     }
 
-    public void getAllEvents(FirebaseCallback<ArrayList<Event>> callback) {
+    public void getAllEvents(FirebaseCallback<QuerySnapshot> callback) {
         db.collection("events").get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    ArrayList<Event> events = new ArrayList<>();
-                    for (DocumentSnapshot doc : queryDocumentSnapshots.getDocuments()) {
-                        Event event = doc.toObject(Event.class);
-                        if (event != null) {
-                            event.setId(doc.getId());
-                            events.add(event);
-                        }
-                    }
-                    callback.onSuccess(events);
-                })
-                .addOnFailureListener(e -> {
-                    System.out.println("Error getting all events: " + e);
-                });
+                .addOnSuccessListener(callback::onSuccess)
+                .addOnFailureListener(callback::onFailure);
     }
 
     public void deleteEvent(String eventId) {
@@ -278,10 +251,6 @@ public class FirebaseManager {
                 .addOnFailureListener(e -> {
                     System.err.println("Error adding event to entrant's joined list: " + e.getMessage());
                 });
-    }
-
-    public void removeJoinedEventFromEntrant(String eventId, String entrantId) {
-
     }
 
 
