@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -16,6 +17,7 @@ import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class AdminUsersActivity extends AppCompatActivity {
 
@@ -37,6 +39,10 @@ public class AdminUsersActivity extends AppCompatActivity {
         listView.setAdapter(adapter);
 
         loadUsersFromFirebase();
+        Button backButton = findViewById(R.id.backButton);
+        backButton.setOnClickListener(v -> finish());
+
+
 
         // Long press to confirm deletion
         listView.setOnItemLongClickListener((parent, view, position, id) -> {
@@ -52,6 +58,7 @@ public class AdminUsersActivity extends AppCompatActivity {
             return true; // consume long click
         });
     }
+
 
     private void loadUsersFromFirebase() {
         firebaseManager.getAllUsers(new FirebaseManager.FirebaseCallback<QuerySnapshot>() {

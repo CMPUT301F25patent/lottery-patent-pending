@@ -1,13 +1,21 @@
 package com.example.lotterypatentpending.models;
 
+import android.os.Build;
 import android.util.Log;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.HashMap;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import com.example.lotterypatentpending.exceptions.UserNotFoundException;
 import com.example.lotterypatentpending.models.Event;
@@ -121,38 +129,83 @@ public class FirebaseManager {
     public Event mapToEvent(Map<String, Object> data) {
         if (data == null) return null;
 
+        // Basic string fields
         String title = (String) data.get("title");
         String description = (String) data.get("description");
         String location = (String) data.get("location");
 
+        // Capacity handling
         int capacity = 0;
         Object capObj = data.get("capacity");
         if (capObj instanceof Long) capacity = ((Long) capObj).intValue();
         else if (capObj instanceof Integer) capacity = (Integer) capObj;
 
-        // Organizer is a User
+        // Organizer handling (can be Map or String)
         User organizer = null;
-        Map<String, Object> organizerMap = (Map<String, Object>) data.get("organizer");
-        if (organizerMap != null) {
+        Object orgObj = data.get("organizer");
+
+        if (orgObj instanceof Map) {
+            Map<String, Object> organizerMap = (Map<String, Object>) orgObj;
             String id = (String) organizerMap.get("userId");
             String name = (String) organizerMap.get("name");
             String email = (String) organizerMap.get("email");
             String contact = (String) organizerMap.get("contactInfo");
             boolean isAdmin = organizerMap.get("isAdmin") != null && (boolean) organizerMap.get("isAdmin");
-
             organizer = new User(id, name, email, contact, isAdmin);
+        } else if (orgObj instanceof String) {
+            organizer = new User();
+            organizer.setName((String) orgObj);
         }
 
+        // Create Event object
         Event event = new Event(title, description, capacity, organizer);
         event.setLocation(location);
-
-
 
         if (data.get("id") != null)
             event.setId((String) data.get("id"));
 
+        // Date parsing - use SimpleDateFormat for compatibility
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault());
+
+        try {
+            Object dateObj = data.get("date_time");
+            if (dateObj != null) {
+                Date parsed = sdf.parse(dateObj.toString());
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && parsed != null) {
+                    event.setDate(parsed.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
+                }
+            }
+        } catch (Exception e) {
+            Log.w("FirebaseManager", "Failed to parse date_time: " + e.getMessage());
+        }
+
+        try {
+            Object regStartObj = data.get("regStartDate");
+            if (regStartObj != null) {
+                Date parsed = sdf.parse(regStartObj.toString());
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && parsed != null) {
+                    event.setRegStartDate(parsed.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
+                }
+            }
+        } catch (Exception e) {
+            Log.w("FirebaseManager", "Failed to parse regStartDate: " + e.getMessage());
+        }
+
+        try {
+            Object regEndObj = data.get("regEndDate");
+            if (regEndObj != null) {
+                Date parsed = sdf.parse(regEndObj.toString());
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && parsed != null) {
+                    event.setRegEndDate(parsed.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
+                }
+            }
+        } catch (Exception e) {
+            Log.w("FirebaseManager", "Failed to parse regEndDate: " + e.getMessage());
+        }
+
         return event;
     }
+
 
 
     public void addOrUpdateEvent(String eventId, Event event) {
@@ -191,7 +244,10 @@ public class FirebaseManager {
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     ArrayList<Event> events = new ArrayList<>();
                     for (DocumentSnapshot doc : queryDocumentSnapshots.getDocuments()) {
-                        Event event = doc.toObject(Event.class);
+                        Map<String, Object> data = doc.getData();
+                        if (data == null) continue;
+
+                        Event event = mapToEvent(data);
                         if (event != null) {
                             event.setId(doc.getId());
                             events.add(event);
@@ -200,17 +256,33 @@ public class FirebaseManager {
                     callback.onSuccess(events);
                 })
                 .addOnFailureListener(e -> {
-                    System.out.println("Error getting all events: " + e);
+                    Log.e("FirebaseManager", "Error getting all events: " + e.getMessage());
+                    callback.onFailure(e);
                 });
     }
 
+
     public void deleteEvent(String eventId) {
-        db.collection("events").document(eventId).delete()
-                .addOnSuccessListener(aVoid ->
-                        System.out.println("Event deleted successfully: " + eventId))
+        db.collection("events")
+                .whereEqualTo("id", eventId)
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    if (querySnapshot.isEmpty()) {
+                        Log.w("FirebaseManager", "No document found for id field: " + eventId);
+                        return;
+                    }
+                    for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
+                        doc.getReference().delete()
+                                .addOnSuccessListener(aVoid ->
+                                        Log.i("FirebaseManager", "Event deleted successfully: " + eventId))
+                                .addOnFailureListener(e ->
+                                        Log.e("FirebaseManager", "Error deleting event: " + e.getMessage()));
+                    }
+                })
                 .addOnFailureListener(e ->
-                        System.err.println("Error deleting event: " + e.getMessage()));
+                        Log.e("FirebaseManager", "Query failed before deletion: " + e.getMessage()));
     }
+
 
     public void addEntrantToWaitingList(User entrant, WaitingListState state, String eventId) {
         Map<String, Object> data = new HashMap<>();
