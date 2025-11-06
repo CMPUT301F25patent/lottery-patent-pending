@@ -175,4 +175,8 @@ public class Event {
         this.waitingList.removeEntrant(entrant);
     }
 
+    public boolean inWaitingList(User entrant) {
+        return this.waitingList.checkEntrant(entrant);
+    }
+
 }

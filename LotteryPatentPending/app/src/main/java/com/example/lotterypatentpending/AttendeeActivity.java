@@ -53,6 +53,13 @@ public class AttendeeActivity extends AppCompatActivity {
         // home button in header: go back to Main
         toolbar.setNavigationIcon(R.drawable.ic_home);
         toolbar.setNavigationOnClickListener(v -> finish());
+        toolbar.setOnMenuItemClickListener(item -> {
+            if (item.getItemId() == R.id.action_info) {
+                showLotteryInfoPopup();
+                return true;
+            }
+            return false;
+        });
 
         //Firebasemanager get db instance
         firebaseManager = FirebaseManager.getInstance();
@@ -64,28 +71,28 @@ public class AttendeeActivity extends AppCompatActivity {
 
         // default tab
         setTitle("Events");
-        load(eventsFragment);
+        loadFragment(eventsFragment);
 
         //creates bottom nav bar and listeners
         bottomNav.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
             if (id == R.id.nav_events) {
                 setTitle("Events");
-                return load(eventsFragment);
+                return loadFragment(eventsFragment);
             }
             if (id == R.id.nav_profile) {
                 setTitle("Profile");
-                return load(profileFragment);
+                return loadFragment(profileFragment);
             }
             if (id == R.id.nav_scan) {
                 setTitle("Scan");
-                return load(scanFragment);
+                return loadFragment(scanFragment);
             }
             return false;
         });
     }
 
-    private boolean load(Fragment f) {
+    private boolean loadFragment(Fragment f) {
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.attendeeContainer, f)
                 .commit();
@@ -95,6 +102,18 @@ public class AttendeeActivity extends AppCompatActivity {
     private void setTitle(String t) {
         MaterialToolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setTitle(t);
+    }
+    private void showLotteryInfoPopup() {
+        new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("How the Lottery Works")
+                .setMessage(
+                        "When registration closes, all entrants on the waiting list are entered into a random draw.\n\n" +
+                                "Selected entrants must accept their spot within the time window.\n\n" +
+                                "If someone declines or doesn't respond, another entrant is randomly selected.\n\n" +
+                                "All eligible entrants have an equal chance, but a spot is not guaranteed."
+                )
+                .setPositiveButton("OK", null)
+                .show();
     }
 
 
@@ -109,7 +128,6 @@ public class AttendeeActivity extends AppCompatActivity {
 
         // open inbox on tap
         actionView.setOnClickListener(v -> onOptionsItemSelected(inboxItem));
-
         // listen to unread count
         String userId;
         FirebaseUser current = FirebaseAuth.getInstance().getCurrentUser();
@@ -144,5 +162,4 @@ public class AttendeeActivity extends AppCompatActivity {
         }
         return super.onOptionsItemSelected(item);
     }
-
 }
