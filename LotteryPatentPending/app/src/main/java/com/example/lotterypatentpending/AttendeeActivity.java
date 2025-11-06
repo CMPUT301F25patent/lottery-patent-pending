@@ -26,10 +26,9 @@ import com.google.firebase.firestore.ListenerRegistration;
  * @maintainer Erik
  * @author Erik
  */
-
 public class AttendeeActivity extends AppCompatActivity {
     private UserEventRepository userEventRepo;
-    private FirebaseManager  firebaseManager;
+    private FirebaseManager firebaseManager;
     private NotificationRepository repo;
     private ListenerRegistration unreadReg;
 

@@ -6,22 +6,21 @@ import com.example.lotterypatentpending.exceptions.UserInListException;
 import com.example.lotterypatentpending.exceptions.UserNotInListException;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class WaitingList {
-    private ArrayList<Pair<User, WaitingListState>> list = new ArrayList<>();;
+    private List<User> entered = new ArrayList<>();
+    private List<User> selected = new ArrayList<>();
+    private List<User> notSelected = new ArrayList<>();
+    private List<User> accepted = new ArrayList<>();
+    private List<User> declined = new ArrayList<>();
+    private List<User> cancelled = new ArrayList<>();
 
     public WaitingList() {    }
 
     public void addEntrant(User entrant) {
-        boolean exists = false;
-        for (Pair<User, WaitingListState> pair : this.list) {
-            if (pair.first.equals(entrant)) {
-                exists = true;
-                break;
-            }
-        }
-        if (!exists) {
-            this.list.add(new Pair<User, WaitingListState>(entrant, WaitingListState.ENTERED));
+        if (!entered.contains(entrant)) {
+            entered.add(entrant);
         }
         else {
             throw new UserInListException("User already in list.");
@@ -29,52 +28,35 @@ public class WaitingList {
     }
 
     public void removeEntrant(User entrant) {
-        boolean removed = false;
-        for (int i = 0; i < this.list.size(); i++) {
-            if (this.list.get(i).first.equals(entrant)) {
-                removed = true;
-                this.list.remove(i);
-                break;
-            }
+        if (entered.contains(entrant)) {
+            entered.remove(entrant);
         }
-        if (!removed) {
+        else {
             throw new UserNotInListException("User not found in list.");
         }
     }
 
     public boolean checkEntrant(User entrant) {
-        boolean in = false;
-        for (Pair<User, WaitingListState> pair : this.list) {
-            if (pair.first.equals(entrant)) {
-                in = true;
-                break;
-            }
-        }
-        return in;
+        return (entered.contains(entrant) || selected.contains(entrant) || notSelected.contains(entrant) || declined.contains(entrant) || cancelled.contains(entrant));
     }
 
     /**
      * Selects a number of people randomly with a lottery system
      */
     public void lotterySelect(Integer numSelect) {
-        LotterySystem.lotterySelect(this.list, numSelect);
+        Pair<List<User>, List<User>> pair = LotterySystem.lotterySelect(this.entered, numSelect);
+        selected = pair.first;
+        notSelected = pair.second;
     }
 
     /**
      * Reselects people, caring about states as well
      */
     public void lotteryReselect(Integer numSelect) {
-        LotterySystem.lotteryReselect(this.list, numSelect);
     }
 
-    public Integer getNumEntrants() {
-        Integer n = 0;
-        for (int i = 0; i < list.size(); i++) {
-            if (list.get(i).second != WaitingListState.NOT_IN) {
-                n++;
-            }
-        }
-        return n;
+    public Integer getNumAll() {
+        return entered.size() + selected.size() + notSelected.size() + accepted.size() + declined.size() + cancelled.size();
     }
 
 }

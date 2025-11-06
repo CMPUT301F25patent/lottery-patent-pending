@@ -7,6 +7,8 @@ import com.example.lotterypatentpending.models.LotteryResultNotifier;
 import com.example.lotterypatentpending.models.NotificationFactory;
 import android.content.Context;
 import android.widget.Toast;
+
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -17,13 +19,12 @@ public class LotterySystem {
      * @param list list of entrants
      * @param num number of entrants to select
      */
-    public static void lotterySelect(List<Pair<User, WaitingListState>> list, Integer num) {
+    public static Pair<List<User>, List<User>> lotterySelect(List<User> list, Integer num) {
         Collections.shuffle(list);
-        for (int i = 0; i < list.size(); i++) {
-            Pair<User, WaitingListState> pair = list.get(i);
-            WaitingListState newState = (i < num) ? WaitingListState.SELECTED : WaitingListState.NOT_SELECTED;
-            list.set(i, new Pair<>(pair.first, newState));
-        }
+        int selectBound = Math.min(num, list.size());
+        List<User> selected = new ArrayList<>(list.subList(0, selectBound));
+        List<User> notSelected = new ArrayList<>(list.subList(selectBound, list.size()));
+        return new Pair<>(selected, notSelected);
     }
 
     private void notifyLotteryResults(String organizerId, String eventId, String eventTitle,
@@ -54,7 +55,7 @@ public class LotterySystem {
                 });
     }
 
-    public static void lotteryReselect(List<Pair<User, WaitingListState>> list, Integer num){
+    public static void lotteryReselect(List<User> list, Integer num){
 
     }
 
