@@ -50,7 +50,7 @@ public class AttendeeProfileFragment extends Fragment {
 
         //get user for fragment
 
-        user = UserEventRepository.getInstance().getUser();
+        user = UserEventRepository.getInstance().getUser().getValue();
 
         name.setText(user.getName());
         email.setText(user.getEmail());
