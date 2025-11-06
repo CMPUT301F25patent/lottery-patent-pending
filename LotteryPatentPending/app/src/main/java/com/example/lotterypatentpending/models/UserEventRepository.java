@@ -4,7 +4,6 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 public class UserEventRepository {
-
     private static UserEventRepository instance;
     private final MutableLiveData<User> user = new MutableLiveData<>();
     private final MutableLiveData<Event> event = new MutableLiveData<>();
@@ -36,24 +35,4 @@ public class UserEventRepository {
         return this.event;
     }
 
-    public void joinEvent() {
-
-
-        User currentUser = user.getValue();
-        Event currentEvent = event.getValue();
-
-        if (currentUser != null && currentEvent != null) {
-            FirebaseManager fm = FirebaseManager.getInstance();
-            fm.addJoinedEventToEntrant(currentEvent, currentUser.getUserId());
-            fm.addEntrantToWaitingList(currentUser, WaitingListState.ENTERED, currentEvent.getId());
-
-            currentEvent.addToWaitingList(currentUser);
-            currentUser.addJoinedEvent(currentEvent.getId());
-
-            user.setValue(currentUser);
-            event.setValue(currentEvent);
-
-
-        }
-    }
 }

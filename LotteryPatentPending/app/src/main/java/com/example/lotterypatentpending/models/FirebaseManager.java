@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 
+import com.example.lotterypatentpending.exceptions.UserNotFoundException;
 import com.example.lotterypatentpending.models.Event;
 import com.example.lotterypatentpending.models.Notification;
 import com.example.lotterypatentpending.models.User;
@@ -49,9 +50,23 @@ public class FirebaseManager {
                 .addOnFailureListener(e -> System.err.println("Error saving user: " + e.getMessage()));
     }
 
-    public void getUser(String userId, FirebaseCallback<DocumentSnapshot> callback) {
+    public void getUser(String userId, FirebaseCallback<User> callback) {
         db.collection("users").document(userId).get()
-                .addOnSuccessListener(callback::onSuccess)
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        User user = documentSnapshot.toObject(User.class);
+                        if (user != null) {
+                            user.setUserId(documentSnapshot.getId());
+                            callback.onSuccess(user);
+                        }
+                        else {
+                            callback.onFailure(new UserNotFoundException("User not found."));
+                        }
+                    }
+                    else {
+                        callback.onFailure(new UserNotFoundException("User not found."));
+                    }
+                })
                 .addOnFailureListener(callback::onFailure);
     }
     public void getAllUsers(FirebaseCallback<QuerySnapshot> callback) {
@@ -171,10 +186,22 @@ public class FirebaseManager {
                 .addOnFailureListener(callback::onFailure);
     }
 
-    public void getAllEvents(FirebaseCallback<QuerySnapshot> callback) {
+    public void getAllEvents(FirebaseCallback<ArrayList<Event>> callback) {
         db.collection("events").get()
-                .addOnSuccessListener(callback::onSuccess)
-                .addOnFailureListener(callback::onFailure);
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    ArrayList<Event> events = new ArrayList<>();
+                    for (DocumentSnapshot doc : queryDocumentSnapshots.getDocuments()) {
+                        Event event = doc.toObject(Event.class);
+                        if (event != null) {
+                            event.setId(doc.getId());
+                            events.add(event);
+                        }
+                    }
+                    callback.onSuccess(events);
+                })
+                .addOnFailureListener(e -> {
+                    System.out.println("Error getting all events: " + e);
+                });
     }
 
     public void deleteEvent(String eventId) {
@@ -251,6 +278,49 @@ public class FirebaseManager {
                 .addOnFailureListener(e -> {
                     System.err.println("Error adding event to entrant's joined list: " + e.getMessage());
                 });
+    }
+
+    public void removeJoinedEventFromEntrant(String eventId, String entrantId) {
+
+    }
+
+
+    // generic notification add, will updated after looking at notification class
+    public void logNotification(Notification notification) {
+        // If the notification already has an ID, reuse it; otherwise Firestore generates one.
+        DocumentReference docRef;
+        if (notification.getId() != null && !notification.getId().isEmpty()) {
+            docRef = db.collection("notifications").document(notification.getId());
+        } else {
+            docRef = db.collection("notifications").document();
+            notification.setId(docRef.getId());
+        }
+
+        // Ensure timestamps are filled if not already
+        if (notification.getCreatedAt() == null) {
+            notification.setCreatedAt(Timestamp.now().toDate());
+        }
+
+        docRef.set(notification)
+                .addOnSuccessListener(aVoid ->
+                        Log.d("FirebaseManager", "Notification logged: " + notification.getId()))
+                .addOnFailureListener(e ->
+                        Log.e("FirebaseManager", "Error logging notification: " + e.getMessage()));
+    }
+
+    public void getAllNotifications(FirebaseCallback<List<Notification>> callback) {
+        db.collection("notifications")
+                .orderBy("createdAt") // optional if stored as a Timestamp
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    List<Notification> notifications = new ArrayList<>();
+                    for (DocumentSnapshot doc : querySnapshot) {
+                        Notification notif = doc.toObject(Notification.class);
+                        notifications.add(notif);
+                    }
+                    callback.onSuccess(notifications);
+                })
+                .addOnFailureListener(callback::onFailure);
     }
 
     // fetches events by event ID, utilized for deleting organizers by event
