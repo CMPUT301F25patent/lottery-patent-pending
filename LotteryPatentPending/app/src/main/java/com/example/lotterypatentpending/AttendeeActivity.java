@@ -64,28 +64,28 @@ public class AttendeeActivity extends AppCompatActivity {
 
         // default tab
         setTitle("Events");
-        load(eventsFragment);
+        loadFragment(eventsFragment);
 
         //creates bottom nav bar and listeners
         bottomNav.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
             if (id == R.id.nav_events) {
                 setTitle("Events");
-                return load(eventsFragment);
+                return loadFragment(eventsFragment);
             }
             if (id == R.id.nav_profile) {
                 setTitle("Profile");
-                return load(profileFragment);
+                return loadFragment(profileFragment);
             }
             if (id == R.id.nav_scan) {
                 setTitle("Scan");
-                return load(scanFragment);
+                return loadFragment(scanFragment);
             }
             return false;
         });
     }
 
-    private boolean load(Fragment f) {
+    private boolean loadFragment(Fragment f) {
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.attendeeContainer, f)
                 .commit();
@@ -144,5 +144,4 @@ public class AttendeeActivity extends AppCompatActivity {
         }
         return super.onOptionsItemSelected(item);
     }
-
 }

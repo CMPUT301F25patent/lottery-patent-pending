@@ -60,7 +60,6 @@ public class AdminActivity extends AppCompatActivity {
             Toast.makeText(this, "Access denied: Admin privileges required", Toast.LENGTH_SHORT).show();
             return;
         }
-
         firebaseManager.deleteUser(userId);
         Toast.makeText(this, "User profile removed", Toast.LENGTH_SHORT).show();
     }
