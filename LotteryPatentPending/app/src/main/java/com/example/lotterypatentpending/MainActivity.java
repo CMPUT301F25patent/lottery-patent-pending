@@ -6,6 +6,7 @@ import android.view.View;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
 
@@ -14,17 +15,14 @@ import com.example.lotterypatentpending.models.User;
 import com.example.lotterypatentpending.models.UserEventRepository;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.auth.FirebaseUser;
 
 /**
  * Class MainActivity
  * @maintainer Erik
  * @author Erik
  */
-
-
 public class MainActivity extends AppCompatActivity implements MainRegisterNewUserFragment.OnProfileSaved {
-    private UserEventRepository userEventRepo;
     private FirebaseManager fm;
 
     @Override
@@ -33,19 +31,17 @@ public class MainActivity extends AppCompatActivity implements MainRegisterNewUs
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
-        // get user event repo instance
-        userEventRepo = UserEventRepository.getInstance();
-
-        // Buttons
-        findViewById(R.id.btnAttendee).setOnClickListener(v ->
-                startActivity(new Intent(this, AttendeeActivity.class)));
-        findViewById(R.id.btnOrganizer).setOnClickListener(v ->
-                startActivity(new Intent(this, OrganizerActivity.class)));
-        findViewById(R.id.btnAdmin).setOnClickListener(v ->
-                startActivity(new Intent(this, AdminActivity.class)));
-
         FirebaseApp.initializeApp(this);
         fm = FirebaseManager.getInstance();
+
+        findViewById(R.id.main_button_attendee).setOnClickListener(v ->
+                startActivity(new Intent(this, AttendeeActivity.class)));
+        findViewById(R.id.main_button_organizer).setOnClickListener(v ->
+                startActivity(new Intent(this, OrganizerActivity.class)));
+        findViewById(R.id.main_button_admin).setOnClickListener(v ->
+                startActivity(new Intent(this, AdminActivity.class)));
+
+        FirebaseAuth auth = FirebaseAuth.getInstance();
 
         // Sign in user to firebase anonymously
         // get the uid from firebase
@@ -59,10 +55,10 @@ public class MainActivity extends AppCompatActivity implements MainRegisterNewUs
     }
 
     private void checkUserDoc(String uid) {
-        fm.getUser(uid, new FirebaseManager.FirebaseCallback<DocumentSnapshot>() {
+        fm.getUser(uid, new FirebaseManager.FirebaseCallback<User>() {
             @Override
-            public void onSuccess(DocumentSnapshot snap) {
-                if (!snap.exists()) {
+            public void onSuccess(User user) {
+                if (user == null) {
                     registerNewUserOverlay();
                 }
                 else {
@@ -98,10 +94,19 @@ public class MainActivity extends AppCompatActivity implements MainRegisterNewUs
     public void onProfileSaved() {
         int containerId = R.id.createUserOverlay;
         FragmentManager fm = getSupportFragmentManager();
-        if (fm.findFragmentById(containerId) != null) {
-            fm.beginTransaction().remove(fm.findFragmentById(containerId)).commit();
+        Fragment fragment = fm.findFragmentById(containerId);
+
+        if (fragment != null) {
+            fm.beginTransaction().remove(fragment).commit();
         }
+
         View container = findViewById(containerId);
         if (container != null) container.setVisibility(View.GONE);
+
+        // reload user
+        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (firebaseUser != null) {
+            checkUserDoc(firebaseUser.getUid());
+        }
     }
 }
