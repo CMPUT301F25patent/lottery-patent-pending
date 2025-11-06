@@ -54,6 +54,7 @@ public class AttendeeEventsFragment extends Fragment {
         });
 
         // initially, show all events
+        shownEventsList = new ArrayList<>();
         shownEventsList.addAll(allEventsList);
 
         eventsListAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_list_item_1, shownEventsList);
