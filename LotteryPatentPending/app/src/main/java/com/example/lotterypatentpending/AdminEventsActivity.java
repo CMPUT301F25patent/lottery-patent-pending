@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -18,6 +19,7 @@ import com.google.firebase.firestore.QuerySnapshot;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class AdminEventsActivity extends AppCompatActivity {
 
@@ -39,6 +41,10 @@ public class AdminEventsActivity extends AppCompatActivity {
         listView.setAdapter(adapter);
 
         loadEventsFromFirebase();
+        Button backButton = findViewById(R.id.backButton);
+        backButton.setOnClickListener(v -> finish());
+
+
 
         // Long press → delete event
         listView.setOnItemLongClickListener((parent, view, position, id) -> {
@@ -54,6 +60,7 @@ public class AdminEventsActivity extends AppCompatActivity {
             return true;
         });
     }
+
 
     public void removeEvent(String eventId) {
 
@@ -109,7 +116,6 @@ public class AdminEventsActivity extends AppCompatActivity {
                 for (Event event : result) {
                     if (event == null) continue;
 
-                    eventList.add(event);
 
                     String organizerName = (event.getOrganizer() != null)
                             ? event.getOrganizer().getName()
@@ -122,6 +128,8 @@ public class AdminEventsActivity extends AppCompatActivity {
                             " | Capacity: " + event.getCapacity();
 
                     eventDisplayList.add(display);
+                    eventList.add(event);
+
                 }
 
                 adapter.notifyDataSetChanged();

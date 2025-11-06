@@ -31,6 +31,11 @@ public class Event {
     private QRGenerator qrGenerator;
     private boolean active;
 
+    public Event() {
+        // Required empty constructor for Firestore deserialization
+    }
+
+
     /**
      * Constructor instantiates the minimal basic information for an event and sets the rest to the default
      * You can then set the other variables with the setter functions for better efficiency
