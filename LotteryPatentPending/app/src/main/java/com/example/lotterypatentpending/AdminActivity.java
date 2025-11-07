@@ -84,7 +84,11 @@ public class AdminActivity extends AppCompatActivity {
         ImageButton homeButton = findViewById(R.id.homeButton);
         homeButton.setOnClickListener(v -> finish());
 
-
+        Button btnRemoveOrganizers = findViewById(R.id.btnRemoveOrganizers);
+        btnRemoveOrganizers.setOnClickListener(v -> {
+            Intent intent = new Intent(AdminActivity.this, AdminOrganizersActivity.class);
+            startActivity(intent);
+        });
         btnBrowseUsers.setOnClickListener(v -> {
             if (!currentUser.isAdmin()) {
                 Toast.makeText(this, "Access denied: Admin privileges required", Toast.LENGTH_SHORT).show();

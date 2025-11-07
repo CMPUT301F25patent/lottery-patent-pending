@@ -307,9 +307,11 @@ public class FirebaseManager {
             String contact = (String) organizerMap.get("contactInfo");
             boolean isAdmin = organizerMap.get("isAdmin") != null && (boolean) organizerMap.get("isAdmin");
             organizer = new User(id, name, email, contact, isAdmin);
+
         } else if (orgObj instanceof String) {
+            // Firestore stored only the organizer UID string
             organizer = new User();
-            organizer.setName((String) orgObj);
+            organizer.setUserId((String) orgObj);  // ✅ Correct — UID, not a name
         }
 
         // Create Event object
