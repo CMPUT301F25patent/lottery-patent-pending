@@ -53,7 +53,7 @@ public class QRGenerator {
      * @param sizePx size of QR code
      */
     public static void setQRToView(ImageView target, String eventId, int sizePx){
-        String payload = new QRCode(eventId).toPayload();
+        String payload = new QRCode(eventId).toContent();
 
         try{
             Bitmap bmp = generate(payload, sizePx);
