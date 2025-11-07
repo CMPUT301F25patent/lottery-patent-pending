@@ -2,14 +2,12 @@ package com.example.lotterypatentpending.models;
 
 /**
  * Small value class for event QR codes.
- * A QRCode just wraps an event ID and knows how to turn it into (and back from)
+ * A QRCode wraps an event ID and knows how to turn it into (and back from)
  * the string format we store in a QR image.
  *
- * Format used: "EVT:<eventId>".
- * At the moment this only supports event QR codes with a single fixed prefix.
+ * Format used: "EVT:" followed by the event ID.
  *
  * @author Erik
- * @maintainer Erik
  */
 public class QRCode {
 
@@ -58,7 +56,7 @@ public class QRCode {
      * Builds the string that will actually be encoded into the QR code.
      * This is just the prefix followed by the event ID.
      *
-     * @return a payload string like "EVT:<eventId>"
+     * @return a payload string like "EVT:12345"
      */
     public String toContent() {
         return PREFIX + eventId;

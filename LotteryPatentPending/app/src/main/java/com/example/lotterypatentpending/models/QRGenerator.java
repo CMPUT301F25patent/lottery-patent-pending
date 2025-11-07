@@ -15,11 +15,6 @@ import com.google.zxing.qrcode.QRCodeWriter;
  * (ZXing format) and then as an Android Bitmap. It also has a convenience
  * method to drop a QR code straight into an ImageView.
  *
- * Known limitations:
- * - Always renders black on white, no customization of colors.
- * - Runs synchronously; using very large sizes on the main thread could
- *   cause jank.
- *
  * @author Erik
  */
 public class QRGenerator {
