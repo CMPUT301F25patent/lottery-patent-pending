@@ -12,12 +12,16 @@
         <action
             android:id="@+id/action_main_to_createEvent"
             app:destination="@id/CreateEventFragment" />
+
+        <action
+            android:id="@+id/action_main_to_viewEventsList"
+            app:destination="@id/ViewEventsListFragment" />
     </fragment>
 
     <fragment
         android:id="@+id/CreateEventFragment"
         android:name="com.example.lotterypatentpending.CreateEventFragment"
-        android:label="Create Event" />
+        android:label="Create Event">
 
         <action
             android:id="@+id/action_createEvent_to_main"
@@ -27,11 +31,25 @@
             android:id="@+id/action_createEvent_to_Event_View"
             app:destination="@id/EventViewFragment"/>
 
+    </fragment>
+
     <fragment
         android:id="@+id/EventViewFragment"
         android:name="com.example.lotterypatentpending.EventViewFragment"
-        android:label="Event View" />
+        android:label="Event View">
 
+    </fragment>
+
+    <fragment
+        android:id="@+id/ViewEventsListFragment"
+        android:name="com.example.lotterypatentpending.ViewOrganizerEventsListFragment"
+        android:label="View Events List">
+
+        <action
+            android:id="@+id/action_viewEventsList_to_Event_View"
+            app:destination="@id/EventViewFragment"/>
+
+    </fragment>
 
 
 </navigation>
