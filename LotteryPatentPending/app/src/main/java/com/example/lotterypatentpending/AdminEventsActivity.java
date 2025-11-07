@@ -1,3 +1,25 @@
+/**
+ * -----------------------------------------------------------------------------
+ * FILE: AdminEventsActivity.java
+ * PROJECT: Lottery Patent Pending
+ * -----------------------------------------------------------------------------
+ * PURPOSE:
+ *   Allows administrators to view, delete, and manage events stored in Firebase.
+ *   Fetches event data through FirebaseManager and displays them in a ListView.
+ *
+ * DESIGN ROLE / PATTERN:
+ *   Acts as the View-Controller for event management, delegating data operations
+ *   to FirebaseManager while handling user interactions.
+ *
+ * OUTSTANDING ISSUES / LIMITATIONS:
+ *   - Event deletion depends on Firestore document ID synchronization.
+ *   - No inline event editing implemented yet.
+ *
+ * AUTHOR: Ritvik Das
+ * COLLABORATORS:
+ * -----------------------------------------------------------------------------
+ */
+
 package com.example.lotterypatentpending;
 
 import android.app.AlertDialog;
@@ -20,38 +42,23 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-
-
 /**
- * AdminEventsActivity allows administrators to view and manage all events
- * stored in Firebase. The admin can see event details and delete events
- * using a long-press action.
- *
- * This is an internal admin-panel screen not accessible to standard users.
+ * The {@code AdminEventsActivity} class allows administrators to browse and
+ * manage all events in the system. Events are loaded from Firestore using
+ * {@link FirebaseManager} and displayed in a {@link ListView}. Admins can
+ * remove events directly from this interface.
  */
 public class AdminEventsActivity extends AppCompatActivity {
 
-    /** Firebase manager instance used to interact with database. */
     private FirebaseManager firebaseManager;
-
-    /** ListView UI element to display events. */
     private ListView listView;
-
-    /** Adapter used to bind event text data to the ListView. */
     private ArrayAdapter<String> adapter;
-
-    /** List of actual Event objects returned from Firestore. */
     private List<Event> eventList = new ArrayList<>();
-
-    /** List of formatted event strings to show in UI. */
     private List<String> eventDisplayList = new ArrayList<>();
-
-
     /**
-     * Called when the activity is created. Sets UI, initializes Firebase,
-     * loads events, and assigns listeners for deletion and navigation.
+     * Initializes the event management screen and sets up the back button and event list.
      *
-     * @param savedInstanceState previous activity state, if any.
+     * @param savedInstanceState previously saved state of the activity, if any.
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,9 +94,9 @@ public class AdminEventsActivity extends AppCompatActivity {
 
 
     /**
-     * Deletes a selected event from Firebase and refreshes the UI list.
+     * Deletes an event from Firestore and updates the list view.
      *
-     * @param event the event to remove.
+     * @param event the {@link Event} to delete.
      */
     private void removeEvent(Event event) {
                     FirebaseManager.getInstance().deleteEvent(event.getId());
@@ -101,9 +108,10 @@ public class AdminEventsActivity extends AppCompatActivity {
     }
 
 
+
     /**
-     * Retrieves all events from Firebase and populates the ListView with
-     * formatted display strings. On failure, logs an error.
+     * Loads all events from Firestore and updates the {@link ListView}.
+     * On success, refreshes the local event list and notifies the adapter.
      */
     private void loadEventsFromFirebase() {
         firebaseManager.getAllEvents(new FirebaseManager.FirebaseCallback<ArrayList<Event>>() {
