@@ -12,12 +12,14 @@ import android.widget.EditText;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.example.lotterypatentpending.models.Event;
 import com.example.lotterypatentpending.models.FirebaseManager;
 import com.example.lotterypatentpending.models.User;
 import com.example.lotterypatentpending.models.UserEventRepository;
+import com.example.lotterypatentpending.viewModels.EventViewModel;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 
@@ -53,7 +55,11 @@ public class CreateEventFragment extends Fragment {
         cancelBtn.setOnClickListener(view ->
                 NavHostFragment.findNavController(CreateEventFragment.this)
                         .navigate(R.id.action_createEvent_to_main));
-        createBtn.setOnClickListener(view -> createEvent());
+        createBtn.setOnClickListener(view -> {
+            createEvent();
+            NavHostFragment.findNavController(CreateEventFragment.this)
+                .navigate(R.id.action_createEvent_to_Event_View);
+            });
     }
 
     public void createEvent() {
@@ -85,6 +91,9 @@ public class CreateEventFragment extends Fragment {
         newEvent.setWaitingListCapacity(waitingListCap);
 
         fm.addEventToDB(newEvent);
+
+        EventViewModel viewModel = new ViewModelProvider(requireActivity()).get(EventViewModel.class);
+        viewModel.setEvent(newEvent);
     }
 
     private LocalDateTime parseDate(String input) {

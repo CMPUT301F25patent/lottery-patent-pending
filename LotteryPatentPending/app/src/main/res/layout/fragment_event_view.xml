@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#303030">
+
+    <!-- Page Title Bar -->
+    <TextView
+        android:id="@+id/titleBar"
+        android:layout_width="0dp"
+        android:layout_height="48dp"
+        android:background="#1A1A1A"
+        android:gravity="center"
+        android:text="Organizer Page"
+        android:textSize="24sp"
+        android:textColor="#FFFFFF"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Top Tabs -->
+    <LinearLayout
+        android:id="@+id/tabContainer"
+        android:layout_width="0dp"
+        android:layout_height="48dp"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:background="#1A1A1A"
+        app:layout_constraintTop_toBottomOf="@id/titleBar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <TextView
+            android:id="@+id/tabEvent"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="Event"
+            android:textColor="#FFFFFF"
+            android:textSize="20sp" />
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="24dp"
+            android:background="#FFFFFF" />
+
+        <TextView
+            android:id="@+id/tabSignupList"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="Sign-up List"
+            android:textColor="#FFFFFF"
+            android:textSize="20sp" />
+    </LinearLayout>
+
+    <!-- Scrollable Content -->
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scrollArea"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        app:layout_constraintTop_toBottomOf="@id/tabContainer"
+        app:layout_constraintBottom_toTopOf="@id/bottom_nav"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="16dp">
+
+            <!-- Event Title -->
+            <TextView
+                android:id="@+id/eventTitle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="Event Title"
+                android:textSize="18sp"
+                android:textColor="#FFFFFF"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+            <!-- Event Description Header -->
+            <TextView
+                android:id="@+id/descHeader"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Event Description"
+                android:textColor="#7FC9FF"
+                android:paddingTop="12dp"
+                app:layout_constraintTop_toBottomOf="@id/eventTitle"
+                app:layout_constraintStart_toStartOf="parent" />
+
+            <!-- Image Placeholder -->
+            <ImageView
+                android:id="@+id/eventImage"
+                android:layout_width="200dp"
+                android:layout_height="200dp"
+                android:layout_marginTop="12dp"
+                android:src="@drawable/ic_launcher_foreground"
+                app:layout_constraintTop_toBottomOf="@id/descHeader"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+            <!-- Long Description Text -->
+            <TextView
+                android:id="@+id/eventLongDescription"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:layout_marginTop="16dp"
+                android:text="Learn to swim in a fun and supportive environment! This 6-week class focuses on water safety, floating, and basic stroke techniques..."
+                app:layout_constraintTop_toBottomOf="@id/eventImage"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+            <!-- Max Entrants -->
+            <TextView
+                android:id="@+id/maxEntrants"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="Max. number of entrants: 30"
+                android:textColor="#FFFFFF"
+                android:layout_marginTop="24dp"
+                app:layout_constraintTop_toBottomOf="@id/eventLongDescription"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+            <TextView
+                android:id="@+id/waitingListCap"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="Waiting List Capacity: 30"
+                android:textColor="#FFFFFF"
+                android:layout_marginTop="24dp"
+                app:layout_constraintTop_toBottomOf="@id/maxEntrants"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+            <!-- Divider -->
+            <View
+                android:id="@+id/divider1"
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:background="#777777"
+                android:layout_marginTop="16dp"
+                app:layout_constraintTop_toBottomOf="@id/waitingListCap"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+            <!-- Event Settings Header -->
+            <TextView
+                android:id="@+id/eventSettingsHeader"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="Event Settings"
+                android:textColor="#7FC9FF"
+                app:layout_constraintTop_toBottomOf="@id/divider1"
+                app:layout_constraintStart_toStartOf="parent" />
+
+            <!-- Geo-location Toggle Row -->
+            <LinearLayout
+                android:id="@+id/geoToggleRow"
+                android:orientation="horizontal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                app:layout_constraintTop_toBottomOf="@id/eventSettingsHeader"
+                app:layout_constraintStart_toStartOf="parent">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Enable Geo-location for this event"
+                    android:textColor="#FFFFFF"
+                    android:paddingEnd="8dp" />
+
+                <CheckBox
+                    android:id="@+id/geoCheck"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:buttonTint="#7FC9FF" />
+            </LinearLayout>
+
+            <!-- QR Button -->
+            <Button
+                android:id="@+id/qrButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Generate QR Code"
+                android:layout_marginTop="20dp"
+                app:layout_constraintTop_toBottomOf="@id/geoToggleRow"
+                app:layout_constraintStart_toStartOf="parent" />
+
+            <!-- QR Image Placeholder -->
+            <ImageView
+                android:id="@+id/qrImage"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:layout_marginTop="12dp"
+                android:src="@drawable/ic_launcher_foreground"
+                android:visibility="gone"
+                app:layout_constraintTop_toBottomOf="@id/qrButton"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- Bottom Nav Buttons -->
+    <LinearLayout
+        android:id="@+id/bottom_nav"
+        android:layout_width="0dp"
+        android:layout_height="64dp"
+        android:background="#1A1A1A"
+        android:gravity="center"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <ImageButton
+            android:id="@+id/backButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="#000000"
+            android:padding="8dp"
+            android:src="@drawable/baseline_arrow_back_24"
+            app:tint="@android:color/white"/>
+
+        <Space
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1" />
+
+        <ImageButton
+            android:id="@+id/homeButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="#000000"
+            android:padding="8dp"
+            android:src="@drawable/ic_home" />
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
