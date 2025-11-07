@@ -27,18 +27,40 @@ import com.google.firebase.firestore.DocumentReference;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+/**
+ * Fragment that allows users to create a new Event.
+ * <p>
+ * Collects input from the user, creates an Event object, stores it in Firestore,
+ * and navigates to EventViewFragment to display the newly created event.
+ * </p>
+ */
 public class CreateEventFragment extends Fragment {
 
     private EditText titleEt, descriptionEt, locationEt, eventDateEt, regStartDateEt, regEndDateEt, capacityEt, waitingListCapEt;
     private Button cancelBtn, createBtn;
     private FirebaseManager fm;
 
+    /**
+     * Inflates the fragment's layout.
+     *
+     * @param inflater The LayoutInflater object that can be used to inflate any views.
+     * @param container The parent ViewGroup.
+     * @param savedInstanceState Bundle containing saved instance state.
+     * @return The root View of the fragment's layout.
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_create_event, container, false);
     }
 
+    /**
+     * Called after the view has been created.
+     * Initializes UI elements, sets click listeners for buttons.
+     *
+     * @param v The root view of the fragment.
+     * @param savedInstanceState Bundle containing saved instance state.
+     */
     @Override
     public void onViewCreated(@NonNull View v, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(v, savedInstanceState);
@@ -66,6 +88,10 @@ public class CreateEventFragment extends Fragment {
             }); // removes CreateEventFragment from stack so when back is clicked from event view doesn't go back there goes back to page beforehand
     }
 
+    /**
+     * Collects input from EditText fields, creates a new Event object,
+     * saves it to Firestore, and updates the EventViewModel.
+     */
     public void createEvent() {
         String title = titleEt.getText().toString().trim();
         String description = descriptionEt.getText().toString().trim();
@@ -85,8 +111,11 @@ public class CreateEventFragment extends Fragment {
             waitingListCap = Integer.parseInt(waitingListCapString);
         }
 
+        // Get the current user
         User current_user = UserEventRepository.getInstance().getUser().getValue();
         assert current_user != null;
+
+        // Create the new event
         Event newEvent = current_user.createEvent(title, description, capacity);
         newEvent.setLocation(location);
         newEvent.setDate(eventDate);
@@ -94,8 +123,10 @@ public class CreateEventFragment extends Fragment {
         newEvent.setRegEndDate(regEndDate);
         newEvent.setWaitingListCapacity(waitingListCap);
 
+        // Save to Firestore
         fm.addEventToDB(newEvent);
 
+        // Update EventViewModel for sharing with EventViewFragment
         EventViewModel viewModel = new ViewModelProvider(requireActivity()).get(EventViewModel.class);
         viewModel.setEvent(newEvent);
     }

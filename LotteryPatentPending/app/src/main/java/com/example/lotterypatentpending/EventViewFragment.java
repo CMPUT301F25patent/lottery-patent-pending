@@ -20,6 +20,14 @@ import com.example.lotterypatentpending.models.Event;
 import com.example.lotterypatentpending.models.QRGenerator;
 import com.example.lotterypatentpending.viewModels.EventViewModel;
 
+/**
+ * Fragment that displays the details of a selected Event.
+ * <p>
+ * Observes an Event object from EventViewModel and updates the UI accordingly.
+ * Provides functionality for generating QR codes, toggling geolocation requirement,
+ * and navigating back or home.
+ * </p>
+ */
 public class EventViewFragment extends Fragment {
 
     private TextView eventTitle, eventDescr, maxEntrants, waitListCap;
@@ -30,6 +38,14 @@ public class EventViewFragment extends Fragment {
     private ImageButton homeButton;
     private CheckBox geoLocationReq;
 
+    /**
+     * Inflates the fragment's layout.
+     *
+     * @param inflater The LayoutInflater object to inflate views.
+     * @param container The parent ViewGroup.
+     * @param savedInstanceState Bundle containing saved instance state.
+     * @return The root View of the fragment's layout.
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -37,6 +53,13 @@ public class EventViewFragment extends Fragment {
 
     }
 
+    /**
+     * Called after the view has been created.
+     * Initializes UI elements, sets observers and click listeners for buttons and checkbox.
+     *
+     * @param v The root view of the fragment.
+     * @param savedInstanceState Bundle containing saved instance state.
+     */
     @Override
     public void onViewCreated(@NonNull View v, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(v, savedInstanceState);
@@ -84,6 +107,12 @@ public class EventViewFragment extends Fragment {
         homeButton.setOnClickListener(view -> requireActivity().finish());
     }
 
+    /**
+     * Generates a QR code for the given event ID and sets it to the provided ImageView.
+     *
+     * @param eventId The ID of the event for which the QR code is generated.
+     * @param qrView The ImageView to display the generated QR code.
+     */
     public void generateEventQRCode(String eventId, ImageView qrView){
         QRGenerator.setQRToView(qrView, eventId, 300);
         qrView.setVisibility(View.VISIBLE);
