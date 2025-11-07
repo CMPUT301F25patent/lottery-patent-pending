@@ -30,7 +30,7 @@ package com.example.lotterypatentpending.models;
 
 import android.os.Build;
 import android.util.Log;
-import android.util.Pair;
+import androidx.core.util.Pair;
 import android.widget.Toast;
 
 import java.time.LocalDate;
