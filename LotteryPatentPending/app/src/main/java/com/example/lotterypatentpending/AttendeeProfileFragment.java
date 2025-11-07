@@ -14,7 +14,7 @@ import android.widget.Toast;
 
 import com.example.lotterypatentpending.models.FirebaseManager;
 import com.example.lotterypatentpending.models.User;
-import com.example.lotterypatentpending.models.UserEventRepository;
+import com.example.lotterypatentpending.viewModels.UserEventRepository;
 import com.google.firebase.auth.FirebaseAuth;
 
 import org.jspecify.annotations.Nullable;
@@ -24,16 +24,28 @@ import org.jspecify.annotations.Nullable;
  * Class AttendeeActivity
  * @author Erik
  * @contributor
+ * Fragment for displaying and updating a logged-in attendee's profile.
+ * Allows a user to update their name, email, and contact information, toggle notification preferences,
+ * and delete their account.
  */
 
 public class AttendeeProfileFragment extends Fragment {
+    /** Text field for displaying and editing the user's name. */
     private TextView name;
+    /** Text field for displaying and editing the user's email. */
     private TextView email;
+    /** Text field for displaying and editing the user's phone number. */
     private TextView phone;
+    /** Switch to enable or disable event notifications for the user. */
     private SwitchCompat notificationsSwitch;
+    /** Button to save profile updates. */
     private Button saveBtn;
+    /** Current logged-in user object. */
     private User user;
 
+    /**
+     * Default constructor that inflates the attendee profile layout.
+     */
     public AttendeeProfileFragment(){
         super(R.layout.fragment_attendee_profile);
     }
@@ -62,14 +74,23 @@ public class AttendeeProfileFragment extends Fragment {
         phone.setText(user.getContactInfo());
         //set switch to current boolean of user
         if (user != null) {
-            notificationsSwitch.setChecked(user.isNotificationsOptIn());
+            boolean enabled = user.isNotificationsOptIn();
+            notificationsSwitch.setChecked(enabled);
+            notificationsSwitch.setText(enabled ? "Notifications Enabled" : "Notifications Disabled");
         }
-
         //switch listener
         notificationsSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (user == null) return;
-            user.setNotificationsOptIn(isChecked);
 
+            user.setNotificationsOptIn(isChecked);
+            FirebaseManager.getInstance().addOrUpdateUser(user);
+
+            notificationsSwitch.setText(isChecked ? "Notifications Enabled" : "Notifications Disabled");
+
+            Toast.makeText(requireContext(),
+                    isChecked ? "Notifications turned ON" : "Notifications turned OFF",
+                    Toast.LENGTH_SHORT
+            ).show();
         });
 
 //        //save button listener

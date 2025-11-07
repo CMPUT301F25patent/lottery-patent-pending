@@ -87,6 +87,8 @@
         android:textColor="@color/white"
         android:text="Enable/Disable Notifications"
         android:layout_marginTop="12dp"
+        android:ems="20"
+        android:gravity="center"
         android:layout_gravity="center"/>
 
     <com.google.android.material.button.MaterialButton

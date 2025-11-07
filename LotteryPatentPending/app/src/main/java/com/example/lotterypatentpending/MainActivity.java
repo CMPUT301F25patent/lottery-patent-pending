@@ -12,7 +12,7 @@ import androidx.fragment.app.FragmentManager;
 
 import com.example.lotterypatentpending.models.FirebaseManager;
 import com.example.lotterypatentpending.models.User;
-import com.example.lotterypatentpending.models.UserEventRepository;
+import com.example.lotterypatentpending.viewModels.UserEventRepository;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
