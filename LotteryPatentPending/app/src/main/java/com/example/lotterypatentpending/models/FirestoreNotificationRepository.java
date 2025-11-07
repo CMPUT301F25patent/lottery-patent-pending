@@ -16,13 +16,24 @@ import java.util.concurrent.CompletableFuture;
 
 public class FirestoreNotificationRepository implements NotificationRepository {
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
-
+    /**
+     * Adds a new notification to a user's notification sub-collection.
+     * @param n The notification object to add.
+     * @return A CompletableFuture that completes when the operation is finished.
+     */
     @Override public CompletableFuture<Void> add(Notification n){
         var f=new CompletableFuture<Void>();
         db.collection("users").document(n.getUserId()).collection("notifications")
                 .add(n).addOnSuccessListener(r->f.complete(null)).addOnFailureListener(f::completeExceptionally);
         return f;
     }
+    /**
+     * Marks a specific notification as read.
+     * This method fetches all notifications for a user and updates the one matching the ID.
+     * @param userId The ID of the user.
+     * @param id The ID of the notification document to mark as read.
+     * @return A CompletableFuture that completes when the update is finished.
+     */
     //if you pass the document id, update directly—it’s cheaper than scanning.
     @Override public CompletableFuture<Void> markRead(String userId,String id){
         var f=new CompletableFuture<Void>();
@@ -40,6 +51,12 @@ public class FirestoreNotificationRepository implements NotificationRepository {
                 }).addOnFailureListener(f::completeExceptionally);
         return f;
     }
+
+    /**
+     * Retrieves all notifications for a specific user, ordered with the newest first.
+     * @param userId The ID of the user whose notifications are to be fetched.
+     * @return A CompletableFuture that completes with a list of notifications.
+     */
     @Override
     public CompletableFuture<List<Notification>> getForUser(String userId){
         var f = new CompletableFuture<List<Notification>>();
@@ -62,6 +79,13 @@ public class FirestoreNotificationRepository implements NotificationRepository {
         return f;
     }
 
+    /**
+     * Listens for real-time changes to the count of unread notifications for a user.
+     * @param userId The ID of the user.
+     * @param onCount A consumer to be called with the updated unread count.
+     * @param onError A consumer to handle any errors.
+     * @return A ListenerRegistration to detach the listener when no longer needed.
+     */
     @Override public ListenerRegistration listenUnreadCount(String userId,
                                                             java.util.function.Consumer<Integer> onCount,
                                                             java.util.function.Consumer<Exception> onError){
