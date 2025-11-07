@@ -37,6 +37,7 @@ public class EventViewFragment extends Fragment {
     private ImageButton backButton;
     private ImageButton homeButton;
     private CheckBox geoLocationReq;
+    private ImageButton notiButton;
 
     /**
      * Inflates the fragment's layout.
@@ -72,6 +73,7 @@ public class EventViewFragment extends Fragment {
         backButton = v.findViewById(R.id.backButton);
         homeButton = v.findViewById(R.id.homeButton);
         geoLocationReq = v.findViewById(R.id.geoCheck);
+        notiButton = v.findViewById(R.id.notiBtn);
 
         EventViewModel viewModel = new ViewModelProvider(requireActivity()).get(EventViewModel.class);
         viewModel.getEvent().observe(getViewLifecycleOwner(), event -> {
@@ -92,6 +94,10 @@ public class EventViewFragment extends Fragment {
             eventId = event.getId();
 
             geoLocationReq.setChecked(event.isGeolocationRequired());
+
+        });
+
+        notiButton.setOnClickListener(view -> {
 
         });
 

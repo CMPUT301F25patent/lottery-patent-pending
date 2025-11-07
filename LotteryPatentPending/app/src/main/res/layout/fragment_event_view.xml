@@ -121,6 +121,19 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent" />
 
+
+            <ImageButton
+                android:id="@+id/notiBtn"
+                android:layout_width="37dp"
+                android:layout_height="36dp"
+                android:background="#303030"
+                android:padding="8dp"
+                android:src="@drawable/ic_notification_white_24dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="1.0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/eventLongDescription" />
+
             <!-- Max Entrants -->
             <TextView
                 android:id="@+id/maxEntrants"
@@ -129,7 +142,7 @@
                 android:text="Event Capacity: 30"
                 android:textColor="#FFFFFF"
                 android:layout_marginTop="24dp"
-                app:layout_constraintTop_toBottomOf="@id/eventLongDescription"
+                app:layout_constraintTop_toBottomOf="@id/notiBtn"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent" />
 
