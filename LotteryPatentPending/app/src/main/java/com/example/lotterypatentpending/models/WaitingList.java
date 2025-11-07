@@ -15,7 +15,7 @@ import java.util.ArrayList;
  */
 public class WaitingList {
     private ArrayList<Pair<User, WaitingListState>> list = new ArrayList<>();
-    private int capacity;
+    private int capacity = -1;
 
     /**
      * list is initialized at the attribute level, for Firebase safety purposes
