@@ -3,6 +3,7 @@ package com.example.lotterypatentpending;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -19,6 +20,7 @@ public class AdminActivity extends AppCompatActivity {
 
     private FirebaseManager firebaseManager;
     private User currentUser;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,6 +41,9 @@ public class AdminActivity extends AppCompatActivity {
 
         Button btnBrowseUsers = findViewById(R.id.btnBrowseUsers);
         Button btnBrowseEvents = findViewById(R.id.btnBrowseEvents);
+        ImageButton homeButton = findViewById(R.id.homeButton);
+        homeButton.setOnClickListener(v -> finish());
+
 
         btnBrowseUsers.setOnClickListener(v -> {
             if (!currentUser.isAdmin()) {
