@@ -21,14 +21,38 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+
+/**
+ * AdminEventsActivity allows administrators to view and manage all events
+ * stored in Firebase. The admin can see event details and delete events
+ * using a long-press action.
+ *
+ * This is an internal admin-panel screen not accessible to standard users.
+ */
 public class AdminEventsActivity extends AppCompatActivity {
 
+    /** Firebase manager instance used to interact with database. */
     private FirebaseManager firebaseManager;
+
+    /** ListView UI element to display events. */
     private ListView listView;
+
+    /** Adapter used to bind event text data to the ListView. */
     private ArrayAdapter<String> adapter;
+
+    /** List of actual Event objects returned from Firestore. */
     private List<Event> eventList = new ArrayList<>();
+
+    /** List of formatted event strings to show in UI. */
     private List<String> eventDisplayList = new ArrayList<>();
 
+
+    /**
+     * Called when the activity is created. Sets UI, initializes Firebase,
+     * loads events, and assigns listeners for deletion and navigation.
+     *
+     * @param savedInstanceState previous activity state, if any.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -62,7 +86,11 @@ public class AdminEventsActivity extends AppCompatActivity {
     }
 
 
-
+    /**
+     * Deletes a selected event from Firebase and refreshes the UI list.
+     *
+     * @param event the event to remove.
+     */
     private void removeEvent(Event event) {
                     FirebaseManager.getInstance().deleteEvent(event.getId());
                     Toast.makeText(this, "Deleted event: " + event.getTitle(), Toast.LENGTH_SHORT).show();
@@ -73,7 +101,10 @@ public class AdminEventsActivity extends AppCompatActivity {
     }
 
 
-
+    /**
+     * Retrieves all events from Firebase and populates the ListView with
+     * formatted display strings. On failure, logs an error.
+     */
     private void loadEventsFromFirebase() {
         firebaseManager.getAllEvents(new FirebaseManager.FirebaseCallback<ArrayList<Event>>() {
             @Override
