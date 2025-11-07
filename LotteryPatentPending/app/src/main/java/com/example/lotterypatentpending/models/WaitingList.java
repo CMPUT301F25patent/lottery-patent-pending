@@ -15,11 +15,22 @@ import java.util.ArrayList;
  */
 public class WaitingList {
     private ArrayList<Pair<User, WaitingListState>> list = new ArrayList<>();
+    private int capacity;
 
     /**
      * list is initialized at the attribute level, for Firebase safety purposes
      */
-    public WaitingList() {    }
+    public WaitingList() {
+    }
+
+    /**
+     * list initialzed with a max capacity
+     * @param capacity
+     */
+    public WaitingList(int capacity){
+        super();
+        this.capacity = capacity;
+    }
 
     /**
      * Adds an entrant to the waiting list, only if the entrant is not already in the list.
@@ -27,6 +38,9 @@ public class WaitingList {
      */
     public void addEntrant(User entrant) {
         boolean exists = false;
+        if(list.size() == capacity){
+            return; // TODO: throw runtime exception
+        }
         for (Pair<User, WaitingListState> pair : this.list) {
             if (pair.first.equals(entrant)) {
                 exists = true;
@@ -39,6 +53,22 @@ public class WaitingList {
         else {
             throw new UserInListException("User already in list.");
         }
+    }
+
+    /**
+     * gets the underlying list
+     * @return
+     */
+    public ArrayList<Pair<User, WaitingListState>> getList() {
+        return list;
+    }
+
+    /**
+     * sets the underlying list
+     * @param list
+     */
+    public void setList(ArrayList<Pair<User, WaitingListState>> list) {
+        this.list = list;
     }
 
     /**
@@ -73,6 +103,14 @@ public class WaitingList {
             }
         }
         return in;
+    }
+
+    public int getCapacity() {
+        return capacity;
+    }
+
+    public void setCapacity(int capacity) {
+        this.capacity = capacity;
     }
 
     /**

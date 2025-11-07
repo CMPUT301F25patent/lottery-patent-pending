@@ -1,13 +1,23 @@
 package com.example.lotterypatentpending.models;
 
+import android.os.Build;
 import android.util.Log;
+import androidx.core.util.Pair;
+import android.widget.Toast;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.HashMap;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import com.example.lotterypatentpending.exceptions.UserNotFoundException;
 import com.example.lotterypatentpending.models.Event;
@@ -81,6 +91,37 @@ public class FirebaseManager {
                 .addOnFailureListener(e -> System.err.println("Error deleting user: " + e.getMessage()));
     }
 
+    public void addEventToDB(Event event){
+        Map <String, Object> eventMap = eventToMap(event);
+        db.collection("events").document(event.getId()).set(eventMap)
+                .addOnSuccessListener(aVoid -> {
+                    Log.d("FIREBASE", "Event saved successfully");
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("FIREBASE", "Failed to save event", e);
+                });
+    };
+
+    public void deleteEventFromDB(Event event){
+        CollectionReference eventsRef = db.collection("Events");
+        DocumentReference eventDocRef = eventsRef.document(event.getId());
+        eventDocRef.delete();
+    };
+
+//    public void updateEventInDB(Event event){
+//        CollectionReference eventsRef = db.collection("Events");
+//        DocumentReference eventDocRef = eventsRef.document(event.getId());
+//        eventDocRef.delete();
+//    };
+    private Map<String, Object> userToMap(User user) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("userId", user.getUserId());
+        map.put("name", user.getName());
+        map.put("email", user.getEmail());
+        map.put("contactInfo", user.getContactInfo());
+        map.put("isAdmin", user.isAdmin());
+        return map;
+    }
 
     // mapping event objects to firestore
     private Map<String, Object> eventToMap(Event event) {
@@ -91,29 +132,60 @@ public class FirebaseManager {
         data.put("description", event.getDescription());
         data.put("capacity", event.getCapacity());
         data.put("location", event.getLocation());
+        data.put("qrCode", event.getQrCode() != null
+                ? event.getQrCode().toContent()
+                : null);
 
-        // Dates & times as strings
-        data.put("date", event.getDate() != null ? event.getDate().toString() : null);
-        data.put("time", event.getTime() != null ? event.getTime().toString() : null);
-        data.put("regStartDate", event.getRegStartDate() != null ? event.getRegStartDate().toString() : null);
-        data.put("regStartTime", event.getRegStartTime() != null ? event.getRegStartTime().toString() : null);
-        data.put("regEndDate", event.getRegEndDate() != null ? event.getRegEndDate().toString() : null);
-        data.put("regEndTime", event.getRegEndTime() != null ? event.getRegEndTime().toString() : null);
+        data.put("waitingListCapacity", event.getWaitingListCapacity());
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy hh:mm a");
+
+            // Dates & times as strings
+            data.put("event_date", event.getDate() != null
+                    ? event.getDate().format(formatter)
+                : null);
+
+            data.put("regStartDate", event.getRegStartDate() != null
+                    ? event.getRegStartDate().format(formatter)
+                    : null);
+
+            data.put("regEndDate", event.getRegEndDate() != null
+                    ? event.getRegEndDate().format(formatter)
+                    : null);
+        }
+
 
         // Organizer is just a User
+//        if (event.getOrganizer() != null) {
+//            Map<String, Object> organizerMap = new HashMap<>();
+//            organizerMap.put("userId", event.getOrganizer().getUserId());
+//            organizerMap.put("name", event.getOrganizer().getName());
+//            organizerMap.put("email", event.getOrganizer().getEmail());
+//            organizerMap.put("contactInfo", event.getOrganizer().getContactInfo());
+//            organizerMap.put("isAdmin", event.getOrganizer().isAdmin());
+//            data.put("organizer", organizerMap);
+//        } else {
+//            data.put("organizer", null);
+//        }
+        // Organizer is just a User
         if (event.getOrganizer() != null) {
-            Map<String, Object> organizerMap = new HashMap<>();
-            organizerMap.put("userId", event.getOrganizer().getUserId());
-            organizerMap.put("name", event.getOrganizer().getName());
-            organizerMap.put("email", event.getOrganizer().getEmail());
-            organizerMap.put("contactInfo", event.getOrganizer().getContactInfo());
-            organizerMap.put("isAdmin", event.getOrganizer().isAdmin());
-            data.put("organizer", organizerMap);
+            data.put("organizer", event.getOrganizer().getUserId());
         } else {
             data.put("organizer", null);
         }
 
+        // Entrants
+        List<String> entrantsList = new ArrayList<>();
+        for (User u : event.getEntrants()) {
+            entrantsList.add(u.getUserId());
+        }
+        data.put("entrants", entrantsList);
+
+        data.put("waitingList", serializeWaitingList(event.getWaitingList().getList()));
+
         return data;
+
     }
 
 
@@ -121,38 +193,115 @@ public class FirebaseManager {
     public Event mapToEvent(Map<String, Object> data) {
         if (data == null) return null;
 
+        // Basic string fields
         String title = (String) data.get("title");
         String description = (String) data.get("description");
         String location = (String) data.get("location");
 
+        // Capacity handling
         int capacity = 0;
         Object capObj = data.get("capacity");
         if (capObj instanceof Long) capacity = ((Long) capObj).intValue();
         else if (capObj instanceof Integer) capacity = (Integer) capObj;
 
-        // Organizer is a User
+        // Organizer handling (can be Map or String)
         User organizer = null;
-        Map<String, Object> organizerMap = (Map<String, Object>) data.get("organizer");
-        if (organizerMap != null) {
+        Object orgObj = data.get("organizer");
+
+        if (orgObj instanceof Map) {
+            Map<String, Object> organizerMap = (Map<String, Object>) orgObj;
             String id = (String) organizerMap.get("userId");
             String name = (String) organizerMap.get("name");
             String email = (String) organizerMap.get("email");
             String contact = (String) organizerMap.get("contactInfo");
             boolean isAdmin = organizerMap.get("isAdmin") != null && (boolean) organizerMap.get("isAdmin");
-
             organizer = new User(id, name, email, contact, isAdmin);
+        } else if (orgObj instanceof String) {
+            organizer = new User();
+            organizer.setName((String) orgObj);
         }
 
+        // Create Event object
         Event event = new Event(title, description, capacity, organizer);
         event.setLocation(location);
-
-
 
         if (data.get("id") != null)
             event.setId((String) data.get("id"));
 
+        // Date parsing - use SimpleDateFormat for compatibility
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault());
+
+        try {
+            Object dateObj = data.get("date_time");
+            if (dateObj != null) {
+                Date parsed = sdf.parse(dateObj.toString());
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && parsed != null) {
+                    event.setDate(parsed.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
+                }
+            }
+        } catch (Exception e) {
+            Log.w("FirebaseManager", "Failed to parse date_time: " + e.getMessage());
+        }
+
+        try {
+            Object regStartObj = data.get("regStartDate");
+            if (regStartObj != null) {
+                Date parsed = sdf.parse(regStartObj.toString());
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && parsed != null) {
+                    event.setRegStartDate(parsed.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
+                }
+            }
+        } catch (Exception e) {
+            Log.w("FirebaseManager", "Failed to parse regStartDate: " + e.getMessage());
+        }
+
+        try {
+            Object regEndObj = data.get("regEndDate");
+            if (regEndObj != null) {
+                Date parsed = sdf.parse(regEndObj.toString());
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && parsed != null) {
+                    event.setRegEndDate(parsed.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
+                }
+            }
+        } catch (Exception e) {
+            Log.w("FirebaseManager", "Failed to parse regEndDate: " + e.getMessage());
+        }
+
         return event;
     }
+
+    public List<Map<String, Object>> serializeWaitingList(List<Pair<User, WaitingListState>> list) {
+        List<Map<String, Object>> out = new ArrayList<>();
+
+        for (Pair<User, WaitingListState> entry : list) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("uid", entry.first.getUserId());
+            map.put("state", entry.second.name()); // store enum as string
+            out.add(map);
+        }
+
+        return out;
+    }
+
+//    public List<Pair<User, WaitingListState>> deserializeWaitingList(
+//            List<Map<String, Object>> storedList,
+//            UserEventRepository userRepo // however you load users
+//    ) {
+//        List<Pair<User, WaitingListState>> out = new ArrayList<>();
+//
+//        for (Map<String, Object> map : storedList) {
+//            String uid = (String) map.get("uid");
+//            String stateName = (String) map.get("state");
+//
+//            User user = userRepo.getInstance().getUser(); // however you fetch users
+//            WaitingListState state = WaitingListState.valueOf(stateName);
+//
+//            out.add(new Pair<>(user, state));
+//        }
+//
+//        return out;
+//    }
+
 
 
     public void addOrUpdateEvent(String eventId, Event event) {
@@ -191,7 +340,10 @@ public class FirebaseManager {
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     ArrayList<Event> events = new ArrayList<>();
                     for (DocumentSnapshot doc : queryDocumentSnapshots.getDocuments()) {
-                        Event event = doc.toObject(Event.class);
+                        Map<String, Object> data = doc.getData();
+                        if (data == null) continue;
+
+                        Event event = mapToEvent(data);
                         if (event != null) {
                             event.setId(doc.getId());
                             events.add(event);
@@ -200,17 +352,22 @@ public class FirebaseManager {
                     callback.onSuccess(events);
                 })
                 .addOnFailureListener(e -> {
-                    System.out.println("Error getting all events: " + e);
+                    Log.e("FirebaseManager", "Error getting all events: " + e.getMessage());
+                    callback.onFailure(e);
                 });
     }
 
+
     public void deleteEvent(String eventId) {
-        db.collection("events").document(eventId).delete()
+        db.collection("events")
+                .document(eventId)
+                .delete()
                 .addOnSuccessListener(aVoid ->
-                        System.out.println("Event deleted successfully: " + eventId))
+                        Log.i("FirebaseManager", "Event deleted successfully: " + eventId))
                 .addOnFailureListener(e ->
-                        System.err.println("Error deleting event: " + e.getMessage()));
+                        Log.e("FirebaseManager", "Error deleting event: " + e.getMessage()));
     }
+
 
     public void addEntrantToWaitingList(User entrant, WaitingListState state, String eventId) {
         Map<String, Object> data = new HashMap<>();
@@ -334,7 +491,7 @@ public class FirebaseManager {
 
 
 
-    // for lsteners
+    // for listeners
     public interface FirebaseCallback<T> {
         void onSuccess(T result);
         void onFailure(Exception e);

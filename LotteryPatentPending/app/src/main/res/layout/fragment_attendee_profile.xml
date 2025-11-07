@@ -41,7 +41,6 @@
         android:id="@+id/notifications"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Enable/Disable Notifactions"
         android:ems="20"
         android:gravity="center"
         android:layout_gravity="center"/>
@@ -54,5 +53,15 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         android:backgroundTint="@color/white_grey"
+        android:layout_gravity="center"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/profileDeleteBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:text="Delete Account"
+        android:textColor="@android:color/black"
+        android:backgroundTint="@color/light_red"
         android:layout_gravity="center"/>
 </LinearLayout>

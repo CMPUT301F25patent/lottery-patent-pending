@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -18,15 +19,40 @@ import com.google.firebase.firestore.QuerySnapshot;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
+
+/**
+ * AdminEventsActivity allows administrators to view and manage all events
+ * stored in Firebase. The admin can see event details and delete events
+ * using a long-press action.
+ *
+ * This is an internal admin-panel screen not accessible to standard users.
+ */
 public class AdminEventsActivity extends AppCompatActivity {
 
+    /** Firebase manager instance used to interact with database. */
     private FirebaseManager firebaseManager;
+
+    /** ListView UI element to display events. */
     private ListView listView;
+
+    /** Adapter used to bind event text data to the ListView. */
     private ArrayAdapter<String> adapter;
+
+    /** List of actual Event objects returned from Firestore. */
     private List<Event> eventList = new ArrayList<>();
+
+    /** List of formatted event strings to show in UI. */
     private List<String> eventDisplayList = new ArrayList<>();
 
+
+    /**
+     * Called when the activity is created. Sets UI, initializes Firebase,
+     * loads events, and assigns listeners for deletion and navigation.
+     *
+     * @param savedInstanceState previous activity state, if any.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -39,6 +65,10 @@ public class AdminEventsActivity extends AppCompatActivity {
         listView.setAdapter(adapter);
 
         loadEventsFromFirebase();
+        Button backButton = findViewById(R.id.backButton);
+        backButton.setOnClickListener(v -> finish());
+
+
 
         // Long press → delete event
         listView.setOnItemLongClickListener((parent, view, position, id) -> {
@@ -47,7 +77,7 @@ public class AdminEventsActivity extends AppCompatActivity {
             new AlertDialog.Builder(AdminEventsActivity.this)
                     .setTitle("Delete Event")
                     .setMessage("Are you sure you want to delete the event \"" + selectedEvent.getTitle() + "\"?")
-                    .setPositiveButton("Delete", (dialog, which) -> removeEvent(selectedEvent.getId()))
+                    .setPositiveButton("Delete", (dialog, which) -> removeEvent(selectedEvent))
                     .setNegativeButton("Cancel", null)
                     .show();
 
@@ -55,50 +85,26 @@ public class AdminEventsActivity extends AppCompatActivity {
         });
     }
 
-    public void removeEvent(String eventId) {
 
-        if (eventId == null || eventId.trim().isEmpty()) {
-            Toast.makeText(this, "Invalid event ID.", Toast.LENGTH_SHORT).show();
-            return;
-        }
+    /**
+     * Deletes a selected event from Firebase and refreshes the UI list.
+     *
+     * @param event the event to remove.
+     */
+    private void removeEvent(Event event) {
+                    FirebaseManager.getInstance().deleteEvent(event.getId());
+                    Toast.makeText(this, "Deleted event: " + event.getTitle(), Toast.LENGTH_SHORT).show();
+                    // Refresh UI
+                    loadEventsFromFirebase();
+                    adapter.notifyDataSetChanged();
 
-        FirebaseManager firebaseManager = FirebaseManager.getInstance();
-
-        firebaseManager.getEvent(eventId, new FirebaseManager.FirebaseCallback<Event>() {
-            @Override
-            public void onSuccess(Event event) {
-                if (event == null) {
-                    Toast.makeText(AdminEventsActivity.this, "Event not found.", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                // 🗑️ Confirm deletion with user
-                new AlertDialog.Builder(AdminEventsActivity.this)
-                        .setTitle("Delete Event")
-                        .setMessage("Are you sure you want to permanently delete \""
-                                + event.getTitle() + "\" organized by "
-                                + (event.getOrganizer() != null ? event.getOrganizer().getName() : "Unknown") + "?")
-                        .setPositiveButton("Delete", (dialog, which) -> {
-                            firebaseManager.deleteEvent(event.getId());
-                            Toast.makeText(AdminEventsActivity.this,
-                                    "Event \"" + event.getTitle() + "\" deleted successfully.",
-                                    Toast.LENGTH_SHORT).show();
-                        })
-                        .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
-                        .show();
-            }
-
-            @Override
-            public void onFailure(Exception e) {
-                Toast.makeText(AdminEventsActivity.this,
-                        "Error retrieving event: " + e.getMessage(),
-                        Toast.LENGTH_SHORT).show();
-                Log.e("Admin", "Failed to get event for deletion", e);
-            }
-        });
     }
 
 
+    /**
+     * Retrieves all events from Firebase and populates the ListView with
+     * formatted display strings. On failure, logs an error.
+     */
     private void loadEventsFromFirebase() {
         firebaseManager.getAllEvents(new FirebaseManager.FirebaseCallback<ArrayList<Event>>() {
             @Override
@@ -109,7 +115,6 @@ public class AdminEventsActivity extends AppCompatActivity {
                 for (Event event : result) {
                     if (event == null) continue;
 
-                    eventList.add(event);
 
                     String organizerName = (event.getOrganizer() != null)
                             ? event.getOrganizer().getName()
@@ -122,6 +127,8 @@ public class AdminEventsActivity extends AppCompatActivity {
                             " | Capacity: " + event.getCapacity();
 
                     eventDisplayList.add(display);
+                    eventList.add(event);
+
                 }
 
                 adapter.notifyDataSetChanged();

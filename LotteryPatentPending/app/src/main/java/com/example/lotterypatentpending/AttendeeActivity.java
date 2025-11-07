@@ -22,22 +22,47 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.ListenerRegistration;
 
+
+
+
 /**
- * Class AttendeeActivity
+ * AttendeeActivity hosts the main UI for users attending events.
+ * Provides navigation between event browsing, profile management,
+ * and QR scanning tabs. Also displays notification inbox count.
+ *
+ * This activity is shown after a user successfully logs in and
+ * has registered their profile.
+ *
  * @maintainer Erik
  * @author Erik
  */
-
 public class AttendeeActivity extends AppCompatActivity {
+    /** Repository holding current logged-in user and event state. */
     private UserEventRepository userEventRepo;
-    private FirebaseManager  firebaseManager;
+
+    /** Firebase utility for syncing user/event data. */
+    private FirebaseManager firebaseManager;
+
+    /** Notification repository for listening to unread message count. */
     private NotificationRepository repo;
+
+    /** Handle for notification unread listener to remove on lifecycle events. */
     private ListenerRegistration unreadReg;
 
+    /** Fragment showing events available to the attendee. */
     private Fragment eventsFragment;
+
+    /** Fragment showing the attendee's profile and settings. */
     private Fragment profileFragment;
+
+    /** Fragment handling QR code scanning for check-in. */
     private Fragment scanFragment;
 
+
+    /**
+     * Initializes the attendee dashboard, navigation bar, notification badge,
+     * and default fragment. Also sets up Firestore listeners.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -54,6 +79,13 @@ public class AttendeeActivity extends AppCompatActivity {
         // home button in header: go back to Main
         toolbar.setNavigationIcon(R.drawable.ic_home);
         toolbar.setNavigationOnClickListener(v -> finish());
+        toolbar.setOnMenuItemClickListener(item -> {
+            if (item.getItemId() == R.id.action_info) {
+                showLotteryInfoPopup();
+                return true;
+            }
+            return false;
+        });
 
         //Firebasemanager get db instance
         firebaseManager = FirebaseManager.getInstance();
@@ -85,21 +117,48 @@ public class AttendeeActivity extends AppCompatActivity {
             return false;
         });
     }
-
+    /**
+     * Replaces the fragment container with a new fragment.
+     *
+     * @param f the fragment to display
+     * @return always true for nav handler use
+     */
     private boolean load(Fragment f) {
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.attendeeContainer, f)
                 .commit();
         return true;
     }
-
+    /**
+     * Sets the title in the top toolbar.
+     *
+     * @param t title text to display
+     */
     private void setTitle(String t) {
         MaterialToolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setTitle(t);
     }
+    /**
+     * Displays a help popup explaining the lottery selection system
+     * for event entry.
+     */
+    private void showLotteryInfoPopup() {
+        new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("How the Lottery Works")
+                .setMessage(
+                        "When registration closes, all entrants on the waiting list are entered into a random draw.\n\n" +
+                                "Selected entrants must accept their spot within the time window.\n\n" +
+                                "If someone declines or doesn't respond, another entrant is randomly selected.\n\n" +
+                                "All eligible entrants have an equal chance, but a spot is not guaranteed."
+                )
+                .setPositiveButton("OK", null)
+                .show();
+    }
 
-
-    // Toolbar menu with inbox badge
+    /**
+     * Inflates toolbar menu and initializes the inbox badge listener
+     * to update unread notification count in real time.
+     */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_attendee, menu);
@@ -132,7 +191,9 @@ public class AttendeeActivity extends AppCompatActivity {
 
         return true;
     }
-
+    /**
+     * Handles toolbar item actions (currently Inbox).
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.action_inbox) {
@@ -141,7 +202,9 @@ public class AttendeeActivity extends AppCompatActivity {
         }
         return super.onOptionsItemSelected(item);
     }
-
+    /**
+     * Removes Firestore listeners to avoid memory leaks when activity stops.
+     */
     @Override
     protected void onStop() {
         super.onStop();

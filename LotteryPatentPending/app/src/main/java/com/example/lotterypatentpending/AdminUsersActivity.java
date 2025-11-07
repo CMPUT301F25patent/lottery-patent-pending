@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -16,15 +17,39 @@ import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
+
+/**
+ * AdminUsersActivity provides admin functionality for viewing and managing
+ * all registered users in the Firebase database. Admins can view user
+ * details and delete users via long-press actions.
+ *
+ * This screen is only accessible to admin accounts.
+ */
 public class AdminUsersActivity extends AppCompatActivity {
 
+    /** Firebase manager instance used for database operations. */
     private FirebaseManager firebaseManager;
+
+    /** ListView UI element for displaying users. */
     private ListView listView;
+
+    /** Adapter used to bind user display text to the ListView. */
     private ArrayAdapter<String> adapter;
+
+    /** List of actual User objects retrieved from Firebase. */
     private List<User> userList = new ArrayList<>();
+
+    /** Formatted list of user info strings for UI display. */
     private List<String> userDisplayList = new ArrayList<>();
 
+    /**
+     * Called when the activity is created; sets UI, initializes Firebase,
+     * loads users, and attaches event listeners.
+     *
+     * @param savedInstanceState saved activity state if activity was recreated.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -37,6 +62,10 @@ public class AdminUsersActivity extends AppCompatActivity {
         listView.setAdapter(adapter);
 
         loadUsersFromFirebase();
+        Button backButton = findViewById(R.id.backButton);
+        backButton.setOnClickListener(v -> finish());
+
+
 
         // Long press to confirm deletion
         listView.setOnItemLongClickListener((parent, view, position, id) -> {
@@ -53,6 +82,10 @@ public class AdminUsersActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Loads all users from Firebase and refreshes the UI list.
+     * Logs errors on failure.
+     */
     private void loadUsersFromFirebase() {
         firebaseManager.getAllUsers(new FirebaseManager.FirebaseCallback<QuerySnapshot>() {
             @Override
@@ -81,7 +114,11 @@ public class AdminUsersActivity extends AppCompatActivity {
             }
         });
     }
-
+    /**
+     * Shows confirmation dialog before deleting a user.
+     *
+     * @param user User selected for deletion
+     */
     private void confirmDelete(User user) {
         new AlertDialog.Builder(this)
                 .setTitle("Delete User")
@@ -90,7 +127,11 @@ public class AdminUsersActivity extends AppCompatActivity {
                 .setNegativeButton("Cancel", null)
                 .show();
     }
-
+    /**
+     * Deletes a user from Firebase and refreshes the list.
+     *
+     * @param user User to be removed from Firebase
+     */
     private void deleteUser(User user) {
         firebaseManager.deleteUser(user.getUserId());
         Toast.makeText(this, "Deleted user: " + user.getName(), Toast.LENGTH_SHORT).show();

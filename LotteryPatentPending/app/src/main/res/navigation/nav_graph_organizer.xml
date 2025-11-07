@@ -1,0 +1,37 @@
+<navigation
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph_organizer"
+    app:startDestination="@id/OrganizerActivityMain">
+
+    <fragment
+        android:id="@+id/OrganizerActivityMain"
+        android:name="com.example.lotterypatentpending.OrganizerActivityFragment"
+        android:label="Organizer Menu">
+
+        <action
+            android:id="@+id/action_main_to_createEvent"
+            app:destination="@id/CreateEventFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/CreateEventFragment"
+        android:name="com.example.lotterypatentpending.CreateEventFragment"
+        android:label="Create Event" />
+
+        <action
+            android:id="@+id/action_createEvent_to_main"
+            app:destination="@id/OrganizerActivityMain" />
+
+        <action
+            android:id="@+id/action_createEvent_to_Event_View"
+            app:destination="@id/EventViewFragment"/>
+
+    <fragment
+        android:id="@+id/EventViewFragment"
+        android:name="com.example.lotterypatentpending.EventViewFragment"
+        android:label="Event View" />
+
+
+
+</navigation>
