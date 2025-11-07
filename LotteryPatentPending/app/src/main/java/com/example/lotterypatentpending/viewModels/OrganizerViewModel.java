@@ -10,9 +10,15 @@ import com.google.android.gms.tasks.Tasks;
 import java.util.List;
 
 /**
- * Holds the “publish results” logic so the Activity stays thin.
- * Returns Firebase Tasks so Activities can add success/failure listeners.
+ * Thin ViewModel wrapper exposing "publish results" as a single Task.
+ *
+ * <p>UI (Activity/Fragment) observes the task to disable buttons, show toasts,
+ * and handle errors without holding domain logic.
+ *
+ * @author Moffat
+ * @maintainer Moffat
  */
+
 public class OrganizerViewModel extends ViewModel {
 
     private final LotteryResultNotifier resultNotifier = new LotteryResultNotifier();

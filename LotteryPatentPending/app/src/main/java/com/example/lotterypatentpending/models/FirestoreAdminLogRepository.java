@@ -14,13 +14,15 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * A repository class that implements the {@link AdminLogRepository} interface
- * using Google Firestore as the data source. This class is responsible for all
- * database operations related to administrator notification logs, such as
- * recording new logs and fetching existing ones.
- * <p>
- * The Firestore structure used is: /admin/notificationsLog/records/{logId}
+ * Firestore-backed writer/reader for admin notification logs.
+ *
+ * <p>Data lives under admin/notificationsLog/records.
+ * Also exposes a realtime listener for auto-updating UIs.
+ *
+ * @author Moffat
+ * @maintainer Moffat
  */
+
 public class FirestoreAdminLogRepository implements AdminLogRepository {
 
     /** The root collection for all admin-related data. */

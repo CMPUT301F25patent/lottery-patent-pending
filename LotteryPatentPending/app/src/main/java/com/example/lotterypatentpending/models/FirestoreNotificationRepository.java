@@ -4,12 +4,16 @@ import com.google.firebase.firestore.*;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-
 /**
- * A repository for managing user notifications in Firestore.
- * This class handles adding, fetching, and updating notifications stored
- * under /users/{userId}/notifications/{notificationId}.
+ * Firestore-backed {@link NotificationRepository}.
+ *
+ * <p>Collection layout:
+ * users/{userId}/notifications/{notificationId}
+ *
+ * @author Moffat
+ * @maintainer Moffat
  */
+
 public class FirestoreNotificationRepository implements NotificationRepository {
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     /**
