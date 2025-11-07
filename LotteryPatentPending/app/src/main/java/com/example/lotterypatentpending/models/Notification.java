@@ -12,6 +12,9 @@ import java.util.List;
 /**
  * User-facing notification stored under users/{userId}/notifications/{id}.
  * Supports categories used in Entrant/Organizer stories (WIN/LOSE, WAITLIST, etc.).
+ *
+ * @author Moffat
+ * @maintainer Moffat
  */
 public class Notification implements Parcelable {
 

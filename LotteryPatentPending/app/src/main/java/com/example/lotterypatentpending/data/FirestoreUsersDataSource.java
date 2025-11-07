@@ -15,6 +15,9 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Firestore-backed implementation of {@link UserDataSource}.
  * - Entrant groups are subcollections of events/{eventId}/(...)
  * - Opt-in is read from users/{uid}.preferences.notificationsOptIn (Boolean) or users/{uid}.notificationsOptIn
+ *
+ * @author Moffat
+ * @maintainer Moffat
  */
 public class FirestoreUsersDataSource implements UserDataSource {
 

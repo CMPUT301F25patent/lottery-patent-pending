@@ -5,6 +5,17 @@ import androidx.annotation.NonNull; import androidx.recyclerview.widget.*;
 import com.example.lotterypatentpending.R; import com.example.lotterypatentpending.models.Notification;
 import java.text.SimpleDateFormat; import java.util.Locale;
 
+/**
+ * RecyclerView adapter for user notifications.
+ *
+ * <p>Highlights unread items (alpha 1f) and dims read ones (alpha ~0.55f).
+ * Clicking an item invokes the provided callback; caller typically calls
+ * {@code repo.markRead(userId, n.getId())}.
+ *
+ * @author Moffat
+ * @maintainer Moffat
+ */
+
 public class NotificationAdapter extends ListAdapter<Notification, NotificationAdapter.Holder> {
     interface OnClick { void open(Notification n); }
     private final OnClick onClick;

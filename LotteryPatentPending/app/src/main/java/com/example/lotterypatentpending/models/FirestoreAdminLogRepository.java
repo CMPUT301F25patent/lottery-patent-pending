@@ -13,6 +13,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * Firestore-backed writer/reader for admin notification logs.
+ *
+ * <p>Data lives under admin/notificationsLog/records.
+ * Also exposes a realtime listener for auto-updating UIs.
+ *
+ * @author Moffat
+ * @maintainer Moffat
+ */
+
 public class FirestoreAdminLogRepository implements AdminLogRepository {
 
     private static final String ROOT = "admin";
