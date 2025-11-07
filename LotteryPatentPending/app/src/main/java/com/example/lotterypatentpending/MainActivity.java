@@ -19,8 +19,7 @@ import com.google.firebase.auth.FirebaseUser;
 
 /**
  * Class MainActivity
- * @maintainer Erik
- * @author Erik
+ * @collaborators Erik, Michael
  */
 public class MainActivity extends AppCompatActivity implements MainRegisterNewUserFragment.OnProfileSaved {
     private FirebaseManager fm;

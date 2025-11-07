@@ -27,13 +27,11 @@ public class Event {
     private User organizer;
     private LocalDateTime regStartDate;
     private LocalDateTime regEndDate;
-    private QRCode qrCode;
     private boolean active;
 
     public Event() {
         // Required empty constructor for Firestore deserialization
     }
-
 
     /**
      * Constructor instantiates the minimal basic information for an event and sets the rest to the default
@@ -55,7 +53,6 @@ public class Event {
         this.entrants = new ArrayList<>();
         this.regStartDate = null;
         this.regEndDate = null;
-        this.qrCode = new QRCode(this.id);
         this.active = false;
         this.waitingListCapacity = -1;
     }
@@ -146,14 +143,6 @@ public class Event {
 
     public void setOrganizer(User organizer) {
         this.organizer = organizer;
-    }
-
-    public QRCode getQrCode() {
-        return qrCode;
-    }
-
-    public void setQrCode(QRCode qrCode) {
-        this.qrCode = qrCode;
     }
 
     public int getWaitingListCapacity() {
