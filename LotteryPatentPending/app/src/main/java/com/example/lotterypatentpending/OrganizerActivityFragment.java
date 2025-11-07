@@ -28,11 +28,6 @@ public class OrganizerActivityFragment extends Fragment {
 
     public void onViewCreated(@NonNull View v, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(v, savedInstanceState);
-//        ViewCompat.setOnApplyWindowInsetsListener(v.findViewById(R.id.main), (view, insets) -> {
-//            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-//            view.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-//            return insets;
-//        });
         create_event = v.findViewById(R.id.create_event);
         view_events = v.findViewById(R.id.view_events);
         home_button = v.findViewById(R.id.homeButton);

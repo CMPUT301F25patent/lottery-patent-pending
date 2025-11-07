@@ -39,6 +39,14 @@ public class WaitingList {
         }
     }
 
+    public ArrayList<Pair<User, WaitingListState>> getList() {
+        return list;
+    }
+
+    public void setList(ArrayList<Pair<User, WaitingListState>> list) {
+        this.list = list;
+    }
+
     public void removeEntrant(User entrant) {
         boolean removed = false;
         for (int i = 0; i < this.list.size(); i++) {
@@ -62,6 +70,14 @@ public class WaitingList {
             }
         }
         return in;
+    }
+
+    public int getCapacity() {
+        return capacity;
+    }
+
+    public void setCapacity(int capacity) {
+        this.capacity = capacity;
     }
 
     /**

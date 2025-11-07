@@ -2,6 +2,8 @@ package com.example.lotterypatentpending.models;
 
 import android.os.Build;
 import android.util.Log;
+import android.util.Pair;
+import android.widget.Toast;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -89,6 +91,37 @@ public class FirebaseManager {
                 .addOnFailureListener(e -> System.err.println("Error deleting user: " + e.getMessage()));
     }
 
+    public void addEventToDB(Event event){
+        Map <String, Object> eventMap = eventToMap(event);
+        db.collection("events").document(event.getId()).set(eventMap)
+                .addOnSuccessListener(aVoid -> {
+                    Log.d("FIREBASE", "Event saved successfully");
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("FIREBASE", "Failed to save event", e);
+                });
+    };
+
+    public void deleteEventFromDB(Event event){
+        CollectionReference eventsRef = db.collection("Events");
+        DocumentReference eventDocRef = eventsRef.document(event.getId());
+        eventDocRef.delete();
+    };
+
+//    public void updateEventInDB(Event event){
+//        CollectionReference eventsRef = db.collection("Events");
+//        DocumentReference eventDocRef = eventsRef.document(event.getId());
+//        eventDocRef.delete();
+//    };
+    private Map<String, Object> userToMap(User user) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("userId", user.getUserId());
+        map.put("name", user.getName());
+        map.put("email", user.getEmail());
+        map.put("contactInfo", user.getContactInfo());
+        map.put("isAdmin", user.isAdmin());
+        return map;
+    }
 
     // mapping event objects to firestore
     private Map<String, Object> eventToMap(Event event) {
@@ -99,29 +132,60 @@ public class FirebaseManager {
         data.put("description", event.getDescription());
         data.put("capacity", event.getCapacity());
         data.put("location", event.getLocation());
+        data.put("qrCode", event.getQrCode() != null
+                ? event.getQrCode().toPayload()
+                : null);
 
-        // Dates & times as strings
-        data.put("date_time", event.getDate() != null ? event.getDate().toString() : null);
-//        data.put("time", event.getTime() != null ? event.getTime().toString() : null);
-        data.put("regStartDate", event.getRegStartDate() != null ? event.getRegStartDate().toString() : null);
-//        data.put("regStartTime", event.getRegStartTime() != null ? event.getRegStartTime().toString() : null);
-        data.put("regEndDate", event.getRegEndDate() != null ? event.getRegEndDate().toString() : null);
-//        data.put("regEndTime", event.getRegEndTime() != null ? event.getRegEndTime().toString() : null);
+        data.put("waitingListCapacity", event.getWaitingListCapacity());
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy hh:mm a");
+
+            // Dates & times as strings
+            data.put("event_date", event.getDate() != null
+                    ? event.getDate().format(formatter)
+                : null);
+
+            data.put("regStartDate", event.getRegStartDate() != null
+                    ? event.getRegStartDate().format(formatter)
+                    : null);
+
+            data.put("regEndDate", event.getRegEndDate() != null
+                    ? event.getRegEndDate().format(formatter)
+                    : null);
+        }
+
 
         // Organizer is just a User
+//        if (event.getOrganizer() != null) {
+//            Map<String, Object> organizerMap = new HashMap<>();
+//            organizerMap.put("userId", event.getOrganizer().getUserId());
+//            organizerMap.put("name", event.getOrganizer().getName());
+//            organizerMap.put("email", event.getOrganizer().getEmail());
+//            organizerMap.put("contactInfo", event.getOrganizer().getContactInfo());
+//            organizerMap.put("isAdmin", event.getOrganizer().isAdmin());
+//            data.put("organizer", organizerMap);
+//        } else {
+//            data.put("organizer", null);
+//        }
+        // Organizer is just a User
         if (event.getOrganizer() != null) {
-            Map<String, Object> organizerMap = new HashMap<>();
-            organizerMap.put("userId", event.getOrganizer().getUserId());
-            organizerMap.put("name", event.getOrganizer().getName());
-            organizerMap.put("email", event.getOrganizer().getEmail());
-            organizerMap.put("contactInfo", event.getOrganizer().getContactInfo());
-            organizerMap.put("isAdmin", event.getOrganizer().isAdmin());
-            data.put("organizer", organizerMap);
+            data.put("organizer", event.getOrganizer().getUserId());
         } else {
             data.put("organizer", null);
         }
 
+        // Entrants
+        List<String> entrantsList = new ArrayList<>();
+        for (User u : event.getEntrants()) {
+            entrantsList.add(u.getUserId());
+        }
+        data.put("entrants", entrantsList);
+
+        data.put("waitingList", serializeWaitingList(event.getWaitingList().getList()));
+
         return data;
+
     }
 
 
@@ -205,6 +269,38 @@ public class FirebaseManager {
 
         return event;
     }
+
+    public List<Map<String, Object>> serializeWaitingList(List<Pair<User, WaitingListState>> list) {
+        List<Map<String, Object>> out = new ArrayList<>();
+
+        for (Pair<User, WaitingListState> entry : list) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("uid", entry.first.getUserId());
+            map.put("state", entry.second.name()); // store enum as string
+            out.add(map);
+        }
+
+        return out;
+    }
+
+//    public List<Pair<User, WaitingListState>> deserializeWaitingList(
+//            List<Map<String, Object>> storedList,
+//            UserEventRepository userRepo // however you load users
+//    ) {
+//        List<Pair<User, WaitingListState>> out = new ArrayList<>();
+//
+//        for (Map<String, Object> map : storedList) {
+//            String uid = (String) map.get("uid");
+//            String stateName = (String) map.get("state");
+//
+//            User user = userRepo.getInstance().getUser(); // however you fetch users
+//            WaitingListState state = WaitingListState.valueOf(stateName);
+//
+//            out.add(new Pair<>(user, state));
+//        }
+//
+//        return out;
+//    }
 
 
 

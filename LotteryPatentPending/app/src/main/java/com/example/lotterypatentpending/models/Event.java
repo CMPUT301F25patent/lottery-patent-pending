@@ -28,7 +28,6 @@ public class Event {
     private LocalDateTime regStartDate;
     private LocalDateTime regEndDate;
     private QRCode qrCode;
-    private QRGenerator qrGenerator;
     private boolean active;
 
     public Event() {
@@ -60,15 +59,6 @@ public class Event {
         this.active = false;
         this.waitingListCapacity = -1;
     }
-
-
-//    public Event(String title, String description, LocalDate date, LocalTime time, int capacity, User organizer, String location){
-//        this(title, description, capacity, organizer);
-//        this.date = date;
-//        this.time = time;
-//        this.capacity = capacity;
-//        this.location = location;
-//    }
 
     public String getTitle() {
         return title;
@@ -172,9 +162,14 @@ public class Event {
 
     public void setWaitingListCapacity(int waitingListCapacity) {
         this.waitingListCapacity = waitingListCapacity;
+        waitingList.setCapacity(waitingListCapacity);
     }
 
     public boolean isActive(){
+        if(regStartDate == null && regEndDate == null){
+            active = false;
+        }
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
         }
@@ -184,7 +179,15 @@ public class Event {
             now = LocalDateTime.now();
         }
 
-        active = now.isAfter(regStartDate) && now.isBefore(regEndDate);
+        boolean afterStart = (regStartDate != null) && now.isAfter(regStartDate);
+        boolean beforeEnd = (regEndDate != null) && now.isBefore(regEndDate);
+
+        if(regStartDate != null && regEndDate != null){
+            active = afterStart && beforeEnd;
+        }else{
+            active = afterStart || beforeEnd;
+        }
+
         return active;
     }
 

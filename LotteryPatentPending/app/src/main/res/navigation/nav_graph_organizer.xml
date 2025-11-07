@@ -23,4 +23,15 @@
             android:id="@+id/action_createEvent_to_main"
             app:destination="@id/OrganizerActivityMain" />
 
+        <action
+            android:id="@+id/action_createEvent_to_Event_View"
+            app:destination="@id/EventViewFragment"/>
+
+    <fragment
+        android:id="@+id/EventViewFragment"
+        android:name="com.example.lotterypatentpending.EventViewFragment"
+        android:label="Event View" />
+
+
+
 </navigation>
