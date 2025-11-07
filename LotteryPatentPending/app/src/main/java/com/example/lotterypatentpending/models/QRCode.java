@@ -13,8 +13,6 @@ public class QRCode {
     //Helpful for identifying if QRCode is ours
     private static final String PREFIX = "EVT:";
 
-
-
     //this will be the event name not including EVT:
     private String eventId;
 
