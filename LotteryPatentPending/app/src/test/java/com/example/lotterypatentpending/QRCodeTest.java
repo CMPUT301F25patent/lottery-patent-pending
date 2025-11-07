@@ -23,11 +23,11 @@ public class QRCodeTest {
     }
 
     @Test
-    public void testQRFromPayload(){
-        QRCode qrcode = new QRCode(event);
-        String payload = qrcode.toContent();
-        assertTrue(payload.equals(eventPayload));
-        assertFalse(payload.equals(event));
+    public void testFromPayload(){
+        QRCode qrcode1 = new QRCode(event);
+        QRCode qrcode2 = QRCode.fromContent(eventPayload);
+
+        assertEquals(qrcode2.getEventId(), qrcode1.getEventId());
     }
 
     @Test

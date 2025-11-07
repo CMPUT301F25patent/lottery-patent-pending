@@ -22,8 +22,8 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * Class AttendeeActivity
- * @maintainer Erik
  * @author Erik
+ * @contributor
  */
 
 public class AttendeeProfileFragment extends Fragment {

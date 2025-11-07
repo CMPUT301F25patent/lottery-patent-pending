@@ -1,6 +1,7 @@
 package com.example.lotterypatentpending;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -24,8 +25,9 @@ import com.google.firebase.firestore.ListenerRegistration;
 
 /**
  * Class AttendeeActivity
- * @maintainer Erik
  * @author Erik
+ * @contributor  Erik, Michael
+ *
  */
 
 public class AttendeeActivity extends AppCompatActivity {
@@ -128,6 +130,7 @@ public class AttendeeActivity extends AppCompatActivity {
 
         ImageView icon = actionView.findViewById(R.id.inboxIcon);
         TextView badge  = actionView.findViewById(R.id.badgeText);
+
 
         // open inbox on tap
         actionView.setOnClickListener(v -> onOptionsItemSelected(inboxItem));

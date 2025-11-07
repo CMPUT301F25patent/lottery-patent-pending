@@ -20,9 +20,10 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 /**
- * The create user fragment that appears and adds new user to DB
- * @maintainer Erik
+ * Class Fragment for a new user to register
  * @author Erik
+ * @contributor  Erik, Michael
+ *   The create user fragment that appears and adds new user to DB
  */
 public class MainRegisterNewUserFragment extends Fragment {
     public interface OnProfileSaved { void onProfileSaved(); }
@@ -56,7 +57,6 @@ public class MainRegisterNewUserFragment extends Fragment {
         boolean ok = true;
         if (TextUtils.isEmpty(name))  { nameEt.setError("Required");  ok = false; }
         if (TextUtils.isEmpty(email)) { emailEt.setError("Required"); ok = false; }
-        if (TextUtils.isEmpty(phone)) { phoneEt.setError("Required"); ok = false; }
         if (!ok) return;
 
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();

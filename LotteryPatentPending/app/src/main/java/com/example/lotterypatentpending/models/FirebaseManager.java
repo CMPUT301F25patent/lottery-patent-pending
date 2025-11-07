@@ -132,9 +132,6 @@ public class FirebaseManager {
         data.put("description", event.getDescription());
         data.put("capacity", event.getCapacity());
         data.put("location", event.getLocation());
-        data.put("qrCode", event.getQrCode() != null
-                ? event.getQrCode().toContent()
-                : null);
 
         data.put("waitingListCapacity", event.getWaitingListCapacity());
 

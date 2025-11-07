@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -19,7 +20,10 @@ import android.view.ViewGroup;
 
 import com.budiyev.android.codescanner.CodeScanner;
 import com.budiyev.android.codescanner.CodeScannerView;
+import com.example.lotterypatentpending.models.Event;
+import com.example.lotterypatentpending.models.FirebaseManager;
 import com.example.lotterypatentpending.models.QRCode;
+import com.example.lotterypatentpending.models.UserEventRepository;
 
 /**
  * Class QRScannerFragment
@@ -80,8 +84,24 @@ public class AttendeeQRScannerFragment extends Fragment {
                     codeScanner.releaseResources();
                     codeScanner = null;
                 }
-
                 Toast.makeText(requireContext(), "QR scanned", Toast.LENGTH_SHORT).show();
+
+                //get instances of firebase
+                FirebaseManager fm = FirebaseManager.getInstance();
+
+                fm.getEvent(eventId, new FirebaseManager.FirebaseCallback<Event>() {
+                    @Override
+                    public void onSuccess(Event result) {
+                        UserEventRepository.getInstance().setEvent(result);
+
+                    }
+
+                    @Override
+                    public void onFailure(Exception e) {
+                        Log.e("EventLoad","Failed to load EVENT", e);
+                    }
+                });
+
                 //create the fragment with eventId
                 Fragment f = new AttendeeEventDetailsFragment();
                 // Launches new fragment
