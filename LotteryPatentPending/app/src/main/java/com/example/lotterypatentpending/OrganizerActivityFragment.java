@@ -65,6 +65,11 @@ public class OrganizerActivityFragment extends Fragment {
                     .navigate(R.id.action_main_to_createEvent);
         });
 
+        view_events.setOnClickListener(view -> {
+            NavHostFragment.findNavController(OrganizerActivityFragment.this)
+                    .navigate(R.id.action_main_to_viewEventsList);
+        });
+
         home_button.setOnClickListener(view -> {
             requireActivity().finish();
         });
