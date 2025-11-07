@@ -1,58 +1,84 @@
 package com.example.lotterypatentpending.models;
 
-
-import android.graphics.Bitmap;
-
 /**
- * Class to represent a QR code
- * @maintainer Erik
+ * Small value class for event QR codes.
+ * A QRCode wraps an event ID and knows how to turn it into (and back from)
+ * the string format we store in a QR image.
+ *
+ * Format used: "EVT:" followed by the event ID.
+ *
  * @author Erik
  */
 public class QRCode {
 
-    //Helpful for identifying if QRCode is ours
+    /**
+     * Prefix used to mark QR codes that belong to this app's events.
+     */
     private static final String PREFIX = "EVT:";
 
-
-
-    //this will be the event name not including EVT:
+    /**
+     * The event ID represented by this QR code (without the prefix).
+     */
     private String eventId;
 
     /**
-     * @param eventId Event ID associated with QRCode
+     * Creates a new QRCode for the given event ID.
+     *
+     * @param eventId the event ID to associate with this QR code; must be non-null and not just whitespace
+     * @throws IllegalArgumentException if eventId is null, empty, or only whitespace
      */
-    public QRCode(String eventId){
-        if (eventId == null || eventId.trim().isEmpty())
+    public QRCode(String eventId) {
+        if (eventId == null || eventId.trim().isEmpty()) {
             throw new IllegalArgumentException("eventId required");
-        this.eventId = eventId;
-    }
-
-    public String getEventId(){
-        return this.eventId;
-    }
-
-    public void setEventId(String eventId){
+        }
         this.eventId = eventId;
     }
 
     /**
-     * String to embed inside the QR code
-     * Easier for QR code to indentify which QR belongs to events
+     * Returns the event ID stored in this QR code.
+     *
+     * @return the event ID (without the prefix)
      */
+    public String getEventId() {
+        return this.eventId;
+    }
 
-    public String toContent(){
+    /**
+     * Updates the event ID stored in this QR code.
+     *
+     * @param eventId the new event ID
+     */
+    public void setEventId(String eventId) {
+        this.eventId = eventId;
+    }
+
+    /**
+     * Builds the string that will actually be encoded into the QR code.
+     * This is just the prefix followed by the event ID.
+     *
+     * @return a payload string like "EVT:12345"
+     */
+    public String toContent() {
         return PREFIX + eventId;
     }
 
     /**
-     * Checks if our prefix in QRCode
+     * Tries to create a QRCode from a payload string.
+     * The string must start with the prefix ("EVT:") and have a non-empty
+     * ID afterwards. If it does not match that format, this returns null.
+     *
+     * @param s the payload string, usually something produced by toContent()
+     * @return a QRCode with the parsed event ID, or null if the string is invalid
      */
-    public static QRCode fromContent(String s){
-        if ( s == null || !s.startsWith(PREFIX) ) return null;
+    public static QRCode fromContent(String s) {
+        if (s == null || !s.startsWith(PREFIX)) {
+            return null;
+        }
 
-        //removes the substring
         String id = s.substring(PREFIX.length()).trim();
-        if (id.isEmpty()) return null;
+        if (id.isEmpty()) {
+            return null;
+        }
         return new QRCode(id);
     }
 }

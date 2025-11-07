@@ -1,6 +1,7 @@
 package com.example.lotterypatentpending;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -26,6 +27,7 @@ import com.google.firebase.firestore.ListenerRegistration;
 
 
 /**
+ * Class AttendeeActivity
  * AttendeeActivity hosts the main UI for users attending events.
  * Provides navigation between event browsing, profile management,
  * and QR scanning tabs. Also displays notification inbox count.
@@ -33,8 +35,9 @@ import com.google.firebase.firestore.ListenerRegistration;
  * This activity is shown after a user successfully logs in and
  * has registered their profile.
  *
- * @maintainer Erik
  * @author Erik
+ * @contributor  Erik, Michael
+ *
  */
 public class AttendeeActivity extends AppCompatActivity {
     /** Repository holding current logged-in user and event state. */
@@ -169,6 +172,7 @@ public class AttendeeActivity extends AppCompatActivity {
 
         ImageView icon = actionView.findViewById(R.id.inboxIcon);
         TextView badge  = actionView.findViewById(R.id.badgeText);
+
 
         // open inbox on tap
         actionView.setOnClickListener(v -> onOptionsItemSelected(inboxItem));
