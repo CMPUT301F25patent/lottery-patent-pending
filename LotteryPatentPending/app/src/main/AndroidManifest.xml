@@ -42,6 +42,8 @@
             android:exported="false"/>
         <activity android:name=".AdminEventsActivity"
             android:exported="false" />
+        <activity android:name=".NotificationAdminActivity"
+            android:exported="false"/>
 
     </application>
 
