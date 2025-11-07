@@ -70,7 +70,7 @@ public class AttendeeQRScannerFragment extends Fragment {
             launched = true;
 
             String text = result.getText();              // e.g., "EVT:abc123"
-            QRCode qr = QRCode.fromPayload(text);       // -> QRCode or null
+            QRCode qr = QRCode.fromContent(text);       // -> QRCode or null
 
             if (qr != null) {
                 String eventId = qr.getEventId();
