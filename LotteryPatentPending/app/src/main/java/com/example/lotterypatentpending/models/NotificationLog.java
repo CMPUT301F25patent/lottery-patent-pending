@@ -6,6 +6,29 @@ import com.example.lotterypatentpending.models.Notification.Category;
 import com.google.firebase.firestore.ServerTimestamp;
 import java.util.*;
 
+/**
+ * Audit record for admin: one row per organizer send.
+ *
+ * <p>Stored at: admin/notificationsLog/records/{autoId}. Captures the
+ * intent of a fan-out operation (who sent what to which list), without
+ * duplicating the entire Notification documents.
+ *
+ * <ul>
+ *   <li><b>organizerId</b> - sender uid</li>
+ *   <li><b>eventId</b> - event in context</li>
+ *   <li><b>category</b> - semantic bucket (WAITLIST, SELECTED, CHOSEN_SIGNUP, etc.)</li>
+ *   <li><b>recipientIds</b> - final opted-in recipients</li>
+ *   <li><b>payloadPreview</b> - first 100 chars of message body</li>
+ *   <li><b>createdAt</b> - server timestamp for sorting</li>
+ * </ul>
+ *
+ * @author Moffat
+ * @maintainer Moffat
+ *
+ * <p>Parcelable for convenient bundling if needed.
+ */
+
+
 public class NotificationLog implements Parcelable {
     private String organizerId = "";
     private String eventId = "";
