@@ -3,11 +3,7 @@ package com.example.lotterypatentpending.models;
 import android.os.Build;
 import android.util.Log;
 import android.util.Pair;
-import android.widget.Toast;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -20,10 +16,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import com.example.lotterypatentpending.exceptions.UserNotFoundException;
-import com.example.lotterypatentpending.models.Event;
-import com.example.lotterypatentpending.models.Notification;
-import com.example.lotterypatentpending.models.User;
-import com.example.lotterypatentpending.models.WaitingListState;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -31,9 +23,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.example.lotterypatentpending.models.FirebaseManager.FirebaseCallback;
+import com.google.firebase.firestore.SetOptions;
 
 public class FirebaseManager {
     // --- Firebase Instances ---
@@ -137,6 +127,7 @@ public class FirebaseManager {
                 : null);
 
         data.put("waitingListCapacity", event.getWaitingListCapacity());
+        data.put("geolocationRequired", event.isGeolocationRequired());
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy hh:mm a");
@@ -176,16 +167,36 @@ public class FirebaseManager {
         }
 
         // Entrants
-        List<String> entrantsList = new ArrayList<>();
-        for (User u : event.getEntrants()) {
-            entrantsList.add(u.getUserId());
+        List<String> selectedEntrants = new ArrayList<>();
+        for (User u : event.getSelectedEntrants()) {
+            selectedEntrants.add(u.getUserId());
         }
-        data.put("entrants", entrantsList);
+        data.put("selectedEntrants", selectedEntrants);
 
         data.put("waitingList", serializeWaitingList(event.getWaitingList().getList()));
 
         return data;
 
+    }
+
+    /**
+     *
+     * @param field_name field that will be updated
+     * @param event event to be updated
+     * @param updated_value field value. Make sure this is a firestore compatible type
+     * @param <T> generic
+     */
+    public <T> void updateEventField(String field_name, Event event, T updated_value){
+        Map<String, Object> update = new HashMap<>();
+        update.put(field_name, updated_value);
+
+        db.collection("events")
+                .document(event.getId()) // adjust if your ID name differs
+                .set(update, SetOptions.merge())
+                .addOnSuccessListener(a ->
+                        Log.d("DEBUG_FIRESTORE_SUCCESS", "Update success"))
+                .addOnFailureListener(e ->
+                        Log.e("DEBUG_FIRESTORE_FAIL", "Update FAILED", e));
     }
 
 

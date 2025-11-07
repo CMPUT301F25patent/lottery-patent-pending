@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -27,6 +28,7 @@ public class EventViewFragment extends Fragment {
     private Button generateQRCode;
     private ImageButton backButton;
     private ImageButton homeButton;
+    private CheckBox geoLocationReq;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -46,16 +48,32 @@ public class EventViewFragment extends Fragment {
         qrView = v.findViewById(R.id.qrImage);
         backButton = v.findViewById(R.id.backButton);
         homeButton = v.findViewById(R.id.homeButton);
+        geoLocationReq = v.findViewById(R.id.geoCheck);
 
         EventViewModel viewModel = new ViewModelProvider(requireActivity()).get(EventViewModel.class);
         viewModel.getEvent().observe(getViewLifecycleOwner(), event -> {
             eventTitle.setText(event.getTitle());
             eventDescr.setText(event.getDescription());
-            String maxEntrantsText = "Max. number of entrants: " + event.getCapacity();
-            String waitListText = "Waiting list capacity: " + event.getCapacity();
+            String maxEntrantsText = "Event Capacity: " + event.getCapacity();
+            int wlCap = event.getWaitingListCapacity();
+            String waitListText = "Waiting List Capacity: ";
+
+            if(wlCap == -1){
+                waitListText += "N/A";
+            }else{
+                waitListText += + event.getWaitingListCapacity();
+            }
+
             maxEntrants.setText(maxEntrantsText);
             waitListCap.setText(waitListText);
             eventId = event.getId();
+
+            geoLocationReq.setChecked(event.isGeolocationRequired());
+
+        });
+
+        geoLocationReq.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            viewModel.updateGeoRequired(isChecked);
         });
 
         generateQRCode.setOnClickListener(view ->{

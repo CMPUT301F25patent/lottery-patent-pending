@@ -23,12 +23,13 @@ public class Event {
     private int waitingListCapacity;
     private String location;
     private WaitingList waitingList;
-    private List<User> entrants;
+    private List<User> selectedEntrants;
     private User organizer;
     private LocalDateTime regStartDate;
     private LocalDateTime regEndDate;
     private QRCode qrCode;
     private boolean active;
+    private boolean geolocationRequired;
 
     public Event() {
         // Required empty constructor for Firestore deserialization
@@ -52,12 +53,13 @@ public class Event {
         this.date = null;
         this.location = null;
         this.waitingList = new WaitingList();
-        this.entrants = new ArrayList<>();
+        this.selectedEntrants = new ArrayList<>();
         this.regStartDate = null;
         this.regEndDate = null;
         this.qrCode = new QRCode(this.id);
         this.active = false;
         this.waitingListCapacity = -1;
+        this.geolocationRequired = false;
     }
 
     public String getTitle() {
@@ -132,12 +134,12 @@ public class Event {
         this.waitingList = waitingList;
     }
 
-    public List<User> getEntrants() {
-        return entrants;
+    public List<User> getSelectedEntrants() {
+        return selectedEntrants;
     }
 
-    public void setEntrants(List<User> entrants) {
-        this.entrants = entrants;
+    public void setSelectedEntrants(List<User> selectedEntrants) {
+        this.selectedEntrants = selectedEntrants;
     }
 
     public User getOrganizer() {
@@ -163,6 +165,14 @@ public class Event {
     public void setWaitingListCapacity(int waitingListCapacity) {
         this.waitingListCapacity = waitingListCapacity;
         waitingList.setCapacity(waitingListCapacity);
+    }
+
+    public boolean isGeolocationRequired() {
+        return geolocationRequired;
+    }
+
+    public void setGeolocationRequired(boolean geolocationRequired) {
+        this.geolocationRequired = geolocationRequired;
     }
 
     public boolean isActive(){
@@ -201,15 +211,17 @@ public class Event {
 
 
    /**
-     * logic to add a user/entrant to the event lottery or the waiting list
-     * @param entrant
+     * logic to add an entrant to waiting list
+     * @param entrant entrant to join lottery
     * */
     public void joinEvent(User entrant){
-       if(entrants.size() < capacity){
-           entrants.add(entrant);
-        }else{
-            addToWaitingList(entrant);
-        }
+       if(waitingListCapacity != -1){
+           if(waitingList.getList().size() < waitingListCapacity && !inWaitingList(entrant)){
+               waitingList.addEntrant(entrant);
+           }
+       }else{
+           waitingList.addEntrant(entrant);
+       }
     }
     public boolean inWaitingList(User entrant) {
         return this.waitingList.checkEntrant(entrant);
