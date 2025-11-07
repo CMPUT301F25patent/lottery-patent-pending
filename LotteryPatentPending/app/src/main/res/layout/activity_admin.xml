@@ -19,34 +19,62 @@
 
     <TextView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textSize="40sp"
-        android:text="Welcome Admin"
-        android:textColor="@color/white"
+        android:layout_height="411dp"
         android:gravity="center|top"
         android:paddingTop="40dp"
         android:paddingBottom="300dp"
-        />
+        android:text="Welcome Admin"
+        android:textColor="@color/white"
+        android:textSize="40sp" />
 
 
     <Button
-        android:id="@+id/btnBrowseUsers"
+        android:id="@+id/btnImages"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Browse Users"
-        android:textColor="@color/black"
         android:backgroundTint="@color/white_grey"
-        android:layout_marginBottom="16dp"
+        android:text="Images"
+        android:textColor="@color/black"
         android:textSize="18sp" />
 
     <Button
         android:id="@+id/btnBrowseEvents"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textColor="@color/black"
         android:backgroundTint="@color/white_grey"
         android:text="Browse Events"
+        android:textColor="@color/black"
         android:textSize="18sp" />
+
+    <Button
+        android:id="@+id/btnBrowseUsers"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:backgroundTint="@color/white_grey"
+        android:text="Browse Users"
+        android:textColor="@color/black"
+        android:textSize="18sp" />
+
+    <Button
+        android:id="@+id/btnLog"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:backgroundTint="@color/white_grey"
+        android:text="Notification Log"
+        android:textColor="@color/black"
+        android:textSize="18sp" />
+
+    <Button
+        android:id="@+id/btnRemoveOrganizers"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:backgroundTint="@color/white_grey"
+        android:text="Remove Organizer"
+        android:textColor="@color/black"
+        android:textSize="18sp" />
+
 
     <ImageButton
         android:id="@+id/homeButton"
