@@ -5,7 +5,14 @@ import com.example.lotterypatentpending.models.*;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-//Sends a single WIN/LOSE notification and logs it for admins.
+/**
+ * Sends a single WIN/LOSE notification for one entrant and logs the action.
+ *
+ * <p>Used during lottery publication when you need per-user confirmation.
+ *
+ * @author Moffat
+ * @maintainer Moffat
+ */
 public class EntrantResultNotifier {
     private final NotificationRepository notifications;
     private final AdminLogRepository logs;

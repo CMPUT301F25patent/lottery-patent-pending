@@ -4,6 +4,16 @@ import com.google.firebase.firestore.*;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * Firestore-backed {@link NotificationRepository}.
+ *
+ * <p>Collection layout:
+ * users/{userId}/notifications/{notificationId}
+ *
+ * @author Moffat
+ * @maintainer Moffat
+ */
+
 public class FirestoreNotificationRepository implements NotificationRepository {
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
 
