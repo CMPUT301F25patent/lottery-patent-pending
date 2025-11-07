@@ -24,9 +24,21 @@ import com.example.lotterypatentpending.viewModels.OrganizerViewModel;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 
+/**
+ * Activity used by event organizers to manage notifications for lottery results,
+ * waitlisted users, selected participants, and cancelled events.
+ * <p>
+ * Handles UI initialization, edge-to-edge setup, and provides helper methods
+ * for sending notifications to specific groups of users via OrganizerNotifier
+ * and LotteryResultNotifier.
+ * </p>
+ */
 public class OrganizerActivity extends AppCompatActivity {
     private OrganizerNotifier organizerNotifier;
     private OrganizerViewModel organizerVm;
+    // Call this when the organizer clicks "Send" to a hand-picked set of users.
+    private final LotteryResultNotifier resultNotifier = new LotteryResultNotifier();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,9 +58,15 @@ public class OrganizerActivity extends AppCompatActivity {
 
 
     }
-    // Call this when the organizer clicks "Send" to a hand-picked set of users.
-    private final LotteryResultNotifier resultNotifier = new LotteryResultNotifier();
 
+    /**
+     * Sends a message to a hand-picked list of users.
+     *
+     * @param organizerId      UID of the organizer sending the notification.
+     * @param eventId          ID of the event.
+     * @param selectedUserIds  List of user IDs to notify.
+     * @param eventTitle       Title of the event (used in message content).
+     */
     private void sendMessageToSelectedUsers(String organizerId,
                                             String eventId,
                                             java.util.List<String> selectedUserIds,
@@ -62,6 +80,14 @@ public class OrganizerActivity extends AppCompatActivity {
                 });
     }
 
+    /**
+     * Notifies all waitlisted users for a given event.
+     *
+     * @param organizerId UID of the organizer sending notifications.
+     * @param eventId     Event ID.
+     * @param title       Title of the notification.
+     * @param body        Body content of the notification.
+     */
     private void notifyAllWaitlist(String organizerId, String eventId, String title, String body) {
         organizerNotifier.notifyAllWaitlist(organizerId, eventId, title, body)
                 .thenAccept(ids -> runOnUiThread(() ->
@@ -73,6 +99,14 @@ public class OrganizerActivity extends AppCompatActivity {
                 });
     }
 
+    /**
+     * Notifies all selected users for a given event.
+     *
+     * @param organizerId UID of the organizer sending notifications.
+     * @param eventId     Event ID.
+     * @param title       Title of the notification.
+     * @param body        Body content of the notification.
+     */
     private void notifyAllSelected(String organizerId, String eventId, String title, String body) {
         organizerNotifier.notifyAllSelected(organizerId, eventId, title, body)
                 .thenAccept(ids -> runOnUiThread(() ->
@@ -84,6 +118,14 @@ public class OrganizerActivity extends AppCompatActivity {
                 });
     }
 
+    /**
+     * Notifies all cancelled participants for a given event.
+     *
+     * @param organizerId UID of the organizer sending notifications.
+     * @param eventId     Event ID.
+     * @param title       Title of the notification.
+     * @param body        Body content of the notification.
+     */
     private void notifyAllCancelled(String organizerId, String eventId, String title, String body) {
         organizerNotifier.notifyAllCancelled(organizerId, eventId, title, body)
                 .thenAccept(ids -> runOnUiThread(() ->
@@ -101,6 +143,12 @@ public class OrganizerActivity extends AppCompatActivity {
      * It notifies winners AND losers and shows one "done" toast
      * when both tasks complete. If you only want winners (or only losers),
      * see the helpers below.
+     *
+     * Publishes lottery results with notifications for both winners and losers.
+     * <p>
+     * Sends notifications for winners, calculates losers from the pool, and notifies them.
+     * Shows a single Toast message when both tasks complete.
+     * </p>
      *
      * @param organizerId current organizer's uid
      * @param eventId     event document id

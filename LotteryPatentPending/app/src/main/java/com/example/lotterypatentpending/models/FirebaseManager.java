@@ -1,3 +1,31 @@
+/**
+ * -----------------------------------------------------------------------------
+ * FILE: FirebaseManager.java
+ * PROJECT: Lottery Patent Pending
+ * -----------------------------------------------------------------------------
+ * PURPOSE:
+ *   The FirebaseManager class centralizes all interactions with Firebase
+ *   Firestore and Authentication services. It provides a clean interface
+ *   for creating, reading, updating, and deleting user and event data.
+ *   This class abstracts away Firestore-specific syntax and ensures that
+ *   the rest of the application interacts with Firebase through consistent
+ *   callback patterns.
+ *
+ * DESIGN ROLE / PATTERN:
+ *   Acts as a Singleton service layer that mediates between the UI (activities)
+ *   and the Firestore database (Model). It encapsulates database logic and
+ *   implements the Repository design pattern.
+ *
+ * OUTSTANDING ISSUES / LIMITATIONS:
+ *   - Firestore security rules currently restrict reads for unauthenticated users.
+ *   - Some asynchronous error cases (e.g., network disconnect) may not
+ *     propagate up to UI properly.
+ *
+ * AUTHOR: Ritvik Das
+ * CONTRIBUTORS:
+ * -----------------------------------------------------------------------------
+ */
+
 package com.example.lotterypatentpending.models;
 
 import android.os.Build;
@@ -34,6 +62,18 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.example.lotterypatentpending.models.FirebaseManager.FirebaseCallback;
+import com.google.firebase.firestore.SetOptions;
+
+
+/**
+ * The {@code FirebaseManager} class acts as a unified data service layer for
+ * Firebase Firestore operations. It handles CRUD operations for {@link User},
+ * {@link Event}, and {@link Notification} objects, providing callback-based
+ * methods for asynchronous data access.
+ *
+ * <p>This class follows the Singleton design pattern to ensure that a single
+ * instance manages all database interactions throughout the app lifecycle.</p>
+ */
 
 public class FirebaseManager {
     // --- Firebase Instances ---
@@ -43,6 +83,12 @@ public class FirebaseManager {
     private FirebaseManager() {
         db = FirebaseFirestore.getInstance();
     }
+
+    /**
+     * Retrieves the singleton instance of the {@code FirebaseManager}.
+     *
+     * @return the shared {@code FirebaseManager} instance.
+     */
 
     public static FirebaseManager getInstance() {
         if (instance == null) {
@@ -54,12 +100,23 @@ public class FirebaseManager {
     // generic user methods, will be updated when user class is looked at
 
     //utilizes user  class, add update, delete and get methods added
+
+    /**
+     * Adds or updates a {@link User} record in Firestore.
+     *
+     * @param user the {@link User} object to store or update.
+     */
     public void addOrUpdateUser(User user) {
         db.collection("users").document(user.getUserId()).set(user)
                 .addOnSuccessListener(aVoid -> System.out.println("User saved successfully: " + user.getUserId()))
                 .addOnFailureListener(e -> System.err.println("Error saving user: " + e.getMessage()));
     }
-
+    /**
+     * Retrieves a single {@link User} document by its ID.
+     *
+     * @param userId   the Firestore document ID of the user.
+     * @param callback a callback to handle success or failure.
+     */
     public void getUser(String userId, FirebaseCallback<User> callback) {
         db.collection("users").document(userId).get()
                 .addOnSuccessListener(documentSnapshot -> {
@@ -79,18 +136,34 @@ public class FirebaseManager {
                 })
                 .addOnFailureListener(callback::onFailure);
     }
+
+    /**
+     * Fetches all user documents in the {@code users} collection.
+     *
+     * @param callback callback triggered with a {@link QuerySnapshot} result or error.
+     */
     public void getAllUsers(FirebaseCallback<QuerySnapshot> callback) {
         db.collection("users").get()
                 .addOnSuccessListener(callback::onSuccess)
                 .addOnFailureListener(callback::onFailure);
     }
 
+    /**
+     * Deletes a user from the Firestore database.
+     *
+     * @param userId Firestore document ID of the user.
+     */
+
     public void deleteUser(String userId) {
         db.collection("users").document(userId).delete()
                 .addOnSuccessListener(aVoid -> System.out.println("User deleted successfully: " + userId))
                 .addOnFailureListener(e -> System.err.println("Error deleting user: " + e.getMessage()));
     }
-
+    /**
+     * Adds or updates an event document in Firestore.
+     *
+     * @param event   The {@link Event} object to save.
+     */
     public void addEventToDB(Event event){
         Map <String, Object> eventMap = eventToMap(event);
         db.collection("events").document(event.getId()).set(eventMap)
@@ -132,11 +205,9 @@ public class FirebaseManager {
         data.put("description", event.getDescription());
         data.put("capacity", event.getCapacity());
         data.put("location", event.getLocation());
-        data.put("qrCode", event.getQrCode() != null
-                ? event.getQrCode().toContent()
-                : null);
 
         data.put("waitingListCapacity", event.getWaitingListCapacity());
+        data.put("geolocationRequired", event.isGeolocationRequired());
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy hh:mm a");
@@ -176,16 +247,36 @@ public class FirebaseManager {
         }
 
         // Entrants
-        List<String> entrantsList = new ArrayList<>();
-        for (User u : event.getEntrants()) {
-            entrantsList.add(u.getUserId());
+        List<String> selectedEntrants = new ArrayList<>();
+        for (User u : event.getSelectedEntrants()) {
+            selectedEntrants.add(u.getUserId());
         }
-        data.put("entrants", entrantsList);
+        data.put("selectedEntrants", selectedEntrants);
 
         data.put("waitingList", serializeWaitingList(event.getWaitingList().getList()));
 
         return data;
 
+    }
+
+    /**
+     *
+     * @param field_name field that will be updated
+     * @param event event to be updated
+     * @param updated_value field value. Make sure this is a firestore compatible type
+     * @param <T> generic
+     */
+    public <T> void updateEventField(String field_name, Event event, T updated_value){
+        Map<String, Object> update = new HashMap<>();
+        update.put(field_name, updated_value);
+
+        db.collection("events")
+                .document(event.getId()) // adjust if your ID name differs
+                .set(update, SetOptions.merge())
+                .addOnSuccessListener(a ->
+                        Log.d("DEBUG_FIRESTORE_SUCCESS", "Update success"))
+                .addOnFailureListener(e ->
+                        Log.e("DEBUG_FIRESTORE_FAIL", "Update FAILED", e));
     }
 
 
@@ -316,7 +407,12 @@ public class FirebaseManager {
                 .addOnFailureListener(e ->
                         Log.e("FirebaseManager", "Error saving event: " + e.getMessage()));
     }
-
+    /**
+     * Retrieves a single event by its ID.
+     *
+     * @param eventId  Firestore document ID.
+     * @param callback Callback that returns the event or an error.
+     */
     public void getEvent(String eventId, FirebaseCallback<Event> callback) {
         db.collection("events").document(eventId).get()
                 .addOnSuccessListener(snapshot -> {
@@ -334,6 +430,12 @@ public class FirebaseManager {
                 })
                 .addOnFailureListener(callback::onFailure);
     }
+
+    /**
+     * Retrieves all events from the Firestore {@code events} collection.
+     *
+     * @param callback Callback that returns a list of all events or an error.
+     */
 
     public void getAllEvents(FirebaseCallback<ArrayList<Event>> callback) {
         db.collection("events").get()
@@ -357,7 +459,11 @@ public class FirebaseManager {
                 });
     }
 
-
+    /**
+     * Deletes an event document by ID.
+     *
+     * @param eventId the Firestore document ID of the event to delete.
+     */
     public void deleteEvent(String eventId) {
         db.collection("events")
                 .document(eventId)
@@ -368,7 +474,13 @@ public class FirebaseManager {
                         Log.e("FirebaseManager", "Error deleting event: " + e.getMessage()));
     }
 
-
+    /**
+     * Adds an entrant to an event’s waiting list.
+     *
+     * @param entrant the {@link User} to add.
+     * @param state   the entrant’s {@link WaitingListState}.
+     * @param eventId the associated event ID.
+     */
     public void addEntrantToWaitingList(User entrant, WaitingListState state, String eventId) {
         Map<String, Object> data = new HashMap<>();
         data.put("userId", entrant.getUserId());
@@ -387,6 +499,14 @@ public class FirebaseManager {
     }
 
     // Updates an entrant’s waiting list state (e.g., SELECTED, ACCEPTED, DECLINED).
+
+    /**
+     * Updates an entrant’s waiting list state.
+     *
+     * @param eventId   event document ID.
+     * @param entrantId entrant’s user ID.
+     * @param newState  new {@link WaitingListState} to set.
+     */
     public void updateEntrantState(String eventId, String entrantId, WaitingListState newState) {
         db.collection("events")
                 .document(eventId)
@@ -400,6 +520,13 @@ public class FirebaseManager {
     }
 
     //Retrieves all entrants in a given event’s waiting list.
+
+    /**
+     * Retrieves all entrants for a given event’s waiting list.
+     *
+     * @param eventId  Firestore document ID for the event.
+     * @param callback callback with {@link QuerySnapshot} or error.
+     */
     public void getWaitingList(String eventId, FirebaseCallback<QuerySnapshot> callback) {
         db.collection("events")
                 .document(eventId)
@@ -410,7 +537,12 @@ public class FirebaseManager {
     }
 
     //Removes an entrant from the waiting list.
-
+    /**
+     * Removes a user from a waiting list.
+     *
+     * @param eventId   event document ID.
+     * @param entrantId user ID of the entrant to remove.
+     */
     public void removeEntrantFromWaitingList(String eventId, String entrantId) {
         db.collection("events")
                 .document(eventId)
@@ -443,6 +575,12 @@ public class FirebaseManager {
 
 
     // generic notification add, will updated after looking at notification class
+
+    /**
+     * Logs a {@link Notification} object to Firestore.
+     *
+     * @param notification the notification object to record.
+     */
     public void logNotification(Notification notification) {
         // If the notification already has an ID, reuse it; otherwise Firestore generates one.
         DocumentReference docRef;
@@ -464,7 +602,11 @@ public class FirebaseManager {
                 .addOnFailureListener(e ->
                         Log.e("FirebaseManager", "Error logging notification: " + e.getMessage()));
     }
-
+    /**
+     * Retrieves all notifications from Firestore.
+     *
+     * @param callback callback that returns a list of {@link Notification} objects.
+     */
     public void getAllNotifications(FirebaseCallback<List<Notification>> callback) {
         db.collection("notifications")
                 .orderBy("createdAt") // optional if stored as a Timestamp
@@ -492,6 +634,12 @@ public class FirebaseManager {
 
 
     // for listeners
+
+    /**
+     * Callback interface used by all FirebaseManager asynchronous methods.
+     *
+     * @param <T> type of object returned on success.
+     */
     public interface FirebaseCallback<T> {
         void onSuccess(T result);
         void onFailure(Exception e);

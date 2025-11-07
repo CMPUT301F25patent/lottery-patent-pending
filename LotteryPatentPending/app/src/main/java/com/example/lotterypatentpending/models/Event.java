@@ -10,9 +10,18 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Class model for Events
- * @maintainer Ebuka
+ * Represents an Event in the system.
+ * <p>
+ * Holds all information related to an event, including title, description, date, capacity,
+ * location, organizer, waiting list, selected entrants, and registration periods.
+ * </p>
+ * <p>
+ * Provides utility methods to manage waiting list entries, check event activity status,
+ * and handle geolocation requirements.
+ * </p>
+ *
  * @author Ebuka
+ * @maintainer Ebuka
  */
 public class Event {
     private String id;
@@ -23,25 +32,27 @@ public class Event {
     private int waitingListCapacity;
     private String location;
     private WaitingList waitingList;
-    private List<User> entrants;
+    private List<User> selectedEntrants;
     private User organizer;
     private LocalDateTime regStartDate;
     private LocalDateTime regEndDate;
-    private QRCode qrCode;
     private boolean active;
+    private boolean geolocationRequired;
 
     public Event() {
         // Required empty constructor for Firestore deserialization
     }
 
-
     /**
-     * Constructor instantiates the minimal basic information for an event and sets the rest to the default
-     * You can then set the other variables with the setter functions for better efficiency
-     * @param title title of event
-     * @param description event description
-     * @param capacity event capacity
-     * @param organizer organizer of the event
+     * Constructs an Event with minimal information.
+     * <p>
+     * Other attributes can be set later via setter methods.
+     * </p>
+     *
+     * @param title       Title of the event
+     * @param description Description of the event
+     * @param capacity    Maximum participants allowed
+     * @param organizer   Organizer of the event
      */
     public Event(String title, String description, int capacity, User organizer){
         this.id = UUID.randomUUID().toString();
@@ -52,119 +63,157 @@ public class Event {
         this.date = null;
         this.location = null;
         this.waitingList = new WaitingList();
-        this.entrants = new ArrayList<>();
+        this.selectedEntrants = new ArrayList<>();
         this.regStartDate = null;
         this.regEndDate = null;
-        this.qrCode = new QRCode(this.id);
         this.active = false;
         this.waitingListCapacity = -1;
+        this.geolocationRequired = false;
     }
 
+    /** @return the title of the event */
     public String getTitle() {
         return title;
     }
 
+    /** @param title Sets the event title */
     public void setTitle(String title) {
         this.title = title;
     }
 
+    /** @return the event description */
     public String getDescription() {
         return description;
     }
 
+    /** @param description Sets the event description */
     public void setDescription(String description) {
         this.description = description;
     }
 
+    /** @return the date and time of the event */
     public LocalDateTime getDate() {
         return date;
     }
 
+    /** @param date Sets the event date */
     public void setDate(LocalDateTime date) {
         this.date = date;
     }
 
+    /** @return the maximum number of participants */
     public int getCapacity() {
         return capacity;
     }
 
+    /** @param capacity Sets the event capacity */
     public void setCapacity(int capacity) {
         this.capacity = capacity;
     }
 
+    /** @return the event location */
     public String getLocation() {
         return location;
     }
 
+    /** @param location Sets the event location */
     public void setLocation(String location) {
         this.location = location;
     }
 
+    /** @return the registration start date */
     public LocalDateTime getRegStartDate() {
         return regStartDate;
     }
 
+    /** @param regStartDate Sets the registration start date */
     public void setRegStartDate(LocalDateTime regStartDate) {
         this.regStartDate = regStartDate;
     }
 
+    /** @return the registration end date */
     public LocalDateTime getRegEndDate() {
         return regEndDate;
     }
 
+    /** @param regEndDate Sets the registration end date */
     public void setRegEndDate(LocalDateTime regEndDate) {
         this.regEndDate = regEndDate;
     }
 
+    /** @return the unique event ID */
     public String getId() {
         return id;
     }
 
+    /** @param id Sets the event ID */
     public void setId(String id) {
         this.id = id;
     }
 
+    /** @return the WaitingList associated with the event */
     public WaitingList getWaitingList() {
         return waitingList;
     }
 
+    /** @param waitingList Sets the event waiting list */
     public void setWaitingList(WaitingList waitingList) {
         this.waitingList = waitingList;
     }
 
-    public List<User> getEntrants() {
-        return entrants;
+    /** @return list of selected entrants */
+    public List<User> getSelectedEntrants() {
+        return selectedEntrants;
     }
 
-    public void setEntrants(List<User> entrants) {
-        this.entrants = entrants;
+    /** @param selectedEntrants Sets the selected entrants list */
+    public void setSelectedEntrants(List<User> selectedEntrants) {
+        this.selectedEntrants = selectedEntrants;
     }
 
+    /** @return the event organizer */
     public User getOrganizer() {
         return organizer;
     }
 
+    /** @param organizer Sets the event organizer */
     public void setOrganizer(User organizer) {
         this.organizer = organizer;
     }
 
-    public QRCode getQrCode() {
-        return qrCode;
-    }
-
-    public void setQrCode(QRCode qrCode) {
-        this.qrCode = qrCode;
-    }
-
+    /** @return the waiting list capacity */
     public int getWaitingListCapacity() {
         return waitingListCapacity;
     }
 
+    /** Sets waiting list capacity and updates the internal WaitingList object
+     * @param waitingListCapacity Maximum number of waiting list participants
+     */
     public void setWaitingListCapacity(int waitingListCapacity) {
         this.waitingListCapacity = waitingListCapacity;
         waitingList.setCapacity(waitingListCapacity);
     }
 
+    /** @return true if geolocation is required */
+    public boolean isGeolocationRequired() {
+        return geolocationRequired;
+    }
+
+    /** @param geolocationRequired Sets whether geolocation is required */
+    public void setGeolocationRequired(boolean geolocationRequired) {
+        this.geolocationRequired = geolocationRequired;
+    }
+
+
+    /**
+     * Determines if the event is currently active based on registration dates.
+     * <p>
+     * If both registration start and end dates are null, returns false.
+     * Otherwise, returns true if current time falls within registration period.
+     * </p>
+     *
+     * @return true if event is active, false otherwise
+     */
     public boolean isActive(){
         if(regStartDate == null && regEndDate == null){
             active = false;
@@ -191,26 +240,51 @@ public class Event {
         return active;
     }
 
+
+    /**
+     * Adds a user to the waiting list.
+     *
+     * @param entrant User to add to the waiting list
+     */
     public void addToWaitingList(User entrant){
         waitingList.addEntrant(entrant);
     }
 
+    /**
+     * Removes a user from the waiting list.
+     *
+     * @param entrant User to remove from the waiting list
+     */
     public void removeFromWaitingList(User entrant){
         waitingList.removeEntrant(entrant);
     }
 
 
-   /**
-     * logic to add a user/entrant to the event lottery or the waiting list
-     * @param entrant
-    * */
+    /**
+     * Adds a user to the event's waiting list based on waiting list capacity (if there is a set capacity).
+     * <p>
+     * Checks if waiting list capacity is not exceeded and if the user
+     * is not already in the list.
+     * </p>
+     *
+     * @param entrant User joining the event
+     */
     public void joinEvent(User entrant){
-       if(entrants.size() < capacity){
-           entrants.add(entrant);
-        }else{
-            addToWaitingList(entrant);
-        }
+       if(waitingListCapacity != -1){
+           if(waitingList.getList().size() < waitingListCapacity && !inWaitingList(entrant)){
+               waitingList.addEntrant(entrant);
+           }
+       }else{
+           waitingList.addEntrant(entrant);
+       }
     }
+
+    /**
+     * Checks if a user is already in the waiting list.
+     *
+     * @param entrant User to check
+     * @return true if user is in waiting list, false otherwise
+     */
     public boolean inWaitingList(User entrant) {
         return this.waitingList.checkEntrant(entrant);
     }

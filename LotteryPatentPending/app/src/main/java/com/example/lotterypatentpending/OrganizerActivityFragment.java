@@ -12,6 +12,17 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
 
+/**
+ * Fragment that serves as the main organizer dashboard.
+ * <p>
+ * Provides buttons for creating events, viewing events, and navigating back to the home screen.
+ * </p>
+ * <p>
+ * This fragment is typically hosted within the OrganizerActivity.
+ * </p>
+ *
+ * @author Ebuka
+ */
 public class OrganizerActivityFragment extends Fragment {
 
     Button create_event;
@@ -19,6 +30,14 @@ public class OrganizerActivityFragment extends Fragment {
 //    Button back_button;
     ImageButton home_button;
 
+    /**
+     * Inflates the fragment layout.
+     *
+     * @param inflater           LayoutInflater object
+     * @param container          Parent view that the fragment's UI should attach to
+     * @param savedInstanceState Bundle containing saved state
+     * @return the root view of the fragment layout
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -26,6 +45,15 @@ public class OrganizerActivityFragment extends Fragment {
 
     }
 
+    /**
+     * Called immediately after the view is created.
+     * <p>
+     * Initializes buttons and sets up click listeners for navigation and finishing the activity.
+     * </p>
+     *
+     * @param v                  The view returned by onCreateView
+     * @param savedInstanceState Bundle containing saved state
+     */
     public void onViewCreated(@NonNull View v, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(v, savedInstanceState);
         create_event = v.findViewById(R.id.create_event);

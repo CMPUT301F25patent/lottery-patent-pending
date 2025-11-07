@@ -21,12 +21,12 @@ import org.jspecify.annotations.Nullable;
 
 
 /**
+ * Class AttendeeActivity
+ * @author Erik
+ * @contributor
  * Fragment for displaying and updating a logged-in attendee's profile.
  * Allows a user to update their name, email, and contact information, toggle notification preferences,
  * and delete their account.
- *
- * @author Erik
- * @maintainer Erik
  */
 
 public class AttendeeProfileFragment extends Fragment {
