@@ -1,3 +1,24 @@
+/**
+ * -----------------------------------------------------------------------------
+ * FILE: AdminUsersActivity.java
+ * PROJECT: Lottery Patent Pending
+ * -----------------------------------------------------------------------------
+ * PURPOSE:
+ *   Displays a list of registered users to the administrator and allows
+ *   for user deletion
+ *
+ * DESIGN ROLE / PATTERN:
+ *   Acts as the View-Controller component in the MVC pattern.
+ *   It fetches data through FirebaseManager (Model) and populates the UI.
+ *
+ * OUTSTANDING ISSUES / LIMITATIONS:
+ *   - Deletion currently relies on user ID matching to Firestore document IDs.
+ *
+ * AUTHOR: Ritvik Das
+ * CONTRIBUTORS:
+ * -----------------------------------------------------------------------------
+ */
+
 package com.example.lotterypatentpending;
 
 import android.app.AlertDialog;
@@ -19,6 +40,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * The {@code AdminUsersActivity} class provides administrators with an
+ * interface to browse and manage registered users. It retrieves user data
+ * from Firestore using {@link FirebaseManager} and displays it in a ListView.
+ * Administrators can also delete users directly from this screen.
+ */
+
 public class AdminUsersActivity extends AppCompatActivity {
 
     private FirebaseManager firebaseManager;
@@ -26,6 +54,13 @@ public class AdminUsersActivity extends AppCompatActivity {
     private ArrayAdapter<String> adapter;
     private List<User> userList = new ArrayList<>();
     private List<String> userDisplayList = new ArrayList<>();
+
+    /**
+     * Initializes the admin user management screen and sets up event listeners
+     * for back navigation and user deletion.
+     *
+     * @param savedInstanceState previously saved state of the activity, if any.
+     */
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,7 +94,9 @@ public class AdminUsersActivity extends AppCompatActivity {
         });
     }
 
-
+    /**
+     * Fetches all user data from Firestore via {@link FirebaseManager} and updates the list view.
+     */
     private void loadUsersFromFirebase() {
         firebaseManager.getAllUsers(new FirebaseManager.FirebaseCallback<QuerySnapshot>() {
             @Override
@@ -97,7 +134,11 @@ public class AdminUsersActivity extends AppCompatActivity {
                 .setNegativeButton("Cancel", null)
                 .show();
     }
-
+    /**
+     * Deletes a user both from Firestore and the on-screen list.
+     *
+     * @param user the {@link User} to delete.
+     */
     private void deleteUser(User user) {
         firebaseManager.deleteUser(user.getUserId());
         Toast.makeText(this, "Deleted user: " + user.getName(), Toast.LENGTH_SHORT).show();

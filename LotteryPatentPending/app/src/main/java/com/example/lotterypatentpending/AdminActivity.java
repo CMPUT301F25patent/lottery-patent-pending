@@ -1,3 +1,32 @@
+/**
+ * -----------------------------------------------------------------------------
+ * FILE: AdminActivity.java
+ * PROJECT: Lottery Patent Pending
+ * -----------------------------------------------------------------------------
+ * PURPOSE:
+ *   Acts as the main control panel for administrators. This activity provides
+ *   access to administrative functions such as browsing and managing users
+ *   and events. It serves as a gateway to other admin-specific screens.
+ *
+ * DESIGN ROLE / PATTERN:
+ *   - Serves as a Controller in the MVC pattern, mediating between user input
+ *     (UI buttons) and navigation to management activities.
+ *   - Utilizes the Singleton instance of FirebaseManager for database operations,
+ *     though this activity primarily handles navigation and access control.
+ *
+ * OUTSTANDING ISSUES / LIMITATIONS:
+ *   - Currently uses a hardcoded admin user for testing; session-based user
+ *     authentication should replace this in production.
+ *   - No verification mechanism yet to ensure admin privileges persist across
+ *     activity transitions.
+ *   - Home button only finishes the activity instead of returning to a true
+ *     “home” screen.
+ *
+ * AUTHOR: Ritvik Das
+ * COLLABORATORS:
+ * -----------------------------------------------------------------------------
+ */
+
 package com.example.lotterypatentpending;
 
 import android.content.Intent;
@@ -16,11 +45,22 @@ import androidx.core.view.WindowInsetsCompat;
 import com.example.lotterypatentpending.models.FirebaseManager;
 import com.example.lotterypatentpending.models.User;
 
+/**
+ * The {@code AdminActivity} class represents the main administrator dashboard.
+ * It allows an admin user to navigate to user management and event management
+ * screens. Access to these functions is restricted to users with admin privileges.
+ */
+
 public class AdminActivity extends AppCompatActivity {
 
     private FirebaseManager firebaseManager;
     private User currentUser;
-
+    /**
+     * Initializes the admin dashboard screen.
+     * Sets up UI elements, Firebase access, and button listeners for navigation.
+     *
+     * @param savedInstanceState Saved state from a previous instance (if any).
+     */
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

@@ -1,3 +1,25 @@
+/**
+ * -----------------------------------------------------------------------------
+ * FILE: AdminEventsActivity.java
+ * PROJECT: Lottery Patent Pending
+ * -----------------------------------------------------------------------------
+ * PURPOSE:
+ *   Allows administrators to view, delete, and manage events stored in Firebase.
+ *   Fetches event data through FirebaseManager and displays them in a ListView.
+ *
+ * DESIGN ROLE / PATTERN:
+ *   Acts as the View-Controller for event management, delegating data operations
+ *   to FirebaseManager while handling user interactions.
+ *
+ * OUTSTANDING ISSUES / LIMITATIONS:
+ *   - Event deletion depends on Firestore document ID synchronization.
+ *   - No inline event editing implemented yet.
+ *
+ * AUTHOR: Ritvik Das
+ * COLLABORATORS:
+ * -----------------------------------------------------------------------------
+ */
+
 package com.example.lotterypatentpending;
 
 import android.app.AlertDialog;
@@ -20,7 +42,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-
+/**
+ * The {@code AdminEventsActivity} class allows administrators to browse and
+ * manage all events in the system. Events are loaded from Firestore using
+ * {@link FirebaseManager} and displayed in a {@link ListView}. Admins can
+ * remove events directly from this interface.
+ */
 public class AdminEventsActivity extends AppCompatActivity {
 
     private FirebaseManager firebaseManager;
@@ -28,7 +55,11 @@ public class AdminEventsActivity extends AppCompatActivity {
     private ArrayAdapter<String> adapter;
     private List<Event> eventList = new ArrayList<>();
     private List<String> eventDisplayList = new ArrayList<>();
-
+    /**
+     * Initializes the event management screen and sets up the back button and event list.
+     *
+     * @param savedInstanceState previously saved state of the activity, if any.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -62,7 +93,11 @@ public class AdminEventsActivity extends AppCompatActivity {
     }
 
 
-
+    /**
+     * Deletes an event from Firestore and updates the list view.
+     *
+     * @param event the {@link Event} to delete.
+     */
     private void removeEvent(Event event) {
                     FirebaseManager.getInstance().deleteEvent(event.getId());
                     Toast.makeText(this, "Deleted event: " + event.getTitle(), Toast.LENGTH_SHORT).show();
@@ -74,6 +109,10 @@ public class AdminEventsActivity extends AppCompatActivity {
 
 
 
+    /**
+     * Loads all events from Firestore and updates the {@link ListView}.
+     * On success, refreshes the local event list and notifies the adapter.
+     */
     private void loadEventsFromFirebase() {
         firebaseManager.getAllEvents(new FirebaseManager.FirebaseCallback<ArrayList<Event>>() {
             @Override
