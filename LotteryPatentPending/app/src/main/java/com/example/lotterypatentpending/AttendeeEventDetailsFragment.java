@@ -12,19 +12,32 @@ import androidx.fragment.app.Fragment;
 import com.example.lotterypatentpending.models.Event;
 import com.example.lotterypatentpending.models.FirebaseManager;
 import com.example.lotterypatentpending.models.User;
-import com.example.lotterypatentpending.models.UserEventRepository;
+import com.example.lotterypatentpending.viewModels.UserEventRepository;
 import com.example.lotterypatentpending.models.WaitingListState;
 
 import java.util.Objects;
 
+/**
+ * Fragment that displays details for a selected event from the attendee view.
+ * Users can join or leave the event's waiting list from this screen.
+ *
+ * This fragment is typically shown when an attendee taps on an event in the event list.
+ */
 public class AttendeeEventDetailsFragment extends Fragment {
     private UserEventRepository userEventRepo;
     private FirebaseManager fm;
-
+    /**
+     * Default constructor that inflates the event details layout for attendees.
+     */
     public AttendeeEventDetailsFragment() {
         super(R.layout.fragment_attendee_event_details);
     }
-
+    /**
+     * Initializes UI components and wires up button actions for joining/leaving an event.
+     *
+     * @param view the fragment UI view
+     * @param savedInstanceState previous state, if any
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -48,7 +61,10 @@ public class AttendeeEventDetailsFragment extends Fragment {
             this.leaveEventHelper();
         });
     }
-
+    /**
+     * Clears the stored event when the fragment view is destroyed
+     * to prevent stale event data when navigating back.
+     */
     @Override
     public void onDestroyView() {
         super.onDestroyView();
@@ -57,7 +73,12 @@ public class AttendeeEventDetailsFragment extends Fragment {
             userEventRepo.setEvent(null);
         }
     }
-
+    /**
+     * Adds the current user to the selected event's waiting list
+     * and updates local + Firestore state.
+     *
+     * @return true if the joining operation succeeded, false otherwise
+     */
     private boolean joinEventHelper() {
         User currentUser = userEventRepo.getUser().getValue();
         Event currentEvent = userEventRepo.getEvent().getValue();
@@ -78,7 +99,12 @@ public class AttendeeEventDetailsFragment extends Fragment {
             return false;
         }
     }
-
+    /**
+     * Removes the current user from the selected event's waiting list
+     * and updates local + Firestore state.
+     *
+     * @return true if the leave operation succeeded, false otherwise
+     */
     private boolean leaveEventHelper() {
         User currentUser = userEventRepo.getUser().getValue();
         Event currentEvent = userEventRepo.getEvent().getValue();

@@ -2,8 +2,12 @@ package com.example.lotterypatentpending.models;
 
 import android.os.Build;
 import android.util.Log;
-import android.util.Pair;
+import androidx.core.util.Pair;
+import android.widget.Toast;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -16,6 +20,10 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import com.example.lotterypatentpending.exceptions.UserNotFoundException;
+import com.example.lotterypatentpending.models.Event;
+import com.example.lotterypatentpending.models.Notification;
+import com.example.lotterypatentpending.models.User;
+import com.example.lotterypatentpending.models.WaitingListState;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -23,7 +31,11 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.example.lotterypatentpending.models.FirebaseManager.FirebaseCallback;
 import com.google.firebase.firestore.SetOptions;
+
 
 public class FirebaseManager {
     // --- Firebase Instances ---
@@ -122,9 +134,6 @@ public class FirebaseManager {
         data.put("description", event.getDescription());
         data.put("capacity", event.getCapacity());
         data.put("location", event.getLocation());
-        data.put("qrCode", event.getQrCode() != null
-                ? event.getQrCode().toContent()
-                : null);
 
         data.put("waitingListCapacity", event.getWaitingListCapacity());
         data.put("geolocationRequired", event.isGeolocationRequired());

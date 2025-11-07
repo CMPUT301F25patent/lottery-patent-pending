@@ -16,22 +16,43 @@ import android.widget.ListView;
 
 import com.example.lotterypatentpending.models.Event;
 import com.example.lotterypatentpending.models.FirebaseManager;
-import com.example.lotterypatentpending.models.UserEventRepository;
+import com.example.lotterypatentpending.viewModels.UserEventRepository;
 
 import java.util.ArrayList;
 
-
+/**
+ * Fragment that displays a list of events available to attendees.
+ * Allows searching, browsing, and selecting an event to view details.
+ *
+ * This fragment is the default landing screen for attendees, showing
+ * available events fetched from Firebase.
+ */
 public class AttendeeEventsFragment extends Fragment {
     private UserEventRepository userEventRepo;
     private FirebaseManager fm;
-    private ArrayList<Event> allEventsList; // holds all events
-    private ArrayList<Event> shownEventsList; // holds events to be shown on screen
+    /** List containing all events fetched from Firestore. */
+    private ArrayList<Event> allEventsList;
+
+    /** List containing events currently shown in the UI (may be filtered). */
+    private ArrayList<Event> shownEventsList;
+
+    /** Adapter backing the event ListView. */
     private ArrayAdapter<Event> eventsListAdapter;
 
+    /**
+     * Default constructor inflating the attendee events list layout.
+     */
     public AttendeeEventsFragment() {
         super(R.layout.fragment_attendee_events);
     }
 
+    /**
+     * Initializes the event list UI, fetches events from Firestore,
+     * and sets up handlers for search and event selection.
+     *
+     * @param view the fragment view
+     * @param savedInstanceState saved state, if any
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -86,7 +107,12 @@ public class AttendeeEventsFragment extends Fragment {
 
 
     }
-
+    /**
+     * Filters events based on the user search query.
+     * (Method stub — implementation pending)
+     *
+     * @param query the text search query
+     */
     private void performSearch(String query) {
 
     }

@@ -1,6 +1,6 @@
 package com.example.lotterypatentpending.models;
 
-import android.util.Pair;
+import androidx.core.util.Pair;
 
 import com.google.android.gms.tasks.Task;
 
@@ -8,6 +8,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * LotterySystem is the collection of functions used to randomly select certain entrants from a list of entrants.
+ *
+ * @author Michael Gao
+ * @maintainer Michael Gao
+ */
 public class LotterySystem {
     /**
      * Selects random entrants by shuffling the list and picking the first n entrants, then sorting the list
@@ -23,6 +29,14 @@ public class LotterySystem {
         }
     }
 
+    /**
+     * Sends notifications for lottery results
+     * @param organizerId
+     * @param eventId
+     * @param eventTitle
+     * @param allEntrantIds
+     * @param winnerIds
+     */
     private void notifyLotteryResults(String organizerId,
                                       String eventId,
                                       String eventTitle,

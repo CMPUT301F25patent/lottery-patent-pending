@@ -7,6 +7,8 @@ android {
     namespace = "com.example.lotterypatentpending"
     compileSdk = 36
 
+
+
     defaultConfig {
         applicationId = "com.example.lotterypatentpending"
         minSdk = 24
@@ -34,7 +36,14 @@ android {
     buildFeatures {
         viewBinding = true
     }
+
+    testOptions {
+        unitTests.all {
+            it.useJUnitPlatform()
+        }
+    }
 }
+
 
 dependencies {
     // Use cataloged (no duplicate hard-coded Material)
@@ -46,8 +55,11 @@ dependencies {
     implementation(libs.lifecycle.viewmodel.ktx)
     implementation(libs.navigation.fragment)
     implementation(libs.navigation.ui)
+    implementation(libs.androidx.junit)
 
-    testImplementation(libs.junit)
+
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.0")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.11.0")
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
 

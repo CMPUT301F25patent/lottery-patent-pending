@@ -6,16 +6,28 @@ import androidx.lifecycle.MutableLiveData;
 import com.example.lotterypatentpending.models.Event;
 import com.example.lotterypatentpending.models.User;
 
+/**
+ * A global singleton for holding the user's current session, and an event so it's easier to get the current event a user is looking at
+ *
+ * @author Michael Gao
+ * @maintainer Michael Gao
+ */
 public class UserEventRepository {
-    public static User getUser;
     private static UserEventRepository instance;
     private final MutableLiveData<User> user = new MutableLiveData<>();
     private final MutableLiveData<Event> event = new MutableLiveData<>();
 
+    /**
+     * Empty constructor, used for getInstance()
+     */
     private UserEventRepository() {
 
     }
 
+    /**
+     * Returns a singleton of UserEventRepository
+     * @return UserEventRepository singleton
+     */
     public static synchronized UserEventRepository getInstance() {
         if (instance == null) {
             instance = new UserEventRepository();
@@ -23,32 +35,36 @@ public class UserEventRepository {
         return instance;
     }
 
+    /**
+     * Sets global user
+     * @param user
+     */
     public void setUser(User user) {
         this.user.setValue(user);
     }
 
+    /**
+     * Gets global user
+     * @return
+     */
     public LiveData<User> getUser() {
         return this.user;
     }
 
+    /**
+     * Sets global event
+     * @param event
+     */
     public void setEvent(Event event) {
         this.event.setValue(event);
     }
 
+    /**
+     * Gets global event
+     * @return
+     */
     public LiveData<Event> getEvent() {
         return this.event;
     }
 
-    public void joinEvent() {
-        User currentUser = user.getValue();
-        Event currentEvent = event.getValue();
-
-        if (currentUser != null && currentEvent != null) {
-            currentEvent.addToWaitingList(currentUser);
-            currentUser.addJoinedEvent(currentEvent.getId());
-
-            user.setValue(currentUser);
-            event.setValue(currentEvent);
-        }
-    }
 }
