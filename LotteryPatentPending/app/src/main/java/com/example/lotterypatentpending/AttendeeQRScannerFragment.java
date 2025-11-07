@@ -23,7 +23,7 @@ import com.budiyev.android.codescanner.CodeScannerView;
 import com.example.lotterypatentpending.models.Event;
 import com.example.lotterypatentpending.models.FirebaseManager;
 import com.example.lotterypatentpending.models.QRCode;
-import com.example.lotterypatentpending.models.UserEventRepository;
+import com.example.lotterypatentpending.viewModels.UserEventRepository;
 
 /**
  * Class QRScannerFragment

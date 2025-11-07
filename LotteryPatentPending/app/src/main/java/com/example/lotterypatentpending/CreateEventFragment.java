@@ -13,12 +13,13 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.NavOptions;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.example.lotterypatentpending.models.Event;
 import com.example.lotterypatentpending.models.FirebaseManager;
 import com.example.lotterypatentpending.models.User;
-import com.example.lotterypatentpending.models.UserEventRepository;
+import com.example.lotterypatentpending.viewModels.UserEventRepository;
 import com.example.lotterypatentpending.viewModels.EventViewModel;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
@@ -58,8 +59,11 @@ public class CreateEventFragment extends Fragment {
         createBtn.setOnClickListener(view -> {
             createEvent();
             NavHostFragment.findNavController(CreateEventFragment.this)
-                .navigate(R.id.action_createEvent_to_Event_View);
-            });
+                .navigate(R.id.action_createEvent_to_Event_View, null,
+                        new NavOptions.Builder()
+                        .setPopUpTo(R.id.CreateEventFragment, true)
+                        .build());
+            }); // removes CreateEventFragment from stack so when back is clicked from event view doesn't go back there goes back to page beforehand
     }
 
     public void createEvent() {
