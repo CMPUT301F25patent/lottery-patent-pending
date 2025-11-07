@@ -16,7 +16,7 @@ import android.widget.ListView;
 
 import com.example.lotterypatentpending.models.Event;
 import com.example.lotterypatentpending.models.FirebaseManager;
-import com.example.lotterypatentpending.models.UserEventRepository;
+import com.example.lotterypatentpending.viewModels.UserEventRepository;
 
 import java.util.ArrayList;
 

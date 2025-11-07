@@ -12,7 +12,7 @@ import androidx.fragment.app.Fragment;
 import com.example.lotterypatentpending.models.Event;
 import com.example.lotterypatentpending.models.FirebaseManager;
 import com.example.lotterypatentpending.models.User;
-import com.example.lotterypatentpending.models.UserEventRepository;
+import com.example.lotterypatentpending.viewModels.UserEventRepository;
 import com.example.lotterypatentpending.models.WaitingListState;
 
 import java.util.Objects;

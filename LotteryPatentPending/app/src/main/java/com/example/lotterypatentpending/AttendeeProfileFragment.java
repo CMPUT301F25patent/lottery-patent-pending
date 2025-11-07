@@ -13,7 +13,7 @@ import android.widget.Toast;
 
 import com.example.lotterypatentpending.models.FirebaseManager;
 import com.example.lotterypatentpending.models.User;
-import com.example.lotterypatentpending.models.UserEventRepository;
+import com.example.lotterypatentpending.viewModels.UserEventRepository;
 
 import org.jspecify.annotations.Nullable;
 
