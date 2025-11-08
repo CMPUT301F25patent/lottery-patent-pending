@@ -23,6 +23,9 @@
             android:name=".AdminActivity"
             android:exported="false" />
         <activity
+            android:name=".User_interface.Inbox.InboxActivity"
+            android:exported="false" />
+        <activity
             android:name=".OrganizerActivity"
             android:exported="false" />
         <activity

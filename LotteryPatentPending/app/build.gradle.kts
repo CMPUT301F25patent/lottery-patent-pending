@@ -74,6 +74,8 @@ dependencies {
     implementation("com.google.zxing:core:3.5.3")
     implementation("com.github.yuriy-budiyev:code-scanner:2.3.2")
 
+
     //SwipeRefreshLayout
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
+    implementation(files("C:\\Users\\Ritvik\\AppData\\Local\\Android\\Sdk\\platforms\\android-36\\android.jar"))
 }
