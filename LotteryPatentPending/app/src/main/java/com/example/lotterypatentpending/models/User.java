@@ -1,4 +1,6 @@
 package com.example.lotterypatentpending.models;
+import com.google.firebase.firestore.Exclude;
+
 import java.util.List;
 import java.util.ArrayList;
 
@@ -22,7 +24,11 @@ public class User {
     private List<String> declinedEventIds = new ArrayList<>();
     private List<String> pastEventIds = new ArrayList<>();      // optional history
     private boolean notificationsOptIn = true;
-    private List<Event> organizedEvents = new ArrayList<Event>();
+
+
+    //Use Organized Events View Model for livedata.
+    //    private List<Event> organizedEvents = new ArrayList<Event>();
+
 
     /**
      * No-argument constructor required for Firestore object deserialization.
@@ -175,9 +181,6 @@ public class User {
      *
      * @return A List containing all events created or managed by the user.
      */
-    public List<Event> getOrganizedEvents(){
-        return organizedEvents;
-    }
 
     /**
      * Sets the list of events organized by this user.
@@ -185,33 +188,7 @@ public class User {
      *
      * @param organizedEvents The new List of events to associate with the user.
      */
-    public void setOrganizedEvents(List<Event> organizedEvents){
-        this.organizedEvents = organizedEvents;
-    }
 
-    /**
-     * Adds a single event to the list of events organized by this user.
-     *
-     * @param event The Event object to add to the user's organized event list.
-     */
-    public void addOrganizedEvent(Event event){
-        organizedEvents.add(event);
-    }
-
-    /**
-     * Creates a new Event owned by this organizer, adds it to the organizer's event list,
-     * and returns the created Event instance.
-     *
-     * @param title       The title of the event.
-     * @param description A brief description of the event.
-     * @param capacity    The maximum number of entrants allowed for the event.
-     * @return The newly created Event object.
-     */
-    public Event createEvent(String title, String description, int capacity){
-        Event newEvent = new Event(title, description, capacity, this);
-        addOrganizedEvent(newEvent);
-        return newEvent;
-    }
 
     @Override
     public String toString() {
@@ -225,7 +202,6 @@ public class User {
                 ", pastEventIds=" + pastEventIds +
                 ", notificationsOptIn=" + notificationsOptIn +
                 ", isAdmin=" + isAdmin +
-                ", organizedEvents=" + organizedEvents +
                 '}';
     }
     /**

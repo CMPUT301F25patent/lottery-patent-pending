@@ -77,5 +77,5 @@ dependencies {
 
     //SwipeRefreshLayout
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
-    implementation(files("C:\\Users\\Ritvik\\AppData\\Local\\Android\\Sdk\\platforms\\android-36\\android.jar"))
+
 }

@@ -22,7 +22,7 @@
  *     propagate up to UI properly.
  *
  * AUTHOR: Ritvik Das
- * CONTRIBUTORS:
+ * CONTRIBUTORS: Erik Bacsa
  * -----------------------------------------------------------------------------
  */
 
@@ -31,11 +31,6 @@ package com.example.lotterypatentpending.models;
 import android.os.Build;
 import android.util.Log;
 import androidx.core.util.Pair;
-import android.widget.Toast;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -48,21 +43,16 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import com.example.lotterypatentpending.exceptions.UserNotFoundException;
-import com.example.lotterypatentpending.models.Event;
-import com.example.lotterypatentpending.models.Notification;
-import com.example.lotterypatentpending.models.User;
-import com.example.lotterypatentpending.models.WaitingListState;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.example.lotterypatentpending.models.FirebaseManager.FirebaseCallback;
 import com.google.firebase.firestore.SetOptions;
+
 
 
 /**
@@ -173,13 +163,13 @@ public class FirebaseManager {
                 .addOnFailureListener(e -> {
                     Log.e("FIREBASE", "Failed to save event", e);
                 });
-    };
+    }
 
     public void deleteEventFromDB(Event event){
         CollectionReference eventsRef = db.collection("Events");
         DocumentReference eventDocRef = eventsRef.document(event.getId());
         eventDocRef.delete();
-    };
+    }
 
 //    public void updateEventInDB(Event event){
 //        CollectionReference eventsRef = db.collection("Events");
@@ -630,6 +620,30 @@ public class FirebaseManager {
                 .addOnSuccessListener(callback::onSuccess)
                 .addOnFailureListener(callback::onFailure);
     }
+
+    public void getOrganizedEventsOnce(String userId,
+                                       FirebaseCallback<ArrayList<Event>> callback) {
+        db.collection("events")
+                // IMPORTANT: match the field name used in eventToMap
+                .whereEqualTo("organizer", userId)
+                .get()
+                .addOnSuccessListener(snap -> {
+                    ArrayList<Event> events = new ArrayList<>();
+                    for (DocumentSnapshot doc : snap.getDocuments()) {
+                        Map<String, Object> data = doc.getData();
+                        if (data == null) continue;
+
+                        Event event = mapToEvent(data);
+                        if (event != null) {
+                            event.setId(doc.getId());
+                            events.add(event);
+                        }
+                    }
+                    callback.onSuccess(events);
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
+
 
 
 

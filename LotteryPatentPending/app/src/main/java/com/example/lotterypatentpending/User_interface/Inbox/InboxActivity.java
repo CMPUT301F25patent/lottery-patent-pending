@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.*;
 import com.example.lotterypatentpending.models.*;
 import com.google.firebase.auth.*;
+import com.example.lotterypatentpending.R;
 
 public class InboxActivity extends AppCompatActivity {
     private final NotificationRepository repo = new FirestoreNotificationRepository();

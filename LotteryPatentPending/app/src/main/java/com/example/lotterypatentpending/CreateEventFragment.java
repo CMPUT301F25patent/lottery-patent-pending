@@ -116,7 +116,7 @@ public class CreateEventFragment extends Fragment {
         assert current_user != null;
 
         // Create the new event
-        Event newEvent = current_user.createEvent(title, description, capacity);
+        Event newEvent = new Event(title, description, capacity, current_user);
         newEvent.setLocation(location);
         newEvent.setDate(eventDate);
         newEvent.setRegStartDate(regStartDate);

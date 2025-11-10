@@ -56,15 +56,6 @@ public class UserTest {
         assertFalse(u.getJoinedEventIds().contains("E1"));
     }
 
-    @Test
-    public void testCreateEventAddsToOrganizedEvents() {
-        User u = new User("1", "Org", "org@example.com", "123", false);
-        Event e = u.createEvent("Party", "Fun event", 10);
-
-        assertEquals(1, u.getOrganizedEvents().size());
-        assertEquals(e, u.getOrganizedEvents().get(0));
-        assertEquals("Party", e.getTitle());
-    }
 
     @Test
     public void testEqualsWithSameId() {

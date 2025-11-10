@@ -1,12 +1,69 @@
 <!-- res/layout/activity_main.xml -->
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
+
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:id="@+id/main"
-    android:background="@color/dark_grey"
-    android:gravity="center|top"
-    android:padding="16dp">
+    android:background="@color/dark_grey">
+    
+    <LinearLayout
+        android:id="@+id/main_layout"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center|top"
+        android:padding="16dp">
+        
+    
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="40sp"
+            android:text="Patent Pending"
+            android:textColor="@color/white"
+            android:gravity="center|top"
+            android:paddingTop="40dp"
+            android:paddingBottom="300dp"
+            />
+    
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="20sp"
+            android:text="Welcome to the event app."
+            android:textColor="@color/white"
+            android:gravity="center|top"
+            android:paddingBottom="50dp"
+            />
+    
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/main_button_attendee"
+            android:text="@string/attendee"
+            android:textSize="20sp"
+            android:textColor="@color/black"
+            android:layout_width="300dp"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/white_grey"/>
+    
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/main_button_organizer"
+            android:text="@string/organizer"
+            android:textSize="20sp"
+            android:textColor="@color/black"
+            android:layout_width="300dp"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/white_grey"/>
+    
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/main_button_admin"
+            android:text="@string/admin"
+            android:textSize="20sp"
+            android:textColor="@color/black"
+            android:layout_width="300dp"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/white_grey"/>
+        
+    </LinearLayout>
 
     <FrameLayout
         android:id="@+id/createUserOverlay"
@@ -15,51 +72,29 @@
         android:visibility="gone"
         />
 
-    <TextView
+    <!-- FULL-SCREEN LOADING OVERLAY -->
+    <LinearLayout
+        android:id="@+id/loading_overlay"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textSize="40sp"
-        android:text="Patent Pending"
-        android:textColor="@color/white"
-        android:gravity="center|top"
-        android:paddingTop="40dp"
-        android:paddingBottom="300dp"
-        />
+        android:layout_height="match_parent"
+        android:background="@color/dark_grey"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:visibility="gone">
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textSize="20sp"
-        android:text="Welcome to the event app."
-        android:textColor="@color/white"
-        android:gravity="center|top"
-        android:paddingBottom="50dp"
-        />
+        <ProgressBar
+            android:id="@+id/main_progress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="?android:attr/progressBarStyleLarge"
+            android:indeterminate="true" />
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/main_button_attendee"
-        android:text="@string/attendee"
-        android:textSize="20sp"
-        android:textColor="@color/black"
-        android:layout_width="300dp"
-        android:layout_height="wrap_content"
-        android:backgroundTint="@color/white_grey"/>
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/main_button_organizer"
-        android:text="@string/organizer"
-        android:textSize="20sp"
-        android:textColor="@color/black"
-        android:layout_width="300dp"
-        android:layout_height="wrap_content"
-        android:backgroundTint="@color/white_grey"/>
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/main_button_admin"
-        android:text="@string/admin"
-        android:textSize="20sp"
-        android:textColor="@color/black"
-        android:layout_width="300dp"
-        android:layout_height="wrap_content"
-        android:backgroundTint="@color/white_grey"/>
-</LinearLayout>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Loading..."
+            android:textColor="@color/white"
+            android:layout_marginTop="16dp"/>
+    </LinearLayout>
+        
+</FrameLayout>

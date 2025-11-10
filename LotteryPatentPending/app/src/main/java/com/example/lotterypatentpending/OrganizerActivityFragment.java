@@ -6,11 +6,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
+
+import com.example.lotterypatentpending.models.User;
+import com.example.lotterypatentpending.viewModels.UserEventRepository;
 
 /**
  * Fragment that serves as the main organizer dashboard.
@@ -27,8 +31,8 @@ public class OrganizerActivityFragment extends Fragment {
 
     Button create_event;
     Button view_events;
-//    Button back_button;
-    ImageButton home_button;
+    TextView greeting;
+
 
     /**
      * Inflates the fragment layout.
@@ -58,7 +62,12 @@ public class OrganizerActivityFragment extends Fragment {
         super.onViewCreated(v, savedInstanceState);
         create_event = v.findViewById(R.id.create_event);
         view_events = v.findViewById(R.id.view_events);
-        home_button = v.findViewById(R.id.homeButton);
+        greeting = v.findViewById(R.id.organizer_greeting);
+
+        User user = UserEventRepository.getInstance().getUser().getValue();
+        if (user != null) {
+            greeting.setText("Welcome, " + user.getName());
+        }
 
         create_event.setOnClickListener(view -> {
             NavHostFragment.findNavController(OrganizerActivityFragment.this)
@@ -70,8 +79,5 @@ public class OrganizerActivityFragment extends Fragment {
                     .navigate(R.id.action_main_to_viewEventsList);
         });
 
-        home_button.setOnClickListener(view -> {
-            requireActivity().finish();
-        });
     }
 }
