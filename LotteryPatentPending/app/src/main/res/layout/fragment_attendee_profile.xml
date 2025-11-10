@@ -110,5 +110,6 @@
         android:textColor="@android:color/black"
         android:backgroundTint="@color/light_red"
         android:layout_gravity="center"/>
+    
 
 </LinearLayout>

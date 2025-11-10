@@ -2,8 +2,9 @@ package com.example.lotterypatentpending.User_interface.Inbox;
 
 import android.view.*; import android.widget.TextView;
 import androidx.annotation.NonNull; import androidx.recyclerview.widget.*;
-import com.example.lotterypatentpending.R; import com.example.lotterypatentpending.models.Notification;
+import com.example.lotterypatentpending.models.Notification;
 import java.text.SimpleDateFormat; import java.util.Locale;
+import com.example.lotterypatentpending.R;
 
 /**
  * RecyclerView adapter for user notifications.

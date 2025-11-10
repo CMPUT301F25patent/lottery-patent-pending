@@ -140,12 +140,12 @@ public class AdminEventsActivity extends AppCompatActivity {
                 }
 
                 adapter.notifyDataSetChanged();
-                Log.d("BrowseEvents", "Loaded " + eventList.size() + " events.");
+                Log.d("AttendeeBrowseEvents", "Loaded " + eventList.size() + " events.");
             }
 
             @Override
             public void onFailure(Exception e) {
-                Log.e("BrowseEvents", "Error loading events: " + e.getMessage());
+                Log.e("AttendeeBrowseEvents", "Error loading events: " + e.getMessage());
             }
         });
     }

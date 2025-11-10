@@ -4,25 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/dark_grey"
+    android:background="@color/grey"
     tools:context=".OrganizerActivity">
 
-    <TextView
-        android:id="@+id/organizer_main_title"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="#1F1F1F"
-        android:gravity="center|top"
-        android:paddingTop="10sp"
-        android:paddingBottom="10sp"
-        android:text="Organizer Page"
-        android:textAlignment="center"
-        android:textColor="@color/white"
-        android:textSize="24sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:text="Organizer Page" />
 
     <TextView
         android:id="@+id/organizer_greeting"
@@ -32,9 +16,10 @@
         android:text="Hello, {Organizer_name}"
         android:textColor="@color/white"
         android:textSize="20sp"
+        android:padding="30dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/organizer_main_title" />
+    />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/create_event"
@@ -82,14 +67,4 @@
 <!--        android:layout_margin="20dp" />-->
 
 
-    <ImageButton
-        android:id="@+id/homeButton"
-        android:layout_width="70dp"
-        android:layout_height="70dp"
-        android:background="#000000"
-        android:src="@drawable/ic_home"
-        app:tint="@android:color/white"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_margin="20dp" />
 </androidx.constraintlayout.widget.ConstraintLayout>

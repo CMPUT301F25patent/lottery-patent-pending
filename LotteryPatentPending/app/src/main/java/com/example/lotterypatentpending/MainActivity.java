@@ -3,6 +3,7 @@ package com.example.lotterypatentpending;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ProgressBar;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -23,6 +24,11 @@ import com.google.firebase.auth.FirebaseUser;
  */
 public class MainActivity extends AppCompatActivity implements MainRegisterNewUserFragment.OnProfileSaved {
     private FirebaseManager fm;
+    private View attendeeBtn;
+    private View organizerBtn;
+    private View adminBtn;
+    private View loadingOverlay;
+    private View mainLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,13 +39,30 @@ public class MainActivity extends AppCompatActivity implements MainRegisterNewUs
         FirebaseApp.initializeApp(this);
         fm = FirebaseManager.getInstance();
 
-        findViewById(R.id.main_button_attendee).setOnClickListener(v ->
+        attendeeBtn = findViewById(R.id.main_button_attendee);
+        organizerBtn = findViewById(R.id.main_button_organizer);
+        adminBtn = findViewById(R.id.main_button_admin);
+        loadingOverlay = findViewById(R.id.loading_overlay);
+        mainLayout = findViewById(R.id.main_layout);
+
+        if (mainLayout != null) mainLayout.setVisibility(View.GONE);
+
+
+
+
+        // click listeners stay the same
+        attendeeBtn.setOnClickListener(v ->
                 startActivity(new Intent(this, AttendeeActivity.class)));
-        findViewById(R.id.main_button_organizer).setOnClickListener(v ->
+        organizerBtn.setOnClickListener(v ->
                 startActivity(new Intent(this, OrganizerActivity.class)));
-        findViewById(R.id.main_button_admin).setOnClickListener(v ->
+        adminBtn.setOnClickListener(v ->
                 startActivity(new Intent(this, AdminActivity.class)));
 
+        // initially disable buttons, show spinner while we figure out the user
+        setButtonsEnabled(false);
+        showLoading(true);
+
+        //Get firebase auth
         FirebaseAuth auth = FirebaseAuth.getInstance();
 
         // if user already signed in
@@ -54,26 +77,47 @@ public class MainActivity extends AppCompatActivity implements MainRegisterNewUs
                         checkUserDoc(uid);
                     })
                     .addOnFailureListener(e -> {
+                        showLoading(false);
                         registerNewUserOverlay();
                     });
         }
 
     }
 
+    private void showLoading(boolean show) {
+        if (loadingOverlay != null) {
+            loadingOverlay.setVisibility(show ? View.VISIBLE : View.GONE);
+        }
+    }
+
+    private void setButtonsEnabled(boolean enabled) {
+        if (attendeeBtn != null) attendeeBtn.setEnabled(enabled);
+        if (organizerBtn != null) organizerBtn.setEnabled(enabled);
+        if (adminBtn != null) adminBtn.setEnabled(enabled);
+    }
+
     private void checkUserDoc(String uid) {
         fm.getUser(uid, new FirebaseManager.FirebaseCallback<User>() {
             @Override
             public void onSuccess(User user) {
+                showLoading(false);
                 if (user == null) {
+                    if (mainLayout != null) mainLayout.setVisibility(View.GONE);
                     registerNewUserOverlay();
                 }
                 else {
                     UserEventRepository.getInstance().setUser(user);
+                    //if not new user show main_layout
+                    if (mainLayout != null) mainLayout.setVisibility(View.VISIBLE);
+                    // user loaded  enable buttons
+                    setButtonsEnabled(true);
                 }
             }
             @Override
             public void onFailure(Exception e) {
+                showLoading(false);
                 // if something goes wrong, just onboard
+                if (mainLayout != null) mainLayout.setVisibility(View.GONE);
                 registerNewUserOverlay();
             }
         });
@@ -107,9 +151,12 @@ public class MainActivity extends AppCompatActivity implements MainRegisterNewUs
         View container = findViewById(containerId);
         if (container != null) container.setVisibility(View.GONE);
 
-        // reload user
+        // reload user and enable buttons once loaded
         FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         if (firebaseUser != null) {
+
+            showLoading(true);
+            setButtonsEnabled(false);
             checkUserDoc(firebaseUser.getUid());
         }
     }

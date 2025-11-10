@@ -16,6 +16,7 @@ import com.example.lotterypatentpending.User_interface.Inbox.InboxActivity;
 import com.example.lotterypatentpending.models.FirebaseManager;
 import com.example.lotterypatentpending.models.FirestoreNotificationRepository;
 import com.example.lotterypatentpending.models.NotificationRepository;
+import com.example.lotterypatentpending.models.User;
 import com.example.lotterypatentpending.viewModels.UserEventRepository;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -79,16 +80,13 @@ public class AttendeeActivity extends AppCompatActivity {
         MaterialToolbar toolbar = findViewById(R.id.toolbar);
         BottomNavigationView bottomNav = findViewById(R.id.bottomNav);
 
+
+        //  make this toolbar the Activity's action bar
+        setSupportActionBar(toolbar);
+
         // home button in header: go back to Main
-        toolbar.setNavigationIcon(R.drawable.ic_home);
         toolbar.setNavigationOnClickListener(v -> finish());
-        toolbar.setOnMenuItemClickListener(item -> {
-            if (item.getItemId() == R.id.action_info) {
-                showLotteryInfoPopup();
-                return true;
-            }
-            return false;
-        });
+
 
         //Firebasemanager get db instance
         firebaseManager = FirebaseManager.getInstance();
@@ -147,7 +145,7 @@ public class AttendeeActivity extends AppCompatActivity {
      */
     private void showLotteryInfoPopup() {
         new androidx.appcompat.app.AlertDialog.Builder(this)
-                .setTitle("How the Lottery Works")
+                .setTitle("Lottery Information")
                 .setMessage(
                         "When registration closes, all entrants on the waiting list are entered into a random draw.\n\n" +
                                 "Selected entrants must accept their spot within the time window.\n\n" +
@@ -178,9 +176,8 @@ public class AttendeeActivity extends AppCompatActivity {
         actionView.setOnClickListener(v -> onOptionsItemSelected(inboxItem));
 
         // listen to unread count
-        FirebaseUser current = FirebaseAuth.getInstance().getCurrentUser();
-        if (current == null) { finish(); return true; }
-        String userId = current.getUid();
+        User user = UserEventRepository.getInstance().getUser().getValue();
+        String userId = user.getUserId();
 
         // keep a reference so we can remove() in onStop()
         unreadReg = repo.listenUnreadCount(
@@ -200,10 +197,17 @@ public class AttendeeActivity extends AppCompatActivity {
      */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.action_inbox) {
+        int id = item.getItemId();
+        if (id == R.id.action_inbox) {
             startActivity(new Intent(this, InboxActivity.class));
             return true;
         }
+
+        if(id == R.id.action_info){
+            showLotteryInfoPopup();
+            return true;
+        }
+
         return super.onOptionsItemSelected(item);
     }
     /**

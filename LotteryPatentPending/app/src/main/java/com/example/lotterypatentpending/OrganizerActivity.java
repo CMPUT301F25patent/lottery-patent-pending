@@ -12,6 +12,8 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.NavController;
+import androidx.navigation.fragment.NavHostFragment;
 
 import com.example.lotterypatentpending.data.FirestoreUsersDataSource;
 import com.example.lotterypatentpending.data.UserDataSource;
@@ -23,6 +25,8 @@ import com.example.lotterypatentpending.models.LotteryResultNotifier;
 import com.example.lotterypatentpending.viewModels.OrganizerViewModel;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
+import com.google.android.material.appbar.MaterialToolbar;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 /**
  * Activity used by event organizers to manage notifications for lottery results,
@@ -42,20 +46,46 @@ public class OrganizerActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_organizer_host);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
+
+        //Shared toolbar
+        MaterialToolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        // Make the home icon do something (e.g., finish organizer & go back)
+        toolbar.setNavigationOnClickListener(v -> finish());
+
+        // Shared bottom nav
+        BottomNavigationView bottomNav = findViewById(R.id.bottomNavOrganizer);
+
+        // NavController for all organizer fragments
+        NavHostFragment navHostFragment =
+                (NavHostFragment) getSupportFragmentManager()
+                        .findFragmentById(R.id.organizer_nav_host);
+        NavController navController = navHostFragment.getNavController();
+
+        // Handle bottom nav actions (e.g., Back)
+        bottomNav.setOnItemSelectedListener(item -> {
+            int id = item.getItemId();
+            if (id == R.id.nav_back) {
+                navController.popBackStack();
+                return true;
+            }
+            // add other nav items here if you want
+            return false;
         });
+
+        // (Optional) update toolbar title from destination labels
+        navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
+            if (destination.getLabel() != null) {
+                toolbar.setTitle(destination.getLabel());
+            }
+        });
+
         var notifRepo = new FirestoreNotificationRepository();
         UserDataSource usersDs = new FirestoreUsersDataSource();
         AdminLogRepository logRepo = new FirestoreAdminLogRepository();
         organizerNotifier = new OrganizerNotifier(notifRepo, usersDs, logRepo);
         organizerVm = new ViewModelProvider(this).get(OrganizerViewModel.class);
-
-
 
     }
 

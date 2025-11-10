@@ -47,7 +47,6 @@
             android:exported="false" />
         <activity android:name=".NotificationAdminActivity"
             android:exported="false"/>
-
     </application>
 
 </manifest>

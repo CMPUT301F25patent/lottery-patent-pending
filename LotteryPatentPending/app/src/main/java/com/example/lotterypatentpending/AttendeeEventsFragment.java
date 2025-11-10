@@ -1,58 +1,49 @@
 package com.example.lotterypatentpending;
 
-import android.content.Context;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.view.KeyEvent;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
+import android.view.inputmethod.EditorInfo;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.example.lotterypatentpending.models.Event;
 import com.example.lotterypatentpending.models.FirebaseManager;
 import com.example.lotterypatentpending.viewModels.UserEventRepository;
+import com.google.android.material.textfield.TextInputEditText;
 
 import java.util.ArrayList;
+import java.util.List;
 
-/**
- * Fragment that displays a list of events available to attendees.
- * Allows searching, browsing, and selecting an event to view details.
- *
- * This fragment is the default landing screen for attendees, showing
- * available events fetched from Firebase.
- */
 public class AttendeeEventsFragment extends Fragment {
     private UserEventRepository userEventRepo;
     private FirebaseManager fm;
-    /** List containing all events fetched from Firestore. */
-    private ArrayList<Event> allEventsList;
 
-    /** List containing events currently shown in the UI (may be filtered). */
-    private ArrayList<Event> shownEventsList;
+    // Master lists
+    private final ArrayList<Event> allEventsList = new ArrayList<>();
+    // TODO: implement history history
+    private final ArrayList<Event> historyEventsList = new ArrayList<>();
 
-    /** Adapter backing the event ListView. */
-    private ArrayAdapter<Event> eventsListAdapter;
+    // What the ListView shows
+    private final ArrayList<Event> shownEventsList = new ArrayList<>();
+    private final ArrayList<String> shownTitlesList = new ArrayList<>();
+    private ArrayAdapter<String> eventsListAdapter;
+    // false = Browse (default), true = History
+    private boolean historyMode = false;
 
-    /**
-     * Default constructor inflating the attendee events list layout.
-     */
     public AttendeeEventsFragment() {
         super(R.layout.fragment_attendee_events);
     }
 
-    /**
-     * Initializes the event list UI, fetches events from Firestore,
-     * and sets up handlers for search and event selection.
-     *
-     * @param view the fragment view
-     * @param savedInstanceState saved state, if any
-     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -60,37 +51,50 @@ public class AttendeeEventsFragment extends Fragment {
         userEventRepo = UserEventRepository.getInstance();
         fm = FirebaseManager.getInstance();
 
-        // get all events from Firebase
-        allEventsList = new ArrayList<>();
+        ListView eventsListView       = view.findViewById(R.id.attendee_events_listview_events_list);
+        TextInputEditText searchInput = view.findViewById(R.id.searchInput);
+        Button searchBtn              = view.findViewById(R.id.btn_search);
+        Button browseEventsBtn        = view.findViewById(R.id.attendee_events_button_browse_events);
+        Button historyBtn             = view.findViewById(R.id.attendee_events_button_event_history);
+
+
+        eventsListAdapter = new ArrayAdapter<>(
+                requireContext(),
+                android.R.layout.simple_list_item_1,
+                shownTitlesList
+        );
+
+        //Set adapter to the list of Events
+        eventsListView.setAdapter(eventsListAdapter);
+
+        // Load events from Firebase safely
         fm.getAllEvents(new FirebaseManager.FirebaseCallback<ArrayList<Event>>() {
             @Override
             public void onSuccess(ArrayList<Event> result) {
-                allEventsList = result;
+                List<Event> safe = (result == null) ? new ArrayList<>() : result;
+                allEventsList.clear();
+                allEventsList.addAll(safe);
+
+                historyMode = false;
+                updateModeButtons(browseEventsBtn, historyBtn);
+                applyFilter(getQuery(searchInput));
             }
 
             @Override
             public void onFailure(Exception e) {
-                // TODO
+                // Keep lists empty;
+                shownEventsList.clear();
+                shownTitlesList.clear();
+                eventsListAdapter.notifyDataSetChanged();
             }
         });
 
-        // initially, show all events
-        shownEventsList = new ArrayList<>();
-        shownEventsList.addAll(allEventsList);
-
-        eventsListAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_list_item_1, shownEventsList);
-
-        ListView eventsListView = view.findViewById(R.id.attendee_events_listview_events_list);
-        EditText searchInput = view.findViewById(R.id.attendee_events_edittext_search);
-        Button searchButton = view.findViewById(R.id.attendee_events_button_search);
-        Button browseEvents = view.findViewById(R.id.attendee_events_button_browse_events);
-        Button eventHistory = view.findViewById(R.id.attendee_events_button_event_history);
-
-        eventsListView.setAdapter(eventsListAdapter);
-
-        eventsListView.setOnItemClickListener((parent, view1, position, id) -> {
+        // Click -> open details
+        eventsListView.setOnItemClickListener((parent, v1, position, id) -> {
+            if (position < 0 || position >= shownEventsList.size()) return;
             Event selectedEvent = shownEventsList.get(position);
             userEventRepo.setEvent(selectedEvent);
+
             AttendeeEventDetailsFragment fragment = new AttendeeEventDetailsFragment();
             requireActivity().getSupportFragmentManager()
                     .beginTransaction()
@@ -98,22 +102,72 @@ public class AttendeeEventsFragment extends Fragment {
                     .addToBackStack(null)
                     .commit();
         });
-        searchButton.setOnClickListener(v -> {
-            String query = searchInput.getText().toString().trim();
-            if (!query.isEmpty()) {
-                performSearch(query);
-            }
+
+        // Search button: run filter once
+        if (searchBtn != null) {
+            searchBtn.setOnClickListener(v -> applyFilter(getQuery(searchInput)));
+        }
+
+        // Keyboard Search / Enter: run filter
+        if (searchInput != null) {
+            searchInput.setOnEditorActionListener((TextView v1, int actionId, KeyEvent event) -> {
+                if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                    applyFilter(getQuery(searchInput));
+                    return true; // handled
+                }
+                return false;
+            });
+        }
+
+
+        // Mode buttons
+        browseEventsBtn.setOnClickListener(v -> {
+            historyMode = false;
+            updateModeButtons(browseEventsBtn, historyBtn);
+            applyFilter(getQuery(searchInput));
         });
 
+        historyBtn.setOnClickListener(v -> {
+            historyMode = true;
+            updateModeButtons(browseEventsBtn, historyBtn);
+            applyFilter(getQuery(searchInput));
+        });
 
+        // Visual default: Browse selected
+        historyMode = false;
+        updateModeButtons(browseEventsBtn, historyBtn);
     }
-    /**
-     * Filters events based on the user search query.
-     * (Method stub — implementation pending)
-     *
-     * @param query the text search query
-     */
-    private void performSearch(String query) {
 
+    private void updateModeButtons(Button browseBtn, Button historyBtn) {
+        // simple “selected = disabled” look
+        browseBtn.setEnabled(historyMode);     // if showing history, enable Browse
+        historyBtn.setEnabled(!historyMode);   // if showing browse, enable History
+    }
+
+    private String getQuery(@Nullable TextInputEditText et) {
+        if (et == null || et.getText() == null) return "";
+        return et.getText().toString();
+    }
+
+    /** Filter current base (browse/history) by query (case-insensitive). */
+    private void applyFilter(String query) {
+        String q = (query == null) ? "" : query.toLowerCase().trim();
+        List<Event> base = historyMode ? historyEventsList : allEventsList;
+
+        shownEventsList.clear();
+        shownTitlesList.clear();
+
+
+        for (Event e : base) {
+            // Use the Event's title
+            String title = (e.getTitle() == null) ? "" : e.getTitle();
+
+            if (q.isEmpty() || title.toLowerCase().contains(q)) {
+                shownEventsList.add(e);
+                shownTitlesList.add(title.isEmpty() ? "(untitled)" : title);
+            }
+        }
+
+        eventsListAdapter.notifyDataSetChanged();
     }
 }

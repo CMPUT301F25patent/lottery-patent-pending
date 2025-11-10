@@ -1,72 +1,93 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:id="@+id/attendee_events_search_container"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="8dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/attendee_events_search_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            app:boxBackgroundMode="none"
+            app:endIconMode="clear_text"
+            app:endIconTint="@color/white">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/searchInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text"
+                android:textSize="16sp"
+                android:textColor="@color/white"
+                android:drawableStart="@drawable/ic_search"
+                android:drawablePadding="10dp"
+                android:background="@drawable/search_box_background"
+                android:imeOptions="actionSearch"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+    </LinearLayout>
+
+
+    <LinearLayout
+
+        android:id="@+id/attendee_events_linearlayout_buttons_bar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp"
+        app:layout_constraintTop_toBottomOf="@id/attendee_events_search_container"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_search"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/search"
+            android:textSize="12sp"
+            android:minWidth="0dp"
+            android:layout_margin="5dp"
+            android:backgroundTint="@color/light_blue_dark"
+            android:textColor="@color/white" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/attendee_events_button_browse_events"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/browse_events"
+            android:textColor="@color/black"
+            android:backgroundTint="@color/white_grey"
+            android:layout_margin="5dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/attendee_events_button_event_history"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/event_history"
+            android:textColor="@color/black"
+            android:backgroundTint="@color/white_grey"
+            android:layout_margin="5dp" />
+    </LinearLayout>
 
     <ListView
         android:id="@+id/attendee_events_listview_events_list"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/attendee_events_linearlayout_search_bar">
-
-    </ListView>
-
-    <LinearLayout
-        android:id="@+id/attendee_events_linearlayout_search_bar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintTop_toBottomOf="@id/attendee_events_listview_events_list"
-        app:layout_constraintBottom_toTopOf="@id/attendee_events_linearlayout_buttons_bar">
-
-        <EditText
-            android:id="@+id/attendee_events_edittext_search"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:hint="@string/filter">
-
-        </EditText>
-
-        <Button
-            android:id="@+id/attendee_events_button_search"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/search">
-
-        </Button>
-
-    </LinearLayout>
-
-
-    <LinearLayout
-        android:id="@+id/attendee_events_linearlayout_buttons_bar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintTop_toBottomOf="@id/attendee_events_linearlayout_search_bar"
-        app:layout_constraintBottom_toBottomOf="parent">
-
-        <Button
-            android:id="@+id/attendee_events_button_browse_events"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:text="@string/browse_events">
-
-        </Button>
-
-        <Button
-            android:id="@+id/attendee_events_button_event_history"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:text="@string/event_history">
-
-        </Button>
-
-    </LinearLayout>
-
+        app:layout_constraintTop_toBottomOf="@id/attendee_events_linearlayout_buttons_bar"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>
