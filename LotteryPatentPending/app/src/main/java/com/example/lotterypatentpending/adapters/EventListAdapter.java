@@ -17,6 +17,8 @@ import java.util.List;
 /**
  * author: Erik
  * contributor: Erik
+ *
+ * to add more features simply add more TextViews to item_event and here
  */
 public class EventListAdapter extends ArrayAdapter<Event> {
 
