@@ -7,7 +7,9 @@
     <color name="grey">#EE494545</color>
     <color name="light_grey">#EE898484</color>
     <color name="dark_grey">#EE212020</color>
-    <color name="white_grey">#EED9CACA</color>
+    <color name="white_grey">#D9CACA</color>
     <color name="button_grey">#6A6666</color>
     <color name="light_red">#FFCDD2</color>
+    <color name="medium_grey">#A29D9D</color>
+    <color name="list_grey">#C7716D6D</color>
 </resources>

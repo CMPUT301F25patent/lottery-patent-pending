@@ -25,6 +25,9 @@ import com.example.lotterypatentpending.viewModels.EventViewModel;
  * Provides functionality for generating QR codes, toggling geolocation requirement,
  * and navigating back or home.
  * </p>
+ *
+ * @author
+ * @contributor
  */
 public class OrganizerEventViewFragment extends Fragment {
 
