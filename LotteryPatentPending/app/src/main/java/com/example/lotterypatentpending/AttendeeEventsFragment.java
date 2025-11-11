@@ -22,6 +22,11 @@ import com.google.android.material.textfield.TextInputEditText;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * @author Michael
+ * @contributor Michael, Erik
+ */
+
 public class AttendeeEventsFragment extends Fragment {
     private UserEventRepository userEventRepo;
     private FirebaseManager fm;

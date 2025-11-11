@@ -27,7 +27,10 @@ import java.util.ArrayList;
 /**
  * Fragment allowing organizers to view their event list (future
  * and search for a specific event by ID. (only functionality included so far)
+ * @author
+ * @contributor Erik
  */
+
 public class OrganizerViewEventsListFragment extends Fragment {
 
 
