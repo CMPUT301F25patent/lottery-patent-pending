@@ -1,9 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
 <navigation
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/nav_graph_organizer"
     app:startDestination="@id/OrganizerActivityMain">
 
+    <!-- Main organizer menu -->
     <fragment
         android:id="@+id/OrganizerActivityMain"
         android:name="com.example.lotterypatentpending.OrganizerActivityFragment"
@@ -18,38 +20,38 @@
             app:destination="@id/ViewEventsListFragment" />
     </fragment>
 
+    <!-- Create Event -->
     <fragment
         android:id="@+id/CreateEventFragment"
-        android:name="com.example.lotterypatentpending.CreateEventFragment"
+        android:name="com.example.lotterypatentpending.OrganizerCreateEventFragment"
         android:label="Create Event">
 
         <action
             android:id="@+id/action_createEvent_to_main"
             app:destination="@id/OrganizerActivityMain" />
 
+        <!-- Go to event view screen -->
         <action
             android:id="@+id/action_createEvent_to_Event_View"
-            app:destination="@id/EventViewFragment"/>
-
+            app:destination="@id/OrganizerEventViewFragment" />
     </fragment>
 
+    <!-- Organizer Event View (renamed class) -->
     <fragment
-        android:id="@+id/EventViewFragment"
-        android:name="com.example.lotterypatentpending.EventViewFragment"
-        android:label="Event View">
-
+        android:id="@+id/OrganizerEventViewFragment"
+        android:name="com.example.lotterypatentpending.OrganizerEventViewFragment"
+        android:label="Event View" >
     </fragment>
 
+    <!-- List of events -->
     <fragment
         android:id="@+id/ViewEventsListFragment"
-        android:name="com.example.lotterypatentpending.ViewOrganizerEventsListFragment"
+        android:name="com.example.lotterypatentpending.OrganizerViewEventsListFragment"
         android:label="View Events List">
 
         <action
             android:id="@+id/action_viewEventsList_to_Event_View"
-            app:destination="@id/EventViewFragment"/>
-
+            app:destination="@id/OrganizerEventViewFragment" />
     </fragment>
-
 
 </navigation>

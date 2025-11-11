@@ -621,8 +621,7 @@ public class FirebaseManager {
                 .addOnFailureListener(callback::onFailure);
     }
 
-    public void getOrganizedEventsOnce(String userId,
-                                       FirebaseCallback<ArrayList<Event>> callback) {
+    public void getOrganizedEventsOnce(String userId, FirebaseCallback<ArrayList<Event>> callback) {
         db.collection("events")
                 // IMPORTANT: match the field name used in eventToMap
                 .whereEqualTo("organizer", userId)

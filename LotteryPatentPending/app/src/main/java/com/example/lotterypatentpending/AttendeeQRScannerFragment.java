@@ -1,7 +1,6 @@
 package com.example.lotterypatentpending;
 
 import android.Manifest;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
@@ -61,7 +60,7 @@ public class AttendeeQRScannerFragment extends Fragment {
      * Passes the layout resource for this fragment to the superclass constructor.
      */
     public AttendeeQRScannerFragment() {
-        super(R.layout.fragment_attendee_qr_scanner);
+        super(R.layout.attendee_fragment_qr_scanner);
     }
     /**
      * Called immediately after {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}

@@ -30,7 +30,7 @@ public class AttendeeEventDetailsFragment extends Fragment {
      * Default constructor that inflates the event details layout for attendees.
      */
     public AttendeeEventDetailsFragment() {
-        super(R.layout.fragment_attendee_event_details);
+        super(R.layout.attendee_fragment_event_details);
     }
     /**
      * Initializes UI components and wires up button actions for joining/leaving an event.

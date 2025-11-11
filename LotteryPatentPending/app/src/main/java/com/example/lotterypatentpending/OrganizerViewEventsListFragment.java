@@ -7,22 +7,17 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
-import android.widget.ArrayAdapter;
-import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProvider;
-import androidx.navigation.fragment.NavHostFragment;
 
+import com.example.lotterypatentpending.adapters.EventListAdapter;
 import com.example.lotterypatentpending.models.Event;
 import com.example.lotterypatentpending.models.FirebaseManager;
 import com.example.lotterypatentpending.models.User;
-import com.example.lotterypatentpending.viewModels.EventViewModel;
 import com.example.lotterypatentpending.viewModels.UserEventRepository;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
@@ -33,14 +28,14 @@ import java.util.ArrayList;
  * Fragment allowing organizers to view their event list (future
  * and search for a specific event by ID. (only functionality included so far)
  */
-public class ViewOrganizerEventsListFragment extends Fragment {
+public class OrganizerViewEventsListFragment extends Fragment {
 
 
     private TextInputEditText searchInput;
     private MaterialButton searchButton;
     private ListView listView;
     private FirebaseManager fm;
-    private ArrayAdapter<String> adapter;
+    private EventListAdapter eventListAdapter;
     // all events from Firestore
     private final ArrayList<Event> allEvents = new ArrayList<>();
     // events currently shown in the list (after filtering)
@@ -58,7 +53,7 @@ public class ViewOrganizerEventsListFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_view_organizer_events_list, container, false);
+        return inflater.inflate(R.layout.organizer_fragment_view_organizer_events_list, container, false);
     }
 
     /**
@@ -87,11 +82,10 @@ public class ViewOrganizerEventsListFragment extends Fragment {
         //get current userId from repo
         String userId = currentUser.getUserId();
 
-        //TODO make more than just titles
-        //Setup adapter with just titles
-        adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_list_item_1, new ArrayList<>());
+        //Setup adapter with events
+        eventListAdapter = new EventListAdapter(requireContext(), visibleEvents);
 
-        listView.setAdapter(adapter);
+        listView.setAdapter(eventListAdapter);
 
         fm.getOrganizedEventsOnce(userId, new FirebaseManager.FirebaseCallback<ArrayList<Event>>() {
             @Override
@@ -146,10 +140,7 @@ public class ViewOrganizerEventsListFragment extends Fragment {
     }
 
     private void refreshListFromVisible(){
-        adapter.clear();
-        for (Event e: visibleEvents) {
-            adapter.add(e.getTitle());
-        }
+        eventListAdapter.notifyDataSetChanged();
     }
 
 
@@ -188,16 +179,4 @@ public class ViewOrganizerEventsListFragment extends Fragment {
         refreshListFromVisible();
     }
 
-//        fm.getEvent(eventId, new FirebaseManager.FirebaseCallback<Event>() {
-//            @Override
-//            public void onSuccess(Event result) {
-//                EventViewModel viewModel = new ViewModelProvider(requireActivity()).get(EventViewModel.class);
-//                viewModel.setEvent(result);
-//            }
-//            @Override
-//            public void onFailure(Exception e) {
-//                Log.e("EventLoad", "Failed to load EVENT", e);
-//            }
-//        });
-//    }
 }

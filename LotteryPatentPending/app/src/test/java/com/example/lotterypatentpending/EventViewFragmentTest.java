@@ -43,8 +43,8 @@
 //
 //    @Test
 //    public void testEventObservation_updatesUI() {
-//        FragmentScenario<EventViewFragment> scenario =
-//                FragmentScenario.launchInContainer(EventViewFragment.class);
+//        FragmentScenario<OrganizerEventViewFragment> scenario =
+//                FragmentScenario.launchInContainer(OrganizerEventViewFragment.class);
 //
 //        scenario.onFragment(fragment -> {
 //            // Inject mock ViewModel
@@ -84,8 +84,8 @@
 //
 //    @Test
 //    public void testCheckbox_callsViewModelUpdate() {
-//        FragmentScenario<EventViewFragment> scenario =
-//                FragmentScenario.launchInContainer(EventViewFragment.class);
+//        FragmentScenario<OrganizerEventViewFragment> scenario =
+//                FragmentScenario.launchInContainer(OrganizerEventViewFragment.class);
 //
 //        scenario.onFragment(fragment -> {
 //            // Inject mock ViewModel
@@ -110,8 +110,8 @@
 //
 //    @Test
 //    public void testGenerateQRCode_setsImageVisible() {
-//        FragmentScenario<EventViewFragment> scenario =
-//                FragmentScenario.launchInContainer(EventViewFragment.class);
+//        FragmentScenario<OrganizerEventViewFragment> scenario =
+//                FragmentScenario.launchInContainer(OrganizerEventViewFragment.class);
 //
 //        scenario.onFragment(fragment -> {
 //            ImageView qrView = fragment.getView().findViewById(R.id.qrImage);

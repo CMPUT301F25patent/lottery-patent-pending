@@ -3,59 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#303030">
-
-    <!-- Page Title Bar -->
-    <TextView
-        android:id="@+id/titleBar"
-        android:layout_width="0dp"
-        android:layout_height="48dp"
-        android:background="#1A1A1A"
-        android:gravity="center"
-        android:text="Organizer Page"
-        android:textSize="24sp"
-        android:textColor="#FFFFFF"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-    <!-- Top Tabs -->
-    <LinearLayout
-        android:id="@+id/tabContainer"
-        android:layout_width="0dp"
-        android:layout_height="48dp"
-        android:orientation="horizontal"
-        android:gravity="center"
-        android:background="#1A1A1A"
-        app:layout_constraintTop_toBottomOf="@id/titleBar"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
-
-        <TextView
-            android:id="@+id/tabEvent"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="match_parent"
-            android:gravity="center"
-            android:text="Event"
-            android:textColor="#FFFFFF"
-            android:textSize="20sp" />
-
-        <View
-            android:layout_width="1dp"
-            android:layout_height="24dp"
-            android:background="#FFFFFF" />
-
-        <TextView
-            android:id="@+id/tabSignupList"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="match_parent"
-            android:gravity="center"
-            android:text="Sign-up List"
-            android:textColor="#FFFFFF"
-            android:textSize="20sp" />
-    </LinearLayout>
+    android:background="@color/grey">
 
     <!-- Scrollable Content -->
     <androidx.core.widget.NestedScrollView
@@ -63,8 +11,8 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:fillViewport="true"
-        app:layout_constraintTop_toBottomOf="@id/tabContainer"
-        app:layout_constraintBottom_toTopOf="@id/bottom_nav"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
@@ -126,7 +74,7 @@
                 android:id="@+id/notiBtn"
                 android:layout_width="37dp"
                 android:layout_height="36dp"
-                android:background="#303030"
+                android:background="@android:color/transparent"
                 android:padding="8dp"
                 android:src="@drawable/ic_notification_white_24dp"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -228,38 +176,5 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.core.widget.NestedScrollView>
 
-    <!-- Bottom Nav Buttons -->
-    <LinearLayout
-        android:id="@+id/bottom_nav"
-        android:layout_width="0dp"
-        android:layout_height="64dp"
-        android:background="#1A1A1A"
-        android:gravity="center"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
-
-        <ImageButton
-            android:id="@+id/backButton"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:background="#000000"
-            android:padding="8dp"
-            android:src="@drawable/baseline_arrow_back_24"
-            app:tint="@android:color/white"/>
-
-        <Space
-            android:layout_width="0dp"
-            android:layout_height="1dp"
-            android:layout_weight="1" />
-
-        <ImageButton
-            android:id="@+id/homeButton"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:background="#000000"
-            android:padding="8dp"
-            android:src="@drawable/ic_home" />
-    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

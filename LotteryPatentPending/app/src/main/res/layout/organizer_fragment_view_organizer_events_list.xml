@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/grey"
-    tools:context=".ViewOrganizerEventsListFragment">
+    tools:context=".OrganizerViewEventsListFragment">
 
     <!-- Search bar at top -->
     <LinearLayout
@@ -61,6 +61,20 @@
         android:id="@+id/organizerEventsList"
         android:layout_width="0dp"
         android:layout_height="0dp"
+
+        android:background="@drawable/bg_list_rounded"
+        android:layout_margin="10dp"
+        android:padding="20dp"
+        android:clipToPadding="false"
+
+        android:divider="@android:color/transparent"
+        android:dividerHeight="12dp"
+
+        android:scrollbarThumbVertical="@drawable/scrollbar_thumb_vertical"
+        android:scrollbarTrackVertical="@android:color/transparent"
+        android:scrollbars="vertical"
+        android:scrollbarStyle="outsideOverlay"
+
         app:layout_constraintTop_toBottomOf="@id/search_bar_container"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"

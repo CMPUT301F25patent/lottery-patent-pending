@@ -22,6 +22,7 @@ import java.util.UUID;
  *
  * @author Ebuka
  * @maintainer Ebuka
+ * @contributor Erik
  */
 public class Event {
     private String id;
@@ -289,4 +290,18 @@ public class Event {
         return this.waitingList.checkEntrant(entrant);
     }
 
+    public String getFormattedRegWindow() {
+        // If both are missing
+        if (regStartDate == null && regEndDate == null) {
+            return "Not set";
+        }
+
+        // Choose a display format
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("MMM d, yyyy h:mm a");
+
+        String startStr = (regStartDate != null) ? regStartDate.format(fmt) : "N/A";
+        String endStr   = (regEndDate != null) ? regEndDate.format(fmt)   : "N/A";
+
+        return startStr + "  –  " + endStr;
+    }
 }
