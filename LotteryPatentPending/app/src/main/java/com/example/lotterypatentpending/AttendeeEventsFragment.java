@@ -6,16 +6,14 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.example.lotterypatentpending.adapters.EventListAdapter;
 import com.example.lotterypatentpending.models.Event;
 import com.example.lotterypatentpending.models.FirebaseManager;
 import com.example.lotterypatentpending.viewModels.UserEventRepository;
@@ -30,18 +28,17 @@ public class AttendeeEventsFragment extends Fragment {
 
     // Master lists
     private final ArrayList<Event> allEventsList = new ArrayList<>();
-    // TODO: implement history history
+    // TODO: implement  history
     private final ArrayList<Event> historyEventsList = new ArrayList<>();
 
     // What the ListView shows
     private final ArrayList<Event> shownEventsList = new ArrayList<>();
-    private final ArrayList<String> shownTitlesList = new ArrayList<>();
-    private ArrayAdapter<String> eventsListAdapter;
+    private EventListAdapter eventsListAdapter; //custom adapter
     // false = Browse (default), true = History
     private boolean historyMode = false;
 
     public AttendeeEventsFragment() {
-        super(R.layout.fragment_attendee_events);
+        super(R.layout.attendee_fragment_events);
     }
 
     @Override
@@ -58,10 +55,9 @@ public class AttendeeEventsFragment extends Fragment {
         Button historyBtn             = view.findViewById(R.id.attendee_events_button_event_history);
 
 
-        eventsListAdapter = new ArrayAdapter<>(
+        eventsListAdapter = new EventListAdapter(
                 requireContext(),
-                android.R.layout.simple_list_item_1,
-                shownTitlesList
+                shownEventsList
         );
 
         //Set adapter to the list of Events
@@ -84,7 +80,6 @@ public class AttendeeEventsFragment extends Fragment {
             public void onFailure(Exception e) {
                 // Keep lists empty;
                 shownEventsList.clear();
-                shownTitlesList.clear();
                 eventsListAdapter.notifyDataSetChanged();
             }
         });
@@ -155,7 +150,6 @@ public class AttendeeEventsFragment extends Fragment {
         List<Event> base = historyMode ? historyEventsList : allEventsList;
 
         shownEventsList.clear();
-        shownTitlesList.clear();
 
 
         for (Event e : base) {
@@ -164,7 +158,6 @@ public class AttendeeEventsFragment extends Fragment {
 
             if (q.isEmpty() || title.toLowerCase().contains(q)) {
                 shownEventsList.add(e);
-                shownTitlesList.add(title.isEmpty() ? "(untitled)" : title);
             }
         }
 

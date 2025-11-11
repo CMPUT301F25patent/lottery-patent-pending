@@ -34,7 +34,7 @@ public class MainRegisterNewUserFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_create_user, container, false);
+        return inflater.inflate(R.layout.organizer_fragment_create_user, container, false);
     }
 
     @Override

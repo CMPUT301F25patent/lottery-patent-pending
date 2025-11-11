@@ -14,9 +14,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.navigation.fragment.NavHostFragment;
 
-import com.example.lotterypatentpending.models.Event;
 import com.example.lotterypatentpending.models.QRGenerator;
 import com.example.lotterypatentpending.viewModels.EventViewModel;
 
@@ -28,14 +26,12 @@ import com.example.lotterypatentpending.viewModels.EventViewModel;
  * and navigating back or home.
  * </p>
  */
-public class EventViewFragment extends Fragment {
+public class OrganizerEventViewFragment extends Fragment {
 
     private TextView eventTitle, eventDescr, maxEntrants, waitListCap;
     private ImageView qrView;
     private String eventId;
     private Button generateQRCode;
-    private ImageButton backButton;
-    private ImageButton homeButton;
     private CheckBox geoLocationReq;
     private ImageButton notiButton;
 
@@ -50,7 +46,7 @@ public class EventViewFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_event_view, container, false);
+        return inflater.inflate(R.layout.organizer_fragment_event_view, container, false);
 
     }
 
@@ -70,8 +66,6 @@ public class EventViewFragment extends Fragment {
         waitListCap = v.findViewById(R.id.waitingListCap);
         generateQRCode = v.findViewById(R.id.qrButton);
         qrView = v.findViewById(R.id.qrImage);
-        backButton = v.findViewById(R.id.backButton);
-        homeButton = v.findViewById(R.id.homeButton);
         geoLocationReq = v.findViewById(R.id.geoCheck);
         notiButton = v.findViewById(R.id.notiBtn);
 
@@ -109,8 +103,6 @@ public class EventViewFragment extends Fragment {
             generateEventQRCode(eventId, qrView);
         });
 
-        backButton.setOnClickListener(view -> NavHostFragment.findNavController(this).popBackStack());
-        homeButton.setOnClickListener(view -> requireActivity().finish());
     }
 
     /**

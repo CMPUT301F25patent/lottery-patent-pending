@@ -21,8 +21,6 @@ import com.example.lotterypatentpending.models.FirebaseManager;
 import com.example.lotterypatentpending.models.User;
 import com.example.lotterypatentpending.viewModels.UserEventRepository;
 import com.example.lotterypatentpending.viewModels.EventViewModel;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.DocumentReference;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -31,10 +29,10 @@ import java.time.format.DateTimeFormatter;
  * Fragment that allows users to create a new Event.
  * <p>
  * Collects input from the user, creates an Event object, stores it in Firestore,
- * and navigates to EventViewFragment to display the newly created event.
+ * and navigates to OrganizerEventViewFragment to display the newly created event.
  * </p>
  */
-public class CreateEventFragment extends Fragment {
+public class OrganizerCreateEventFragment extends Fragment {
 
     private EditText titleEt, descriptionEt, locationEt, eventDateEt, regStartDateEt, regEndDateEt, capacityEt, waitingListCapEt;
     private Button cancelBtn, createBtn;
@@ -51,7 +49,7 @@ public class CreateEventFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_create_event, container, false);
+        return inflater.inflate(R.layout.organizer_fragment_create_event, container, false);
     }
 
     /**
@@ -76,16 +74,16 @@ public class CreateEventFragment extends Fragment {
         cancelBtn = v.findViewById(R.id.cancelButton);
         createBtn = v.findViewById(R.id.createEventButton);
         cancelBtn.setOnClickListener(view ->
-                NavHostFragment.findNavController(CreateEventFragment.this)
+                NavHostFragment.findNavController(OrganizerCreateEventFragment.this)
                         .navigate(R.id.action_createEvent_to_main));
         createBtn.setOnClickListener(view -> {
             createEvent();
-            NavHostFragment.findNavController(CreateEventFragment.this)
+            NavHostFragment.findNavController(OrganizerCreateEventFragment.this)
                 .navigate(R.id.action_createEvent_to_Event_View, null,
                         new NavOptions.Builder()
                         .setPopUpTo(R.id.CreateEventFragment, true)
                         .build());
-            }); // removes CreateEventFragment from stack so when back is clicked from event view doesn't go back there goes back to page beforehand
+            }); // removes OrganizerCreateEventFragment from stack so when back is clicked from event view doesn't go back there goes back to page beforehand
     }
 
     /**
@@ -126,7 +124,7 @@ public class CreateEventFragment extends Fragment {
         // Save to Firestore
         fm.addEventToDB(newEvent);
 
-        // Update EventViewModel for sharing with EventViewFragment
+        // Update EventViewModel for sharing with OrganizerEventViewFragment
         EventViewModel viewModel = new ViewModelProvider(requireActivity()).get(EventViewModel.class);
         viewModel.setEvent(newEvent);
     }

@@ -51,8 +51,8 @@
 //
 //    @Test
 //    public void testCreateEventWithReflection() throws Exception {
-//        FragmentScenario<CreateEventFragment> scenario =
-//                FragmentScenario.launchInContainer(CreateEventFragment.class);
+//        FragmentScenario<OrganizerCreateEventFragment> scenario =
+//                FragmentScenario.launchInContainer(OrganizerCreateEventFragment.class);
 //
 //        scenario.onFragment(fragment -> {
 //            // Create real EditText values
