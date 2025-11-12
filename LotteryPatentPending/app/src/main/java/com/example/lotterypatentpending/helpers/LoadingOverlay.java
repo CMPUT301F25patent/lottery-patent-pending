@@ -1,7 +1,10 @@
 package com.example.lotterypatentpending.helpers;
-
-
 import android.view.View;
+
+/**
+ * @author Erik
+ * @contributor Erik
+ */
 
 public class LoadingOverlay {
     private final View overlay;

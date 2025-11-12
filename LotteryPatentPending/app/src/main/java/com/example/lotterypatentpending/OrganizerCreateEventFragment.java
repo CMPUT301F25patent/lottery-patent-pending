@@ -1,13 +1,14 @@
 package com.example.lotterypatentpending;
 
-import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -16,14 +17,15 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavOptions;
 import androidx.navigation.fragment.NavHostFragment;
 
+import com.example.lotterypatentpending.helpers.DateTimePickerHelper;
 import com.example.lotterypatentpending.models.Event;
 import com.example.lotterypatentpending.models.FirebaseManager;
 import com.example.lotterypatentpending.models.User;
 import com.example.lotterypatentpending.viewModels.UserEventRepository;
 import com.example.lotterypatentpending.viewModels.EventViewModel;
+import com.google.firebase.Timestamp;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+
 
 /**
  * Fragment that allows users to create a new Event.
@@ -31,18 +33,21 @@ import java.time.format.DateTimeFormatter;
  * Collects input from the user, creates an Event object, stores it in Firestore,
  * and navigates to OrganizerEventViewFragment to display the newly created event.
  * </p>
+ * @author
+ * @contributor Erik
  */
 public class OrganizerCreateEventFragment extends Fragment {
 
-    private EditText titleEt, descriptionEt, locationEt, eventDateEt, regStartDateEt, regEndDateEt, capacityEt, waitingListCapEt;
+    private EditText titleEt, descriptionEt, locationEt, capacityEt, waitingListCapEt;
+    private TextView eventDateEt, regStartDateEt, regEndDateEt;
     private Button cancelBtn, createBtn;
     private FirebaseManager fm;
 
     /**
      * Inflates the fragment's layout.
      *
-     * @param inflater The LayoutInflater object that can be used to inflate any views.
-     * @param container The parent ViewGroup.
+     * @param inflater           The LayoutInflater object that can be used to inflate any views.
+     * @param container          The parent ViewGroup.
      * @param savedInstanceState Bundle containing saved instance state.
      * @return The root View of the fragment's layout.
      */
@@ -56,13 +61,17 @@ public class OrganizerCreateEventFragment extends Fragment {
      * Called after the view has been created.
      * Initializes UI elements, sets click listeners for buttons.
      *
-     * @param v The root view of the fragment.
+     * @param v                  The root view of the fragment.
      * @param savedInstanceState Bundle containing saved instance state.
      */
     @Override
     public void onViewCreated(@NonNull View v, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(v, savedInstanceState);
+
+        //Firebase Manager Instance
         fm = FirebaseManager.getInstance();
+
+        //Set the views we'll be using
         titleEt = v.findViewById(R.id.titleEt);
         descriptionEt = v.findViewById(R.id.descriptionEt);
         locationEt = v.findViewById(R.id.locationEt);
@@ -73,45 +82,117 @@ public class OrganizerCreateEventFragment extends Fragment {
         waitingListCapEt = v.findViewById(R.id.waitingListCapInput);
         cancelBtn = v.findViewById(R.id.cancelButton);
         createBtn = v.findViewById(R.id.createEventButton);
+
+    // event must be future, between 00:00 and 24:00
+        DateTimePickerHelper.attachDateTimePicker(eventDateEt, requireContext(), true, 0, 24);
+    // registration start/end: future only, no hour bounds
+        DateTimePickerHelper.attachDateTimePicker(regStartDateEt, requireContext(), false, null, null);
+        DateTimePickerHelper.attachDateTimePicker(regEndDateEt, requireContext(), false, null, null);
+
         cancelBtn.setOnClickListener(view ->
                 NavHostFragment.findNavController(OrganizerCreateEventFragment.this)
                         .navigate(R.id.action_createEvent_to_main));
         createBtn.setOnClickListener(view -> {
-            createEvent();
-            NavHostFragment.findNavController(OrganizerCreateEventFragment.this)
-                .navigate(R.id.action_createEvent_to_Event_View, null,
-                        new NavOptions.Builder()
-                        .setPopUpTo(R.id.CreateEventFragment, true)
-                        .build());
-            }); // removes OrganizerCreateEventFragment from stack so when back is clicked from event view doesn't go back there goes back to page beforehand
+            if (createEvent()) {
+                NavHostFragment.findNavController(OrganizerCreateEventFragment.this)
+                        .navigate(R.id.action_createEvent_to_Event_View, null,
+                                new NavOptions.Builder()
+                                        .setPopUpTo(R.id.CreateEventFragment, true)
+                                        .build());
+            }
+        }); // removes OrganizerCreateEventFragment from stack so when back is clicked from event view doesn't go back there goes back to page beforehand
     }
 
     /**
      * Collects input from EditText fields, creates a new Event object,
      * saves it to Firestore, and updates the EventViewModel.
      */
-    public void createEvent() {
-        String title = titleEt.getText().toString().trim();
-        String description = descriptionEt.getText().toString().trim();
-        String location = locationEt.getText().toString().trim();
-        String eventDateString = eventDateEt.getText().toString().trim();
-        String regStartDateString = regStartDateEt.getText().toString().trim();
-        String regEndDateString = regEndDateEt.getText().toString().trim();
-        String capacityString = capacityEt.getText().toString().trim();
-        String waitingListCapString = waitingListCapEt.getText().toString().trim();
-        LocalDateTime eventDate = parseDate(eventDateString);
-        LocalDateTime regStartDate = parseDate(regStartDateString);
-        LocalDateTime regEndDate = parseDate(regEndDateString);
+    public boolean createEvent() {
+        String title               = titleEt.getText().toString().trim();
+        String description         = descriptionEt.getText().toString().trim();
+        String location            = locationEt.getText().toString().trim();
+        String eventDateString     = eventDateEt.getText().toString().trim();
+        String regStartDateString  = regStartDateEt.getText().toString().trim();
+        String regEndDateString    = regEndDateEt.getText().toString().trim();
+        String capacityString      = capacityEt.getText().toString().trim();
+        String waitingListCapString= waitingListCapEt.getText().toString().trim();
 
-        int capacity = Integer.parseInt(capacityString);
+        // Basic required fields
+        if (title.isEmpty() || description.isEmpty() || location.isEmpty()) {
+            Toast.makeText(requireContext(),
+                    "Title, description, and location are required.",
+                    Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
+        // Dates required (strings)
+        if (eventDateString.isEmpty() ||
+                regStartDateString.isEmpty() ||
+                regEndDateString.isEmpty()) {
+
+            Toast.makeText(requireContext(),
+                    "Event date, registration start, and registration end are required.",
+                    Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
+        // Capacity required and must be a number
+        if (capacityString.isEmpty()) {
+            Toast.makeText(requireContext(),
+                    "Event capacity is required.",
+                    Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
+        int capacity;
+        try {
+            capacity = Integer.parseInt(capacityString);
+        } catch (NumberFormatException e) {
+            Toast.makeText(requireContext(),
+                    "Capacity must be a number.",
+                    Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
         int waitingListCap = -1;
-        if (!(waitingListCapString.equals("N/A")) && !(waitingListCapString.isEmpty())) {
-            waitingListCap = Integer.parseInt(waitingListCapString);
+        if (!waitingListCapString.equalsIgnoreCase("N/A") &&
+                !waitingListCapString.isEmpty()) {
+            try {
+                waitingListCap = Integer.parseInt(waitingListCapString);
+            } catch (NumberFormatException e) {
+                Toast.makeText(requireContext(),
+                        "Waiting list cap must be a number or 'N/A'.",
+                        Toast.LENGTH_SHORT).show();
+                return false;
+            }
+        }
+
+        // Parse timestamps
+        Timestamp eventDate    = DateTimePickerHelper.parseToTimestamp(eventDateString);
+        Timestamp regStartDate = DateTimePickerHelper.parseToTimestamp(regStartDateString);
+        Timestamp regEndDate   = DateTimePickerHelper.parseToTimestamp(regEndDateString);
+
+        // Parsing failed -> invalid date format
+        if (eventDate == null || regStartDate == null || regEndDate == null) {
+            Toast.makeText(requireContext(),
+                    "Please select valid dates and times.",
+                    Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
+        // Registration window rules
+        if (!validateRegistrationWindow(eventDate, regStartDate, regEndDate)) {
+            return false;
         }
 
         // Get the current user
         User current_user = UserEventRepository.getInstance().getUser().getValue();
-        assert current_user != null;
+        if (current_user == null) {
+            Toast.makeText(requireContext(),
+                    "No current user logged in.",
+                    Toast.LENGTH_SHORT).show();
+            return false;
+        }
 
         // Create the new event
         Event newEvent = new Event(title, description, capacity, current_user);
@@ -125,26 +206,48 @@ public class OrganizerCreateEventFragment extends Fragment {
         fm.addEventToDB(newEvent);
 
         // Update EventViewModel for sharing with OrganizerEventViewFragment
-        EventViewModel viewModel = new ViewModelProvider(requireActivity()).get(EventViewModel.class);
+        EventViewModel viewModel =
+                new ViewModelProvider(requireActivity()).get(EventViewModel.class);
         viewModel.setEvent(newEvent);
+
+        return true;
     }
 
-    private LocalDateTime parseDate(String input) {
-        if (input == null || input.trim().isEmpty()) return null;
 
-        try {
-            DateTimeFormatter formatter = null;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy hh:mm a");
-                return LocalDateTime.parse(input.trim(), formatter);
-            }
-
-        } catch (Exception e) {
-            Log.e("CreateEvent", "Invalid date: '" + input + "'", e);
-            return null;
+    /**
+     *
+     * @param eventDate timestamp of the events date
+     * @param regStart timestamp of the registration start date
+     * @param regEnd timestamp of the registration end date
+     * @return true/flase if timestamps are validated and make sense.
+     */
+    private boolean validateRegistrationWindow(Timestamp eventDate,
+                                               Timestamp regStart,
+                                               Timestamp regEnd) {
+        if (eventDate == null || regStart == null || regEnd == null) {
+            Toast.makeText(requireContext(),
+                    "Please set event date, registration start, and registration end.",
+                    Toast.LENGTH_SHORT).show();
+            return false;
         }
 
-        return null;
+        // regEnd must be AFTER regStart (strict)
+        if (regEnd.compareTo(regStart) <= 0) {
+            Toast.makeText(requireContext(),
+                    "Registration end must be after registration start.",
+                    Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
+        // regEnd must NOT be after eventDate
+        if (regEnd.compareTo(eventDate) > 0) {
+            Toast.makeText(requireContext(),
+                    "Registration must end before the event starts.",
+                    Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
+        return true;
     }
 
 }
