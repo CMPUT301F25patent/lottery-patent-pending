@@ -1,5 +1,7 @@
 package com.example.lotterypatentpending;
 
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -7,19 +9,25 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.PopupWindow;
 import android.widget.TextView;
 
 import com.example.lotterypatentpending.adapters.EventListAdapter;
+import com.example.lotterypatentpending.helpers.DateTimeFormatHelper;
+import com.example.lotterypatentpending.helpers.DateTimePickerHelper;
 import com.example.lotterypatentpending.helpers.LoadingOverlay;
 import com.example.lotterypatentpending.models.Event;
 import com.example.lotterypatentpending.models.FirebaseManager;
 import com.example.lotterypatentpending.viewModels.UserEventRepository;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
+import com.google.firebase.Timestamp;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,11 +43,15 @@ public class AttendeeEventsFragment extends Fragment {
 
     private LoadingOverlay loading;
 
+    private PopupWindow filterPopup;
+
+    private Timestamp filterStartTime;
+    private Timestamp filterEndTime;
+
     // Master lists
     private final ArrayList<Event> allEventsList = new ArrayList<>();
     // TODO: implement  history
     private final ArrayList<Event> historyEventsList = new ArrayList<>();
-
     // What the ListView shows
     private final ArrayList<Event> shownEventsList = new ArrayList<>();
     private EventListAdapter eventsListAdapter; //custom adapter
@@ -57,11 +69,18 @@ public class AttendeeEventsFragment extends Fragment {
         userEventRepo = UserEventRepository.getInstance();
         fm = FirebaseManager.getInstance();
 
-        ListView eventsListView = view.findViewById(R.id.attendee_events_listview_events_list);
+        //Search bar
+        TextInputLayout til = view.findViewById(R.id.attendee_events_search_layout);
+        //Search bar input
         TextInputEditText searchInput = view.findViewById(R.id.searchInput);
+
+
+        ListView eventsListView = view.findViewById(R.id.attendee_events_listview_events_list);
         Button searchBtn = view.findViewById(R.id.btn_search);
         Button browseEventsBtn = view.findViewById(R.id.attendee_events_button_browse_events);
         Button historyBtn = view.findViewById(R.id.attendee_events_button_event_history);
+
+
 
         // Attach loading screen
         ViewGroup root = view.findViewById(R.id.attendee_events_root);
@@ -111,6 +130,12 @@ public class AttendeeEventsFragment extends Fragment {
             }
         });
 
+        // Click handler for the end icon
+        //Search filter attach listener
+        til.setEndIconOnClickListener(v -> {
+            dateFilterPopup(v);
+        });
+
         // Click -> open details
         eventsListView.setOnItemClickListener((parent, v1, position, id) -> {
             if (position < 0 || position >= shownEventsList.size()) return;
@@ -140,7 +165,6 @@ public class AttendeeEventsFragment extends Fragment {
                 return false;
             });
         }
-
 
         // Mode buttons
         browseEventsBtn.setOnClickListener(v -> {
@@ -178,16 +202,106 @@ public class AttendeeEventsFragment extends Fragment {
 
         shownEventsList.clear();
 
-
         for (Event e : base) {
-            // Use the Event's title
-            String title = (e.getTitle() == null) ? "" : e.getTitle();
+            if (!matchesText(e.getTitle(), q)) continue;
 
-            if (q.isEmpty() || title.toLowerCase().contains(q)) {
-                shownEventsList.add(e);
-            }
+            // User range: [filterStartTime, filterEndTime]
+            // Event reg window: [e.getRegStartDate(), e.getRegEndDate()]
+            if (!overlaps(e.getRegStartDate(), e.getRegEndDate(), filterStartTime, filterEndTime))
+                continue;
+            shownEventsList.add(e);
         }
 
         eventsListAdapter.notifyDataSetChanged();
+    }
+
+    private static boolean overlaps(@Nullable Timestamp aStart,
+                                    @Nullable Timestamp aEnd,
+                                    @Nullable Timestamp bStart,
+                                    @Nullable Timestamp bEnd) {
+        // if aEnd(event) < bStart(range) do not overlap then false
+        if (aEnd != null && bStart != null && aEnd.compareTo(bStart) < 0) return false;
+        // if bEnd(event) < aStart(range) do not overlap then false
+        if (bEnd != null && aStart != null && bEnd.compareTo(aStart) < 0) return false;
+        return true;
+    }
+
+    private static boolean matchesText(@Nullable String title, String q) {
+
+        if (q == null || q.isEmpty()) return true;
+
+        return title != null && title.toLowerCase().contains(q);
+    }
+
+
+    private void dateFilterPopup(View anchor) {
+
+        if (filterPopup != null && filterPopup.isShowing()){
+            filterPopup.dismiss();
+            return;
+        }
+
+        //Inflate popup layout
+        LayoutInflater inflater = LayoutInflater.from(requireContext());
+        View content = inflater.inflate(R.layout.attendee_popup_filter, null, false);
+
+        filterPopup = new PopupWindow(
+                content,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                true
+        );
+
+        filterPopup.setOutsideTouchable(true);
+        filterPopup.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
+        TextView startDate = content.findViewById(R.id.startDate);
+        TextView endDate = content.findViewById(R.id.endDate);
+        TextView clear = content.findViewById(R.id.clearSearch);
+
+        // Prefill the popup with any previously chosen range
+        if (filterStartTime != null) {
+            startDate.setText(DateTimeFormatHelper.formatTimestamp(filterStartTime));
+        }
+        if (filterEndTime != null) {
+            endDate.setText(DateTimeFormatHelper.formatTimestamp(filterEndTime));
+        }
+
+        //Attach a date picker to each date textView
+        DateTimePickerHelper.attachDateTimePicker(startDate, requireContext());
+        DateTimePickerHelper.attachDateTimePicker(endDate, requireContext());
+
+
+        filterPopup.setOnDismissListener(() -> {
+
+            filterStartTime = DateTimePickerHelper.parseToTimestamp(startDate.getText().toString());
+            filterEndTime = DateTimePickerHelper.parseToTimestamp(endDate.getText().toString());
+
+            TextInputEditText searchText = requireView().findViewById(R.id.searchInput);
+            applyFilter(getQuery(searchText));
+
+        });
+
+        clear.setOnClickListener(v -> {
+            // clear stand and end dates
+            startDate.setText("");
+            endDate.setText("");
+
+            filterStartTime = null;
+            filterEndTime = null;
+
+            // clear search
+            TextInputEditText searchText = requireView().findViewById(R.id.searchInput);
+            searchText.setText("");
+            applyFilter(getQuery(searchText));
+
+            // close popup
+            if (filterPopup != null) filterPopup.dismiss();
+        });
+
+
+
+        // anchor under icon
+        filterPopup.showAsDropDown(anchor, 0, 0);
     }
 }

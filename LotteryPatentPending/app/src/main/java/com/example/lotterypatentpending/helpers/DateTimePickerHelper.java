@@ -5,7 +5,6 @@ import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.firebase.Timestamp;
 
@@ -15,6 +14,10 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
+/**
+ * author Erik
+ * contributor Erik
+ */
 public class DateTimePickerHelper {
 
     private static final String DISPLAY_PATTERN = "dd/MM/yyyy hh:mm a";
@@ -28,53 +31,37 @@ public class DateTimePickerHelper {
      *
      * @param target     the TextView to fill
      * @param context    context (e.g. requireContext())
-     * @param futureOnly if true, disallow past date/time
-     * @param minHour    nullable; e.g. 8 for 8:00. Use null for no lower bound
-     * @param maxHour    nullable; e.g. 22 for 22:00. Use null for no upper bound
      */
 
-    public static void attachDateTimePicker(TextView target, Context context,
-                                            boolean futureOnly,
-                                            Integer minHour,
-                                            Integer maxHour) {
+    public static void attachDateTimePicker(TextView target, Context context) {
         target.setOnClickListener(v -> {
             Calendar cal = Calendar.getInstance();
 
+            // 1) Show DATE picker
             DatePickerDialog datePickerDialog = new DatePickerDialog(
                     context,
                     (view, year, month, dayOfMonth) -> {
+                        // 2) User has PICKED a DATE here
                         cal.set(Calendar.YEAR, year);
                         cal.set(Calendar.MONTH, month);
                         cal.set(Calendar.DAY_OF_MONTH, dayOfMonth);
 
-                        TimePickerDialog timeDialog = new TimePickerDialog(context,
+                        // 3) Now show TIME picker
+                        TimePickerDialog timeDialog = new TimePickerDialog(
+                                context,
                                 (timeView, hourOfDay, minute) -> {
-                                    if (minHour != null && hourOfDay < minHour) {
-                                        hourOfDay = minHour;
-                                    }
-
-                                    if (maxHour != null && hourOfDay > maxHour) {
-                                        hourOfDay = maxHour;
-                                    }
+                                    // 4) User has PICKED a TIME here
                                     cal.set(Calendar.HOUR_OF_DAY, hourOfDay);
                                     cal.set(Calendar.MINUTE, minute);
                                     cal.set(Calendar.SECOND, 0);
 
-                                    long chosenSeconds = cal.getTimeInMillis() / 1000L;
-                                    long nowSeconds = System.currentTimeMillis() / 1000L;
-
-                                    if (futureOnly && chosenSeconds < nowSeconds) {
-                                        Toast.makeText(context,
-                                                "Please choose a future time",
-                                                Toast.LENGTH_SHORT).show();
-                                        target.setText("");
-                                        return;
-                                    }
+                                    // 5) NOW we format and set the TextView
                                     SimpleDateFormat sdf =
                                             new SimpleDateFormat(DISPLAY_PATTERN, Locale.getDefault());
                                     String formatted = sdf.format(cal.getTime());
-                                    target.setText(formatted);
+                                    target.setText(formatted);  // set the textViews to the formatted values
                                 },
+                                // set initial/default values for time
                                 cal.get(Calendar.HOUR_OF_DAY),
                                 cal.get(Calendar.MINUTE),
                                 false
@@ -82,20 +69,14 @@ public class DateTimePickerHelper {
 
                         timeDialog.show();
                     },
+                    // set initial/default values for date
                     cal.get(Calendar.YEAR),
                     cal.get(Calendar.MONTH),
                     cal.get(Calendar.DAY_OF_MONTH)
             );
-
-            if (futureOnly) {
-                datePickerDialog.getDatePicker().setMinDate(System.currentTimeMillis());
-            }
             datePickerDialog.show();
         });
-    }
 
-    public static void attachDateTimePicker(TextView target, Context context) {
-        attachDateTimePicker(target, context, false, null, null);
     }
 
     public static Timestamp parseToTimestamp(String input) {
