@@ -158,22 +158,28 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginTop="20dp"
-            android:layout_marginHorizontal="20dp" />
+            android:layout_marginHorizontal="20dp"
+            android:focusable="false"
+            android:clickable="true"
+            android:inputType="none"/>
 
-        <EditText
+        <TextView
             android:id="@+id/eventDateEt"
             android:layout_width="0dp"
             android:layout_height="50dp"
             android:background="@drawable/bg_edittext_rounded"
             android:padding="10dp"
             android:textColor="@android:color/white"
-            android:hint="DD/MM/YYYY 00:00 AM/PM"
+            android:hint="DD/MM/YYYY 00:00"
             android:textColorHint="#BBBBBB"
+            android:gravity="center_vertical"
+            android:focusable="false"
+            android:clickable="true"
             app:layout_constraintTop_toBottomOf="@id/eventDateLabel"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginTop="4dp"
-            android:layout_marginHorizontal="20dp" />
+            android:layout_marginHorizontal="20dp"/>
 
 
         <!-- Reg start label -->
@@ -188,22 +194,28 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginTop="20dp"
-            android:layout_marginHorizontal="20dp" />
+            android:layout_marginHorizontal="20dp"
+            android:focusable="false"
+            android:clickable="true"
+            android:inputType="none"/>
 
-        <EditText
+        <TextView
             android:id="@+id/registrationStartDate"
             android:layout_width="0dp"
             android:layout_height="50dp"
             android:background="@drawable/bg_edittext_rounded"
             android:padding="10dp"
             android:textColor="@android:color/white"
-            android:hint="Reg. start: DD/MM/YYYY 00:00"
+            android:hint="DD/MM/YYYY 00:00"
             android:textColorHint="#BBBBBB"
+            android:gravity="center_vertical"
+            android:focusable="false"
+            android:clickable="true"
             app:layout_constraintTop_toBottomOf="@id/regStartLabel"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginTop="4dp"
-            android:layout_marginHorizontal="20dp" />
+            android:layout_marginHorizontal="20dp"/>
 
 
         <!-- Reg end label -->
@@ -220,20 +232,23 @@
             android:layout_marginTop="20dp"
             android:layout_marginHorizontal="20dp" />
 
-        <EditText
+        <TextView
             android:id="@+id/registrationEndDate"
             android:layout_width="0dp"
             android:layout_height="50dp"
             android:background="@drawable/bg_edittext_rounded"
             android:padding="10dp"
             android:textColor="@android:color/white"
-            android:hint="Reg. end: DD/MM/YYYY 00:00"
+            android:hint="DD/MM/YYYY 00:00"
             android:textColorHint="#BBBBBB"
+            android:gravity="center_vertical"
+            android:focusable="false"
+            android:clickable="true"
             app:layout_constraintTop_toBottomOf="@id/regEndLabel"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginTop="4dp"
-            android:layout_marginHorizontal="20dp" />
+            android:layout_marginHorizontal="20dp"/>
 
 
         <!-- Event capacity label -->
