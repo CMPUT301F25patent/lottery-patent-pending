@@ -8,12 +8,14 @@ import androidx.fragment.app.Fragment;
 
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import com.example.lotterypatentpending.adapters.EventListAdapter;
+import com.example.lotterypatentpending.helpers.LoadingOverlay;
 import com.example.lotterypatentpending.models.Event;
 import com.example.lotterypatentpending.models.FirebaseManager;
 import com.example.lotterypatentpending.viewModels.UserEventRepository;
@@ -30,6 +32,8 @@ import java.util.List;
 public class AttendeeEventsFragment extends Fragment {
     private UserEventRepository userEventRepo;
     private FirebaseManager fm;
+
+    private LoadingOverlay loading;
 
     // Master lists
     private final ArrayList<Event> allEventsList = new ArrayList<>();
@@ -53,12 +57,21 @@ public class AttendeeEventsFragment extends Fragment {
         userEventRepo = UserEventRepository.getInstance();
         fm = FirebaseManager.getInstance();
 
-        ListView eventsListView       = view.findViewById(R.id.attendee_events_listview_events_list);
+        ListView eventsListView = view.findViewById(R.id.attendee_events_listview_events_list);
         TextInputEditText searchInput = view.findViewById(R.id.searchInput);
-        Button searchBtn              = view.findViewById(R.id.btn_search);
-        Button browseEventsBtn        = view.findViewById(R.id.attendee_events_button_browse_events);
-        Button historyBtn             = view.findViewById(R.id.attendee_events_button_event_history);
+        Button searchBtn = view.findViewById(R.id.btn_search);
+        Button browseEventsBtn = view.findViewById(R.id.attendee_events_button_browse_events);
+        Button historyBtn = view.findViewById(R.id.attendee_events_button_event_history);
 
+        // Attach loading screen
+        ViewGroup root = view.findViewById(R.id.attendee_events_root);
+        View overlayView = getLayoutInflater().inflate(
+                R.layout.loading_screen,
+                root,
+                false);
+
+        root.addView(overlayView);
+        loading = new LoadingOverlay(overlayView, null);
 
         eventsListAdapter = new EventListAdapter(
                 requireContext(),
@@ -68,10 +81,14 @@ public class AttendeeEventsFragment extends Fragment {
         //Set adapter to the list of Events
         eventsListView.setAdapter(eventsListAdapter);
 
+        loading.show();
+
         // Load events from Firebase safely
         fm.getAllEvents(new FirebaseManager.FirebaseCallback<ArrayList<Event>>() {
             @Override
             public void onSuccess(ArrayList<Event> result) {
+                if (!isAdded()) return;
+
                 List<Event> safe = (result == null) ? new ArrayList<>() : result;
                 allEventsList.clear();
                 allEventsList.addAll(safe);
@@ -79,13 +96,18 @@ public class AttendeeEventsFragment extends Fragment {
                 historyMode = false;
                 updateModeButtons(browseEventsBtn, historyBtn);
                 applyFilter(getQuery(searchInput));
+                if (loading != null) loading.hide();
             }
 
             @Override
             public void onFailure(Exception e) {
+                if (!isAdded()) return;
+
                 // Keep lists empty;
                 shownEventsList.clear();
                 eventsListAdapter.notifyDataSetChanged();
+                if (loading != null) loading.hide();
+
             }
         });
 

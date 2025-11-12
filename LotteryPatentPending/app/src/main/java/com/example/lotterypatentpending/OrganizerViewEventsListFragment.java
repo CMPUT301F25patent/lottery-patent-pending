@@ -15,6 +15,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.example.lotterypatentpending.adapters.EventListAdapter;
+import com.example.lotterypatentpending.helpers.LoadingOverlay;
 import com.example.lotterypatentpending.models.Event;
 import com.example.lotterypatentpending.models.FirebaseManager;
 import com.example.lotterypatentpending.models.User;
@@ -43,6 +44,7 @@ public class OrganizerViewEventsListFragment extends Fragment {
     private final ArrayList<Event> allEvents = new ArrayList<>();
     // events currently shown in the list (after filtering)
     private final ArrayList<Event> visibleEvents = new ArrayList<>();
+    private LoadingOverlay loading;
 
 
     /**
@@ -76,23 +78,39 @@ public class OrganizerViewEventsListFragment extends Fragment {
 
         fm = FirebaseManager.getInstance();
 
+        // Attach loading screen
+        ViewGroup root = v.findViewById(R.id.organizer_events_root);
+        View overlayView = getLayoutInflater().inflate(
+                R.layout.loading_screen,
+                root,
+                false);
+
+        // Add overlayView to root
+        root.addView(overlayView);
+
+        // Adds loading screen controller
+        loading = new LoadingOverlay(overlayView, null);
 
         User currentUser = UserEventRepository.getInstance().getUser().getValue();
         if (currentUser == null) {
             Log.e("ViewOrganizerEventsList", "Current user is null, cannot load events");
             return; // or show a message / navigate away
         }
+
         //get current userId from repo
         String userId = currentUser.getUserId();
 
         //Setup adapter with events
         eventListAdapter = new EventListAdapter(requireContext(), visibleEvents);
-
         listView.setAdapter(eventListAdapter);
+
+        // show spinner while loading Firestore data
+        loading.show();
 
         fm.getOrganizedEventsOnce(userId, new FirebaseManager.FirebaseCallback<ArrayList<Event>>() {
             @Override
             public void onSuccess(ArrayList<Event> events) {
+                if (!isAdded()) return;
                 allEvents.clear();
                 allEvents.addAll(events);
 
@@ -100,12 +118,20 @@ public class OrganizerViewEventsListFragment extends Fragment {
                 visibleEvents.clear();
                 visibleEvents.addAll(events);
                 refreshListFromVisible();
+                if (loading != null) loading.hide();
 
             }
 
             @Override
             public void onFailure(Exception e) {
                 Log.e("ViewOrgEvents", "Failed to load organized events", e);
+
+                if (!isAdded()) return;
+
+                if (getContext() != null) {
+                    Toast.makeText(getContext(), "Failed to load events", Toast.LENGTH_SHORT).show();
+                }
+                if (loading != null) loading.hide();
             }
         });
 
