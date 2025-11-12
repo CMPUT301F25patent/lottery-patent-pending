@@ -21,7 +21,8 @@
             android:layout_gravity="center"
             android:text="Name Of Event"
             android:textStyle="bold"
-            android:textSize="25sp" />
+            android:textSize="25sp"
+            android:textColor="@color/black"/>
     </LinearLayout>
 
     <!-- Time block (registration window or event time) -->
@@ -37,14 +38,16 @@
             android:layout_height="wrap_content"
             android:text="Time"
             android:textStyle="bold"
-            android:textSize="14sp" />
+            android:textSize="14sp"
+            android:textColor="@color/black"/>
 
         <TextView
             android:id="@+id/eventTime"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Oct 20, 2025 7:00 PM – 9:00 PM"
-            android:textSize="13sp" />
+            android:textSize="13sp"
+            android:textColor="@color/black"/>
     </LinearLayout>
 
     <!-- Location block -->
@@ -60,14 +63,16 @@
             android:layout_height="wrap_content"
             android:text="Location"
             android:textStyle="bold"
-            android:textSize="14sp" />
+            android:textSize="14sp"
+            android:textColor="@color/black"/>
 
         <TextView
             android:id="@+id/eventLocation"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Location of event"
-            android:textSize="13sp" />
+            android:textSize="13sp"
+            android:textColor="@color/black"/>
     </LinearLayout>
 
 </LinearLayout>
