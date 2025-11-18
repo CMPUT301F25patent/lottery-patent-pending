@@ -68,6 +68,12 @@ public class AdminActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_admin);
 
+        Button notifLogButton = findViewById(R.id.btnLog);
+        notifLogButton.setOnClickListener(v -> {
+            Intent intent = new Intent(AdminActivity.this, NotificationAdminActivity.class);
+            startActivity(intent);
+        });
+
         firebaseManager = FirebaseManager.getInstance();
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
