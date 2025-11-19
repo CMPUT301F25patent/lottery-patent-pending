@@ -122,20 +122,28 @@ public class AttendeeQRScannerFragment extends Fragment {
                     public void onSuccess(Event result) {
                         UserEventRepository.getInstance().setEvent(result);
 
+                        if (!isAdded()) return;
+                        //create the fragment with eventId
+                        Fragment f = new AttendeeEventDetailsFragment();
+                        // Launches new fragment
+                        requireActivity().getSupportFragmentManager().beginTransaction()
+                                .replace(R.id.attendeeContainer, f)
+                                .commit();
+
                     }
 
                     @Override
                     public void onFailure(Exception e) {
                         Log.e("EventLoad","Failed to load EVENT", e);
+
+                        if (isAdded()){
+                            Toast.makeText(requireContext(), "Failed to load event", Toast.LENGTH_SHORT).show();
+                            // Optionally restart scan:
+                            if (codeScanner != null) codeScanner.startPreview();
+                        }
                     }
                 });
 
-                //create the fragment with eventId
-                Fragment f = new AttendeeEventDetailsFragment();
-                // Launches new fragment
-                    requireActivity().getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.attendeeContainer, f)
-                        .commit();
             } else {
                 Toast.makeText(requireContext(), "Not an event QR for this app", Toast.LENGTH_SHORT).show();
                 codeScanner.startPreview();

@@ -10,6 +10,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 
 import com.example.lotterypatentpending.R;
+import com.example.lotterypatentpending.helpers.DateTimeFormatHelper;
 import com.example.lotterypatentpending.models.Event;
 
 import java.util.List;
@@ -35,14 +36,17 @@ public class EventListAdapter extends ArrayAdapter<Event> {
 
         Event event = getItem(position);
 
-        TextView nameTV = convertView.findViewById(R.id.eventName);
-        TextView locationTV = convertView.findViewById(R.id.eventLocation);
-        TextView timeTV = convertView.findViewById(R.id.eventTime);
+        TextView name = convertView.findViewById(R.id.eventName);
+        TextView location = convertView.findViewById(R.id.eventLocation);
+        TextView eventTime = convertView.findViewById(R.id.eventTime);
+        TextView regTime = convertView.findViewById(R.id.regTime);
 
         if (event != null) {
-            nameTV.setText(event.getTitle());
-            locationTV.setText(event.getLocation());
-            timeTV.setText(event.getFormattedRegWindow());
+            name.setText(event.getTitle());
+            location.setText(event.getLocation());
+            String formattedTime = DateTimeFormatHelper.formatTimestamp(event.getDate());
+            eventTime.setText(formattedTime);
+            regTime.setText(event.getFormattedRegWindow());
         }
 
         return convertView;
