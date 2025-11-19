@@ -16,7 +16,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Registration Start Date"
+            android:text="Start Date"
             android:textStyle="bold"
             android:textColor="@color/white" />
 
@@ -42,7 +42,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Registration End Date"
+            android:text="End Date"
             android:textStyle="bold"
             android:textColor="@color/white" />
 
