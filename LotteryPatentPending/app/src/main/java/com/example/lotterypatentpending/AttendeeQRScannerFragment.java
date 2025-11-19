@@ -1,7 +1,6 @@
 package com.example.lotterypatentpending;
 
 import android.Manifest;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
@@ -61,7 +60,7 @@ public class AttendeeQRScannerFragment extends Fragment {
      * Passes the layout resource for this fragment to the superclass constructor.
      */
     public AttendeeQRScannerFragment() {
-        super(R.layout.fragment_attendee_qr_scanner);
+        super(R.layout.attendee_fragment_qr_scanner);
     }
     /**
      * Called immediately after {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}
@@ -123,20 +122,28 @@ public class AttendeeQRScannerFragment extends Fragment {
                     public void onSuccess(Event result) {
                         UserEventRepository.getInstance().setEvent(result);
 
+                        if (!isAdded()) return;
+                        //create the fragment with eventId
+                        Fragment f = new AttendeeEventDetailsFragment();
+                        // Launches new fragment
+                        requireActivity().getSupportFragmentManager().beginTransaction()
+                                .replace(R.id.attendeeContainer, f)
+                                .commit();
+
                     }
 
                     @Override
                     public void onFailure(Exception e) {
                         Log.e("EventLoad","Failed to load EVENT", e);
+
+                        if (isAdded()){
+                            Toast.makeText(requireContext(), "Failed to load event", Toast.LENGTH_SHORT).show();
+                            // Optionally restart scan:
+                            if (codeScanner != null) codeScanner.startPreview();
+                        }
                     }
                 });
 
-                //create the fragment with eventId
-                Fragment f = new AttendeeEventDetailsFragment();
-                // Launches new fragment
-                    requireActivity().getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.attendeeContainer, f)
-                        .commit();
             } else {
                 Toast.makeText(requireContext(), "Not an event QR for this app", Toast.LENGTH_SHORT).show();
                 codeScanner.startPreview();

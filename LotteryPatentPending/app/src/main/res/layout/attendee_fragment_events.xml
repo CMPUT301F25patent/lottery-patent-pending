@@ -1,12 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/grey"
+    android:id="@+id/attendee_events_root">
 
+<!--    search bar-->
     <LinearLayout
         android:id="@+id/attendee_events_search_container"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:padding="8dp"
@@ -14,31 +18,37 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
+        <!--searchbar and filter-->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/attendee_events_search_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="2dp"
-            app:boxBackgroundMode="none"
-            app:endIconMode="clear_text"
-            app:endIconTint="@color/white">
+
+            app:startIconDrawable="@drawable/ic_search"
+            app:startIconTint="@color/white"
+
+            app:endIconMode="custom"
+            app:endIconDrawable="@drawable/filter_solid_full"
+            app:endIconTint="@color/white"
+            app:endIconContentDescription="@string/filter">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/searchInput"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="text"
-                android:textSize="16sp"
                 android:textColor="@color/white"
-                android:drawableStart="@drawable/ic_search"
-                android:drawablePadding="10dp"
                 android:background="@drawable/search_box_background"
+                android:inputType="text"
                 android:imeOptions="actionSearch"/>
+
+
         </com.google.android.material.textfield.TextInputLayout>
 
     </LinearLayout>
 
 
+<!--    buttons bar-->
     <LinearLayout
 
         android:id="@+id/attendee_events_linearlayout_buttons_bar"
@@ -54,18 +64,19 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_search"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
+            android:layout_weight="1"
             android:layout_height="wrap_content"
             android:text="@string/search"
             android:textSize="12sp"
-            android:minWidth="0dp"
             android:layout_margin="5dp"
             android:backgroundTint="@color/light_blue_dark"
             android:textColor="@color/white" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/attendee_events_button_browse_events"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
+            android:layout_weight="1"
             android:layout_height="wrap_content"
             android:text="@string/browse_events"
             android:textColor="@color/black"
@@ -74,18 +85,35 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/attendee_events_button_event_history"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
+            android:layout_weight="1"
             android:layout_height="wrap_content"
             android:text="@string/event_history"
             android:textColor="@color/black"
             android:backgroundTint="@color/white_grey"
             android:layout_margin="5dp" />
+
     </LinearLayout>
 
     <ListView
         android:id="@+id/attendee_events_listview_events_list"
         android:layout_width="0dp"
         android:layout_height="0dp"
+
+        android:background="@drawable/bg_list_rounded"
+        android:layout_margin="10dp"
+        android:padding="20dp"
+        android:clipToPadding="false"
+
+
+        android:divider="@android:color/transparent"
+        android:dividerHeight="12dp"
+
+        android:scrollbarThumbVertical="@drawable/scrollbar_thumb_vertical"
+        android:scrollbarTrackVertical="@android:color/transparent"
+        android:scrollbars="vertical"
+        android:scrollbarStyle="outsideOverlay"
+
         app:layout_constraintTop_toBottomOf="@id/attendee_events_linearlayout_buttons_bar"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"

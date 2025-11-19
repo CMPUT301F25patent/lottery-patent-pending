@@ -21,26 +21,19 @@
  *   - Some asynchronous error cases (e.g., network disconnect) may not
  *     propagate up to UI properly.
  *
- * AUTHOR: Ritvik Das
- * CONTRIBUTORS: Erik Bacsa
+ * @AUTHOR: Ritvik Das
+ * @CONTRIBUTORS: Erik Bacsa
  * -----------------------------------------------------------------------------
  */
 
 package com.example.lotterypatentpending.models;
 
-import android.os.Build;
 import android.util.Log;
 import androidx.core.util.Pair;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.HashMap;
-
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 import com.example.lotterypatentpending.exceptions.UserNotFoundException;
 import com.google.firebase.Timestamp;
@@ -48,7 +41,6 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.SetOptions;
@@ -166,7 +158,7 @@ public class FirebaseManager {
     }
 
     public void deleteEventFromDB(Event event){
-        CollectionReference eventsRef = db.collection("Events");
+        CollectionReference eventsRef = db.collection("events");
         DocumentReference eventDocRef = eventsRef.document(event.getId());
         eventDocRef.delete();
     }
@@ -199,22 +191,10 @@ public class FirebaseManager {
         data.put("waitingListCapacity", event.getWaitingListCapacity());
         data.put("geolocationRequired", event.isGeolocationRequired());
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy hh:mm a");
+        data.put("date",          event.getDate());         // Timestamp or null
+        data.put("regStartDate",  event.getRegStartDate()); // Timestamp or null
+        data.put("regEndDate",    event.getRegEndDate());   // Timestamp or null  : null);
 
-            // Dates & times as strings
-            data.put("event_date", event.getDate() != null
-                    ? event.getDate().format(formatter)
-                : null);
-
-            data.put("regStartDate", event.getRegStartDate() != null
-                    ? event.getRegStartDate().format(formatter)
-                    : null);
-
-            data.put("regEndDate", event.getRegEndDate() != null
-                    ? event.getRegEndDate().format(formatter)
-                    : null);
-        }
 
 
         // Organizer is just a User
@@ -299,7 +279,7 @@ public class FirebaseManager {
             organizer = new User(id, name, email, contact, isAdmin);
         } else if (orgObj instanceof String) {
             organizer = new User();
-            organizer.setName((String) orgObj);
+            organizer.setUserId((String) orgObj);
         }
 
         // Create Event object
@@ -309,43 +289,20 @@ public class FirebaseManager {
         if (data.get("id") != null)
             event.setId((String) data.get("id"));
 
-        // Date parsing - use SimpleDateFormat for compatibility
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault());
-
-        try {
-            Object dateObj = data.get("date_time");
-            if (dateObj != null) {
-                Date parsed = sdf.parse(dateObj.toString());
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && parsed != null) {
-                    event.setDate(parsed.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
-                }
-            }
-        } catch (Exception e) {
-            Log.w("FirebaseManager", "Failed to parse date_time: " + e.getMessage());
+        // Read timestamps directly
+        Object dateObj = data.get("date");
+        if (dateObj instanceof Timestamp) {
+            event.setDate((Timestamp) dateObj);
         }
 
-        try {
-            Object regStartObj = data.get("regStartDate");
-            if (regStartObj != null) {
-                Date parsed = sdf.parse(regStartObj.toString());
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && parsed != null) {
-                    event.setRegStartDate(parsed.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
-                }
-            }
-        } catch (Exception e) {
-            Log.w("FirebaseManager", "Failed to parse regStartDate: " + e.getMessage());
+        Object regStartObj = data.get("regStartDate");
+        if (regStartObj instanceof Timestamp) {
+            event.setRegStartDate((Timestamp) regStartObj);
         }
 
-        try {
-            Object regEndObj = data.get("regEndDate");
-            if (regEndObj != null) {
-                Date parsed = sdf.parse(regEndObj.toString());
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && parsed != null) {
-                    event.setRegEndDate(parsed.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
-                }
-            }
-        } catch (Exception e) {
-            Log.w("FirebaseManager", "Failed to parse regEndDate: " + e.getMessage());
+        Object regEndObj = data.get("regEndDate");
+        if (regEndObj instanceof Timestamp) {
+            event.setRegEndDate((Timestamp) regEndObj);
         }
 
         return event;
@@ -621,8 +578,7 @@ public class FirebaseManager {
                 .addOnFailureListener(callback::onFailure);
     }
 
-    public void getOrganizedEventsOnce(String userId,
-                                       FirebaseCallback<ArrayList<Event>> callback) {
+    public void getOrganizedEventsOnce(String userId, FirebaseCallback<ArrayList<Event>> callback) {
         db.collection("events")
                 // IMPORTANT: match the field name used in eventToMap
                 .whereEqualTo("organizer", userId)

@@ -3,41 +3,101 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="10dp">
+    android:padding="10dp"
+    android:layout_margin="50dp"
+    android:background="@drawable/bg_event_item">
 
-    <TextView
-        android:id="@+id/eventTitle"
+    <!-- Event Name block -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Event Title"
-        android:textStyle="bold"
-        android:textSize="18sp" />
+        android:orientation="vertical"
+        android:layout_marginBottom="8dp">
 
-    <TextView
-        android:id="@+id/eventDescription"
+        <TextView
+            android:id="@+id/eventName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="Name Of Event"
+            android:textStyle="bold"
+            android:textSize="25sp"
+            android:textColor="@color/black"/>
+    </LinearLayout>
+
+    <!-- Event Start Date-->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Description"
-        android:textSize="14sp" />
+        android:orientation="vertical"
+        android:layout_marginBottom="8dp">
 
-    <TextView
-        android:id="@+id/eventLocation"
+        <TextView
+            android:id="@+id/eventTimeLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Start Date"
+            android:textStyle="bold"
+            android:textSize="14sp"
+            android:textColor="@color/black"/>
+
+        <TextView
+            android:id="@+id/eventTime"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Oct 20, 2025 7:00 PM – 9:00 PM"
+            android:textSize="13sp"
+            android:textColor="@color/black"/>
+
+    </LinearLayout>
+
+    <!-- Registration time -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Location"
-        android:textSize="13sp" />
+        android:orientation="vertical"
+        android:layout_marginBottom="8dp">
 
-    <TextView
-        android:id="@+id/eventCapacity"
+        <TextView
+            android:id="@+id/eventRegTime"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Registration Time"
+            android:textStyle="bold"
+            android:textSize="14sp"
+            android:textColor="@color/black"/>
+        <TextView
+            android:id="@+id/regTime"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Registration Time"
+            android:textSize="13sp"
+            android:textColor="@color/black"/>
+    </LinearLayout>
+
+    <!-- Location -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Capacity"
-        android:textSize="13sp" />
+        android:orientation="vertical"
+        android:layout_marginBottom="8dp">
 
-    <TextView
-        android:id="@+id/eventOrganizer"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Organizer"
-        android:textSize="13sp" />
+        <TextView
+            android:id="@+id/eventLocationLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Location"
+            android:textStyle="bold"
+            android:textSize="14sp"
+            android:textColor="@color/black"/>
+
+        <TextView
+            android:id="@+id/eventLocation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Location of event"
+            android:textSize="13sp"
+            android:textColor="@color/black"/>
+    </LinearLayout>
+
 </LinearLayout>
