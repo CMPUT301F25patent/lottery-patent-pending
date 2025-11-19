@@ -206,8 +206,9 @@ public class AttendeeEventsFragment extends Fragment {
             if (!matchesText(e.getTitle(), q)) continue;
 
             // User range: [filterStartTime, filterEndTime]
-            // Event reg window: [e.getRegStartDate(), e.getRegEndDate()]
-            if (!overlaps(e.getRegStartDate(), e.getRegEndDate(), filterStartTime, filterEndTime))
+            // Event start date
+            //Return false whenever not in date, return true when within date
+            if (!overlaps(e.getDate(), filterStartTime, filterEndTime))
                 continue;
             shownEventsList.add(e);
         }
@@ -215,14 +216,13 @@ public class AttendeeEventsFragment extends Fragment {
         eventsListAdapter.notifyDataSetChanged();
     }
 
-    private static boolean overlaps(@Nullable Timestamp aStart,
-                                    @Nullable Timestamp aEnd,
-                                    @Nullable Timestamp bStart,
-                                    @Nullable Timestamp bEnd) {
-        // if aEnd(event) < bStart(range) do not overlap then false
-        if (aEnd != null && bStart != null && aEnd.compareTo(bStart) < 0) return false;
-        // if bEnd(event) < aStart(range) do not overlap then false
-        if (bEnd != null && aStart != null && bEnd.compareTo(aStart) < 0) return false;
+    private static boolean overlaps(@Nullable Timestamp date, @Nullable Timestamp start, @Nullable Timestamp end) {
+        //cannot filter empty event show all events.
+        if (date == null) return true;
+
+        if (start != null && date.compareTo(start) < 0) return false;
+        if (end != null && date.compareTo(end) > 0) return false;
+
         return true;
     }
 
@@ -274,8 +274,8 @@ public class AttendeeEventsFragment extends Fragment {
 
         filterPopup.setOnDismissListener(() -> {
 
-            filterStartTime = DateTimePickerHelper.parseToTimestamp(startDate.getText().toString());
-            filterEndTime = DateTimePickerHelper.parseToTimestamp(endDate.getText().toString());
+            filterStartTime = DateTimeFormatHelper.parseTimestamp(startDate.getText().toString());
+            filterEndTime = DateTimeFormatHelper.parseTimestamp(endDate.getText().toString());
 
             TextInputEditText searchText = requireView().findViewById(R.id.searchInput);
             applyFilter(getQuery(searchText));
@@ -298,8 +298,6 @@ public class AttendeeEventsFragment extends Fragment {
             // close popup
             if (filterPopup != null) filterPopup.dismiss();
         });
-
-
 
         // anchor under icon
         filterPopup.showAsDropDown(anchor, 0, 0);

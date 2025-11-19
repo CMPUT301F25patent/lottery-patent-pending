@@ -312,11 +312,11 @@
 
 
         <!-- Cancel Button -->
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/cancelButton"
             android:layout_width="0dp"
             android:layout_height="60dp"
-            android:background="#000000"
+            android:backgroundTint="@color/white_grey"
             android:text="Cancel"
             android:textColor="@android:color/white"
             android:textSize="18sp"
@@ -328,11 +328,11 @@
             android:layout_marginEnd="10dp" />
 
         <!-- Create Button -->
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/createEventButton"
             android:layout_width="0dp"
             android:layout_height="60dp"
-            android:background="#2C64FF"
+            android:backgroundTint="@color/white_grey"
             android:text="Create Event"
             android:textColor="@android:color/white"
             android:textSize="18sp"
@@ -342,6 +342,7 @@
             android:layout_marginTop="30dp"
             android:layout_marginStart="10dp"
             android:layout_marginEnd="20dp" />
+
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.core.widget.NestedScrollView>
