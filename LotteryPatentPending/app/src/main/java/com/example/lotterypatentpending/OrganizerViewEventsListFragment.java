@@ -13,12 +13,15 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.fragment.NavHostFragment;
 
 import com.example.lotterypatentpending.adapters.EventListAdapter;
 import com.example.lotterypatentpending.helpers.LoadingOverlay;
 import com.example.lotterypatentpending.models.Event;
 import com.example.lotterypatentpending.models.FirebaseManager;
 import com.example.lotterypatentpending.models.User;
+import com.example.lotterypatentpending.viewModels.EventViewModel;
 import com.example.lotterypatentpending.viewModels.UserEventRepository;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
@@ -135,19 +138,18 @@ public class OrganizerViewEventsListFragment extends Fragment {
             }
         });
 
-//        TODO: implement view event
-//    // Clicking a row opens that event (from filtered list)
-//        listView.setOnItemClickListener((parent, view, position, id) -> {
-//        if (position < 0 || position >= visibleEvents.size()) return;
-//
-//        Event clicked = visibleEvents.get(position);
-//        EventViewModel evm =
-//                new ViewModelProvider(requireActivity()).get(EventViewModel.class);
-//        evm.setEvent(clicked);
-//
-//        NavHostFragment.findNavController(this)
-//                .navigate(R.id.action_viewEventsList_to_Event_View);
-//    });
+    // Clicking a row opens that event (from filtered list)
+        listView.setOnItemClickListener((parent, view, position, id) -> {
+        if (position < 0 || position >= visibleEvents.size()) return;
+
+        Event clicked = visibleEvents.get(position);
+        EventViewModel evm =
+                new ViewModelProvider(requireActivity()).get(EventViewModel.class);
+        evm.setEvent(clicked);
+
+        NavHostFragment.findNavController(this)
+                .navigate(R.id.action_viewEventsList_to_Event_View);
+    });
 
         //Click search button
         searchButton.setOnClickListener(view ->
