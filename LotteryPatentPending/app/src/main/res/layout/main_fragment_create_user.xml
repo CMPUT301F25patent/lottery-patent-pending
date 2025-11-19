@@ -1,115 +1,115 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:padding="20dp"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:padding="20dp">
 
     <LinearLayout
-        android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
 
         <TextView
-            android:text="Create your profile"
-            android:textSize="20sp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
             android:layout_gravity="center"
-            android:textColor="@color/white_grey" />
+            android:layout_marginBottom="16dp"
+            android:text="Create your profile"
+            android:textColor="@color/white_grey"
+            android:textSize="20sp" />
 
         <!-- Name row -->
         <LinearLayout
-            android:orientation="horizontal"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
 
             <TextView
                 android:id="@+id/tv_name_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Name:"
-                android:textColor="@color/white_grey"
                 android:layout_gravity="center_vertical"
-                android:layout_marginEnd="8dp" />
+                android:layout_marginEnd="8dp"
+                android:text="Name:"
+                android:textColor="@color/white_grey" />
 
             <EditText
                 android:id="@+id/et_name"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:padding="4dp"
                 android:hint="Full name"
-                android:textColorHint="@color/white_grey"
+                android:inputType="textPersonName"
+                android:padding="4dp"
                 android:textColor="@color/white"
-                android:inputType="textPersonName" />
+                android:textColorHint="@color/white_grey" />
         </LinearLayout>
 
         <!-- Email row -->
         <LinearLayout
-            android:orientation="horizontal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp">
+            android:layout_marginTop="12dp"
+            android:orientation="horizontal">
 
             <TextView
                 android:id="@+id/tv_email_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Email:"
-                android:textColor="@color/white_grey"
                 android:layout_gravity="center_vertical"
-                android:layout_marginEnd="8dp" />
+                android:layout_marginEnd="8dp"
+                android:text="Email:"
+                android:textColor="@color/white_grey" />
 
             <EditText
                 android:id="@+id/et_email"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:padding="4dp"
                 android:hint="Email"
-                android:textColorHint="@color/white_grey"
+                android:inputType="textEmailAddress"
+                android:padding="4dp"
                 android:textColor="@color/white"
-                android:inputType="textEmailAddress" />
+                android:textColorHint="@color/white_grey" />
         </LinearLayout>
 
         <!-- Phone row -->
         <LinearLayout
-            android:orientation="horizontal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp">
+            android:layout_marginTop="12dp"
+            android:orientation="horizontal">
 
             <TextView
                 android:id="@+id/tv_phone_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Phone:"
-                android:textColor="@color/white_grey"
                 android:layout_gravity="center_vertical"
-                android:layout_marginEnd="8dp" />
+                android:layout_marginEnd="8dp"
+                android:text="Phone:"
+                android:textColor="@color/white_grey" />
 
             <EditText
                 android:id="@+id/et_phone"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:padding="4dp"
                 android:hint="Phone Number (optional)"
-                android:textColorHint="@color/white_grey"
+                android:inputType="phone"
+                android:padding="4dp"
                 android:textColor="@color/white"
-                android:inputType="phone" />
+                android:textColorHint="@color/white_grey" />
         </LinearLayout>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_save"
-            android:textColor="@color/black"
-            android:text="Save"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center"
             android:layout_marginTop="20dp"
             android:backgroundTint="@color/white_grey"
-            android:layout_gravity="center" />
+            android:text="Save"
+            android:textColor="@color/black" />
 
     </LinearLayout>
-</ScrollView>
+</LinearLayout>

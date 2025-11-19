@@ -25,7 +25,7 @@
             android:textColor="@color/black"/>
     </LinearLayout>
 
-    <!-- Time block (registration window or event time) -->
+    <!-- Event Start Date-->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -36,7 +36,7 @@
             android:id="@+id/eventTimeLabel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Time"
+            android:text="Start Date"
             android:textStyle="bold"
             android:textSize="14sp"
             android:textColor="@color/black"/>
@@ -48,9 +48,34 @@
             android:text="Oct 20, 2025 7:00 PM – 9:00 PM"
             android:textSize="13sp"
             android:textColor="@color/black"/>
+
     </LinearLayout>
 
-    <!-- Location block -->
+    <!-- Registration time -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginBottom="8dp">
+
+        <TextView
+            android:id="@+id/eventRegTime"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Registration Time"
+            android:textStyle="bold"
+            android:textSize="14sp"
+            android:textColor="@color/black"/>
+        <TextView
+            android:id="@+id/regTime"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Registration Time"
+            android:textSize="13sp"
+            android:textColor="@color/black"/>
+    </LinearLayout>
+
+    <!-- Location -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
