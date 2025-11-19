@@ -34,8 +34,8 @@ public class EventViewFragment extends Fragment {
     private ImageView qrView;
     private String eventId;
     private Button generateQRCode;
-    private ImageButton backButton;
-    private ImageButton homeButton;
+//    private ImageButton backButton;
+//    private ImageButton homeButton;
     private CheckBox geoLocationReq;
     private ImageButton notiButton;
 
@@ -70,8 +70,8 @@ public class EventViewFragment extends Fragment {
         waitListCap = v.findViewById(R.id.waitingListCap);
         generateQRCode = v.findViewById(R.id.qrButton);
         qrView = v.findViewById(R.id.qrImage);
-        backButton = v.findViewById(R.id.backButton);
-        homeButton = v.findViewById(R.id.homeButton);
+//        backButton = v.findViewById(R.id.backButton);
+//        homeButton = v.findViewById(R.id.homeButton);
         geoLocationReq = v.findViewById(R.id.geoCheck);
         notiButton = v.findViewById(R.id.notiBtn);
 
@@ -109,8 +109,8 @@ public class EventViewFragment extends Fragment {
             generateEventQRCode(eventId, qrView);
         });
 
-        backButton.setOnClickListener(view -> NavHostFragment.findNavController(this).popBackStack());
-        homeButton.setOnClickListener(view -> requireActivity().finish());
+//        backButton.setOnClickListener(view -> NavHostFragment.findNavController(this).popBackStack());
+//        homeButton.setOnClickListener(view -> requireActivity().finish());
     }
 
     /**
