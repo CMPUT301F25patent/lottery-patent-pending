@@ -44,6 +44,8 @@ public class EventListAdapter extends ArrayAdapter<Event> {
         if (event != null) {
             name.setText(event.getTitle());
             location.setText(event.getLocation());
+
+            //use helper to convert Timestamp of UTC time to local time(string)
             String formattedTime = DateTimeFormatHelper.formatTimestamp(event.getDate());
             eventTime.setText(formattedTime);
             regTime.setText(event.getFormattedRegWindow());
