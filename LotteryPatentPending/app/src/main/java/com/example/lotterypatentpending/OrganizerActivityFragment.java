@@ -10,9 +10,11 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.example.lotterypatentpending.models.User;
+import com.example.lotterypatentpending.viewModels.EventViewModel;
 import com.example.lotterypatentpending.viewModels.UserEventRepository;
 
 /**
@@ -69,8 +71,12 @@ public class OrganizerActivityFragment extends Fragment {
         }
 
         create_event.setOnClickListener(view -> {
+            EventViewModel viewModel = new ViewModelProvider(requireActivity()).get(EventViewModel.class);
+            viewModel.setEvent(null);
+
             NavHostFragment.findNavController(OrganizerActivityFragment.this)
                     .navigate(R.id.action_main_to_createEvent);
+
         });
 
         view_events.setOnClickListener(view -> {

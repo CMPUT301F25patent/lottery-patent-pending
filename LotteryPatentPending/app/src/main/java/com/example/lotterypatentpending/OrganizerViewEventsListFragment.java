@@ -12,6 +12,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
@@ -24,6 +25,7 @@ import com.example.lotterypatentpending.models.User;
 import com.example.lotterypatentpending.viewModels.EventViewModel;
 import com.example.lotterypatentpending.viewModels.UserEventRepository;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputEditText;
 
 import java.util.ArrayList;
@@ -104,7 +106,38 @@ public class OrganizerViewEventsListFragment extends Fragment {
         String userId = currentUser.getUserId();
 
         //Setup adapter with events
-        eventListAdapter = new EventListAdapter(requireContext(), visibleEvents);
+        eventListAdapter = new EventListAdapter(
+                requireContext(),
+                visibleEvents,
+                new EventListAdapter.OnEventActionListener() {
+
+                    @Override
+                    public void onEdit(Event event) {
+                        // 1. Put the event into the shared ViewModel
+                        EventViewModel viewModel = new ViewModelProvider(requireActivity()).get(EventViewModel.class);
+                        viewModel.setEvent(event);
+
+                        Bundle bundle = new Bundle();
+                        bundle.putBoolean("isEdit", true);
+
+                        // 2. Navigate to your EventView/Edit fragment
+                        NavHostFragment.findNavController(OrganizerViewEventsListFragment.this)
+                                .navigate(R.id.action_viewEventsList_to_Edit_Event_view, bundle);
+                    }
+
+                    @Override
+                    public void onDelete(Event event) {
+                        new MaterialAlertDialogBuilder(requireContext())
+                                .setTitle("Delete Event")
+                                .setMessage("Are you sure you want to delete \"" + event.getTitle() + "\"?")
+                                .setPositiveButton("Delete", (dialog, which) -> {
+                                    deleteEvent(event);
+                                })
+                                .setNegativeButton("Cancel", null)
+                                .show();
+                    }
+                });
+
         listView.setAdapter(eventListAdapter);
 
         // show spinner while loading Firestore data
@@ -207,6 +240,12 @@ public class OrganizerViewEventsListFragment extends Fragment {
         }
         visibleEvents.clear();
         visibleEvents.addAll(matches);
+        refreshListFromVisible();
+    }
+
+    public void deleteEvent(Event event){
+        visibleEvents.remove(event);
+        fm.deleteEvent(event.getId());
         refreshListFromVisible();
     }
 
