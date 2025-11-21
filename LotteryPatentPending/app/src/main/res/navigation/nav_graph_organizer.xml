@@ -47,7 +47,7 @@
     <fragment
         android:id="@+id/ViewEventsListFragment"
         android:name="com.example.lotterypatentpending.OrganizerViewEventsListFragment"
-        android:label="View Events List">
+        android:label="View Events">
 
         <action
             android:id="@+id/action_viewEventsList_to_Event_View"
