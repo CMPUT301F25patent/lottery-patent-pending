@@ -104,7 +104,31 @@ public class OrganizerViewEventsListFragment extends Fragment {
         String userId = currentUser.getUserId();
 
         //Setup adapter with events
-        eventListAdapter = new EventListAdapter(requireContext(), visibleEvents);
+        eventListAdapter = new EventListAdapter(
+                requireContext(),
+                visibleEvents,
+                new EventListAdapter.OnEventActionListener() {
+
+                    @Override
+                    public void onEdit(Event event) {
+                        // 1. Put the event into the shared ViewModel
+                        EventViewModel viewModel = new ViewModelProvider(requireActivity()).get(EventViewModel.class);
+                        viewModel.setEvent(event);
+
+                        Bundle bundle = new Bundle();
+                        bundle.putBoolean("isEdit", true);
+
+                        // 2. Navigate to your EventView/Edit fragment
+                        NavHostFragment.findNavController(OrganizerViewEventsListFragment.this)
+                                .navigate(R.id.action_viewEventsList_to_Edit_Event_view, bundle);
+                    }
+
+                    @Override
+                    public void onDelete(Event event) {
+                        //
+                    }
+                });
+
         listView.setAdapter(eventListAdapter);
 
         // show spinner while loading Firestore data

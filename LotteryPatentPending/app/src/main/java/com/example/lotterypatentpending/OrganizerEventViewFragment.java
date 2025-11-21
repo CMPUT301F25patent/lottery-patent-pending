@@ -32,7 +32,7 @@ import com.example.lotterypatentpending.viewModels.EventViewModel;
  */
 public class OrganizerEventViewFragment extends Fragment {
 
-    private TextView eventTitle, eventDescr, eventLocation, eventDate, eventRegStart, eventRegEnd, maxEntrants, waitListCap;
+    private TextView eventTitle, eventDescr, eventLocation, eventDate, eventRegStart, eventRegEnd, maxEntrants, waitListCap, eventTag;
     private ImageView qrView;
     private String eventId;
     private Button generateQRCode;
@@ -72,6 +72,7 @@ public class OrganizerEventViewFragment extends Fragment {
         eventRegEnd = v.findViewById(R.id.regEnd);
         maxEntrants = v.findViewById(R.id.maxEntrants);
         waitListCap = v.findViewById(R.id.waitingListCap);
+        eventTag = v.findViewById(R.id.tag);
         generateQRCode = v.findViewById(R.id.qrButton);
         qrView = v.findViewById(R.id.qrImage);
         geoLocationReq = v.findViewById(R.id.geoCheck);
@@ -89,11 +90,12 @@ public class OrganizerEventViewFragment extends Fragment {
             String location = event.getLocation();
             int wlCap = event.getWaitingListCapacity();
             String waitListText = "Waiting List Capacity: ";
+            String tagText = "Tag: " + event.getTag();
 
             if(wlCap == -1){
                 waitListText += "N/A";
             }else{
-                waitListText += + event.getWaitingListCapacity();
+                waitListText += event.getWaitingListCapacity();
             }
 
             if(location == null || location.isEmpty()){
@@ -126,6 +128,7 @@ public class OrganizerEventViewFragment extends Fragment {
             eventRegEnd.setText(regEndText);
             maxEntrants.setText(maxEntrantsText);
             waitListCap.setText(waitListText);
+            eventTag.setText(tagText);
             eventId = event.getId();
 
             geoLocationReq.setChecked(event.isGeolocationRequired());

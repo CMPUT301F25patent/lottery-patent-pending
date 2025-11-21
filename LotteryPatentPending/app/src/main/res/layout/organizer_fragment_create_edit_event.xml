@@ -14,7 +14,7 @@
         android:background="@drawable/bg_event_form">
 
         <TextView
-            android:id="@+id/createNewEventText"
+            android:id="@+id/pageTitleText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Create New Event"
@@ -35,7 +35,7 @@
             android:padding="16dp"
             android:scaleType="centerInside"
             android:src="@drawable/ic_launcher_foreground"
-            app:layout_constraintTop_toBottomOf="@id/createNewEventText"
+            app:layout_constraintTop_toBottomOf="@id/pageTitleText"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginTop="20dp" />

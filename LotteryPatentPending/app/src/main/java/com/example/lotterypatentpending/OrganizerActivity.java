@@ -70,6 +70,13 @@ public class OrganizerActivity extends AppCompatActivity {
 
         // (Optional) update toolbar title from destination labels
         navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
+            if (destination.getId() == R.id.CreateEditEventFragment) {
+                boolean isEdit = arguments != null && arguments.getBoolean("isEdit", false);
+
+                toolbar.setTitle(isEdit ? "Edit Event" : "Create Event");
+                return;
+            }
+
             if (destination.getLabel() != null) {
                 toolbar.setTitle(destination.getLabel());
             }
