@@ -5,7 +5,11 @@
     android:orientation="vertical"
     android:padding="10dp"
     android:layout_margin="50dp"
-    android:background="@drawable/bg_event_item">
+    android:background="@drawable/bg_event_item"
+    android:descendantFocusability="blocksDescendants"
+    android:focusable="false"
+    android:focusableInTouchMode="false"
+    android:clickable="false">
 
     <!-- Event Name block -->
     <LinearLayout
@@ -115,6 +119,40 @@
             android:text="Location of event"
             android:textSize="13sp"
             android:textColor="@color/black"/>
+    </LinearLayout>
+
+    <!-- Edit/Delete Row -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="end"
+        android:paddingTop="8dp">
+
+        <ImageButton
+            android:id="@+id/btnEdit"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:contentDescription="Edit"
+            android:padding="2dp"
+            android:src="@drawable/baseline_edit_24"
+            android:background="@android:color/transparent"
+            android:focusable="false"
+            android:focusableInTouchMode="false"
+            android:clickable="true"/>
+
+        <ImageButton
+            android:id="@+id/btnDelete"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:src="@drawable/ic_delete"
+            android:padding="2dp"
+            android:contentDescription="Delete"
+            android:layout_marginStart="16dp"
+            android:background="@android:color/transparent"
+            android:focusable="false"
+            android:focusableInTouchMode="false"
+            android:clickable="true"/>
     </LinearLayout>
 
 </LinearLayout>
