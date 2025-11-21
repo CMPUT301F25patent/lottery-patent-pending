@@ -43,7 +43,9 @@ public class EventListAdapter extends ArrayAdapter<Event> {
 
         if (event != null) {
             name.setText(event.getTitle());
-            location.setText(event.getLocation());
+            String locationText = event.getLocation() != null && !event.getLocation().isEmpty() ?
+                    event.getLocation() : "Not set";
+            location.setText(locationText);
             String formattedTime = DateTimeFormatHelper.formatTimestamp(event.getDate());
             eventTime.setText(formattedTime);
             regTime.setText(event.getFormattedRegWindow());

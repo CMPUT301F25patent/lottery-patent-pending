@@ -244,7 +244,7 @@ public class Event {
             return "Not set";
         }
 
-        SimpleDateFormat fmt = new SimpleDateFormat("dd/MM/yyyy hh:mm", Locale.getDefault());
+        SimpleDateFormat fmt = new SimpleDateFormat("dd/MM/yyyy hh:mm aa", Locale.getDefault());
 
         String startStr = (regStartDate != null) ? fmt.format(regStartDate.toDate()) : "N/A";
         String endStr   = (regEndDate != null) ? fmt.format(regEndDate.toDate())   : "N/A";
