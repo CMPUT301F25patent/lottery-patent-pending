@@ -13,6 +13,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.PopupWindow;
@@ -22,6 +23,7 @@ import com.example.lotterypatentpending.adapters.EventListAdapter;
 import com.example.lotterypatentpending.helpers.DateTimeFormatHelper;
 import com.example.lotterypatentpending.helpers.DateTimePickerHelper;
 import com.example.lotterypatentpending.helpers.LoadingOverlay;
+import com.example.lotterypatentpending.helpers.TagDropdownHelper;
 import com.example.lotterypatentpending.models.Event;
 import com.example.lotterypatentpending.models.FirebaseManager;
 import com.example.lotterypatentpending.viewModels.UserEventRepository;
@@ -47,6 +49,9 @@ public class AttendeeEventsFragment extends Fragment {
 
     private Timestamp filterStartTime;
     private Timestamp filterEndTime;
+
+
+    private String filterTag = null;
 
     // Master lists
     private final ArrayList<Event> allEventsList = new ArrayList<>();
@@ -203,37 +208,52 @@ public class AttendeeEventsFragment extends Fragment {
         shownEventsList.clear();
 
         for (Event e : base) {
+            // 1) Search bar: ONLY title
             if (!matchesText(e.getTitle(), q)) continue;
 
-            // User range: [filterStartTime, filterEndTime]
-            // Event reg window: [e.getRegStartDate(), e.getRegEndDate()]
-            if (!overlaps(e.getRegStartDate(), e.getRegEndDate(), filterStartTime, filterEndTime))
+            // 2) Date filter
+            if (!overlaps(e.getDate(), filterStartTime, filterEndTime))
                 continue;
+
+            // 3) Tag filter from popup
+            if (filterTag != null && !filterTag.isEmpty()) {
+                String eventTag = e.getTag();
+                if (eventTag == null || !eventTag.equalsIgnoreCase(filterTag)) {
+                    continue;
+                }
+            }
+
             shownEventsList.add(e);
         }
 
         eventsListAdapter.notifyDataSetChanged();
     }
 
-    private static boolean overlaps(@Nullable Timestamp aStart,
-                                    @Nullable Timestamp aEnd,
-                                    @Nullable Timestamp bStart,
-                                    @Nullable Timestamp bEnd) {
-        // if aEnd(event) < bStart(range) do not overlap then false
-        if (aEnd != null && bStart != null && aEnd.compareTo(bStart) < 0) return false;
-        // if bEnd(event) < aStart(range) do not overlap then false
-        if (bEnd != null && aStart != null && bEnd.compareTo(aStart) < 0) return false;
+    private static boolean overlaps(@Nullable Timestamp date, @Nullable Timestamp start, @Nullable Timestamp end) {
+        //cannot filter empty event show all events.
+        if (date == null) return true;
+
+        if (start != null && date.compareTo(start) < 0) return false;
+        if (end != null && date.compareTo(end) > 0) return false;
+
         return true;
     }
 
-    private static boolean matchesText(@Nullable String title, String q) {
+    private static boolean matchesText(@Nullable String title, String query) {
 
-        if (q == null || q.isEmpty()) return true;
+        if (query == null || query.isEmpty()) return true;
 
-        return title != null && title.toLowerCase().contains(q);
+        query = query.toLowerCase();
+
+        return title != null && title.toLowerCase().contains(query);
     }
 
 
+    /**
+     *
+     * @param anchor will be anchored to view
+     * this is the pop-up for the filter being clicked
+     */
     private void dateFilterPopup(View anchor) {
 
         if (filterPopup != null && filterPopup.isShowing()){
@@ -258,6 +278,14 @@ public class AttendeeEventsFragment extends Fragment {
         TextView startDate = content.findViewById(R.id.startDate);
         TextView endDate = content.findViewById(R.id.endDate);
         TextView clear = content.findViewById(R.id.clearSearch);
+        AutoCompleteTextView tagFilterDropdown = content.findViewById(R.id.tagFilterDropdown);
+
+        //Set dropdown
+        TagDropdownHelper.setupTagDropdown(requireContext(), tagFilterDropdown, fm);
+        // Prefill selected tag if user chose one before
+        if (filterTag != null && !filterTag.isEmpty()) {
+            tagFilterDropdown.setText(filterTag, false);
+        }
 
         // Prefill the popup with any previously chosen range
         if (filterStartTime != null) {
@@ -274,9 +302,14 @@ public class AttendeeEventsFragment extends Fragment {
 
         filterPopup.setOnDismissListener(() -> {
 
-            filterStartTime = DateTimePickerHelper.parseToTimestamp(startDate.getText().toString());
-            filterEndTime = DateTimePickerHelper.parseToTimestamp(endDate.getText().toString());
+            filterStartTime = DateTimeFormatHelper.parseTimestamp(startDate.getText().toString());
+            filterEndTime = DateTimeFormatHelper.parseTimestamp(endDate.getText().toString());
 
+            // Save selected tag filter
+            String chosenTag = tagFilterDropdown.getText().toString().trim();
+            filterTag = chosenTag.isEmpty() ? null : chosenTag;
+
+            //save current filter
             TextInputEditText searchText = requireView().findViewById(R.id.searchInput);
             applyFilter(getQuery(searchText));
 
@@ -290,6 +323,10 @@ public class AttendeeEventsFragment extends Fragment {
             filterStartTime = null;
             filterEndTime = null;
 
+            // clear tag filter
+            tagFilterDropdown.setText("");
+            filterTag = null;
+
             // clear search
             TextInputEditText searchText = requireView().findViewById(R.id.searchInput);
             searchText.setText("");
@@ -298,8 +335,6 @@ public class AttendeeEventsFragment extends Fragment {
             // close popup
             if (filterPopup != null) filterPopup.dismiss();
         });
-
-
 
         // anchor under icon
         filterPopup.showAsDropDown(anchor, 0, 0);

@@ -29,6 +29,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.example.lotterypatentpending.helpers.DateTimeFormatHelper;
 import com.example.lotterypatentpending.models.QRGenerator;
 import com.example.lotterypatentpending.viewModels.EventViewModel;
 
@@ -45,7 +46,7 @@ import com.example.lotterypatentpending.viewModels.EventViewModel;
  */
 public class OrganizerEventViewFragment extends Fragment {
 
-    private TextView eventTitle, eventDescr, maxEntrants, waitListCap;
+    private TextView eventTitle, eventDescr, eventLocation, eventDate, eventRegStart, eventRegEnd, maxEntrants, waitListCap, eventTag;
     private ImageView qrView;
     private String eventId;
     private Button generateQRCode;
@@ -91,8 +92,13 @@ public class OrganizerEventViewFragment extends Fragment {
         super.onViewCreated(v, savedInstanceState);
         eventTitle = v.findViewById(R.id.eventTitle);
         eventDescr = v.findViewById(R.id.eventLongDescription);
+        eventLocation = v.findViewById(R.id.location);
+        eventDate = v.findViewById(R.id.eventDate);
+        eventRegStart = v.findViewById(R.id.regStart);
+        eventRegEnd = v.findViewById(R.id.regEnd);
         maxEntrants = v.findViewById(R.id.maxEntrants);
         waitListCap = v.findViewById(R.id.waitingListCap);
+        eventTag = v.findViewById(R.id.tag);
         generateQRCode = v.findViewById(R.id.qrButton);
         qrView = v.findViewById(R.id.qrImage);
         geoLocationReq = v.findViewById(R.id.geoCheck);
@@ -104,8 +110,14 @@ public class OrganizerEventViewFragment extends Fragment {
             eventDescr.setText(event.getDescription());
             currentEvent = event;
             String maxEntrantsText = "Event Capacity: " + event.getCapacity();
+            String locationText = "Location: ";
+            String dateText = "Date: ";
+            String regStartText = "Registration Start: ";
+            String regEndText = "Registration End: ";
+            String location = event.getLocation();
             int wlCap = event.getWaitingListCapacity();
             String waitListText = "Waiting List Capacity: ";
+            String tagText = "Tag: " + event.getTag();
 
             if(wlCap == -1){
                 waitListText += "N/A";
@@ -113,8 +125,37 @@ public class OrganizerEventViewFragment extends Fragment {
                 waitListText += event.getWaitingListCapacity();
             }
 
+            if(location == null || location.isEmpty()){
+                locationText += "TBD";
+            }else{
+                locationText += location;
+            }
+
+            if(event.getDate() == null){
+                dateText += "TBD";
+            }else{
+                dateText += DateTimeFormatHelper.formatTimestamp(event.getDate());
+            }
+
+            if(event.getRegStartDate() == null){
+                regStartText += "TBD";
+            }else{
+                regStartText += DateTimeFormatHelper.formatTimestamp(event.getRegStartDate());
+            }
+
+            if(event.getRegEndDate() == null){
+                regEndText += "TBD";
+            }else{
+                regEndText += DateTimeFormatHelper.formatTimestamp(event.getRegEndDate());
+            }
+
+            eventLocation.setText(locationText);
+            eventDate.setText(dateText);
+            eventRegStart.setText(regStartText);
+            eventRegEnd.setText(regEndText);
             maxEntrants.setText(maxEntrantsText);
             waitListCap.setText(waitListText);
+            eventTag.setText(tagText);
             eventId = event.getId();
 
             geoLocationReq.setChecked(event.isGeolocationRequired());

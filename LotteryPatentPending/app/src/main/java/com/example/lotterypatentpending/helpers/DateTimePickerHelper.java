@@ -74,23 +74,13 @@ public class DateTimePickerHelper {
                     cal.get(Calendar.MONTH),
                     cal.get(Calendar.DAY_OF_MONTH)
             );
+
+            //Set min date
+            datePickerDialog.getDatePicker().setMinDate(System.currentTimeMillis() - 1000L);
             datePickerDialog.show();
         });
 
     }
 
-    public static Timestamp parseToTimestamp(String input) {
-        if (input == null || input.trim().isEmpty()) return null;
-        try {
-            SimpleDateFormat sdf =
-                    new SimpleDateFormat(DISPLAY_PATTERN, Locale.getDefault());
-            Date parsed = sdf.parse(input.trim());
-            if (parsed == null) return null;
-            return new Timestamp(parsed);
-
-        } catch (ParseException e) {
-            return null;
-        }
-    }
 
 }

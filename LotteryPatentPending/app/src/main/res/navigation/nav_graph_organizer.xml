@@ -13,7 +13,7 @@
 
         <action
             android:id="@+id/action_main_to_createEvent"
-            app:destination="@id/CreateEventFragment" />
+            app:destination="@id/CreateEditEventFragment" />
 
         <action
             android:id="@+id/action_main_to_viewEventsList"
@@ -22,8 +22,8 @@
 
     <!-- Create Event -->
     <fragment
-        android:id="@+id/CreateEventFragment"
-        android:name="com.example.lotterypatentpending.OrganizerCreateEventFragment"
+        android:id="@+id/CreateEditEventFragment"
+        android:name="com.example.lotterypatentpending.OrganizerCreateEditEventFragment"
         android:label="Create Event">
 
         <action
@@ -32,8 +32,13 @@
 
         <!-- Go to event view screen -->
         <action
-            android:id="@+id/action_createEvent_to_Event_View"
+            android:id="@+id/action_createEditEvent_to_Event_View"
             app:destination="@id/OrganizerEventViewFragment" />
+
+        <argument
+            android:name="isEdit"
+            app:argType="boolean"
+            android:defaultValue="false" />
     </fragment>
 
     <!-- Organizer Event View (renamed class) -->
@@ -47,11 +52,15 @@
     <fragment
         android:id="@+id/ViewEventsListFragment"
         android:name="com.example.lotterypatentpending.OrganizerViewEventsListFragment"
-        android:label="View Events List">
+        android:label="View Events">
 
         <action
             android:id="@+id/action_viewEventsList_to_Event_View"
             app:destination="@id/OrganizerEventViewFragment" />
+
+        <action
+            android:id="@+id/action_viewEventsList_to_Edit_Event_view"
+            app:destination="@id/CreateEditEventFragment" />
     </fragment>
 
 </navigation>

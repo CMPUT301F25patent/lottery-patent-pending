@@ -27,6 +27,8 @@ import java.util.UUID;
 public class Event {
     private String id;
     private String title;
+
+    private String tag;
     private String description;
     private int capacity;
     private int waitingListCapacity;
@@ -58,6 +60,7 @@ public class Event {
     public Event(String title, String description, int capacity, User organizer){
         this.id = UUID.randomUUID().toString();
         this.title = title;
+        this.tag = "General";
         this.description = description;
         this.capacity = capacity;
         this.organizer = organizer;
@@ -80,6 +83,23 @@ public class Event {
     /** @param title Sets the event title */
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    /**
+     * @return tag of event
+     */
+    public String getTag(){ return tag;}
+
+    /**
+     * @param tag Set the tag of the event
+     */
+    public void setTag(String tag){
+        if (tag == null || tag.trim().isEmpty()){
+            this.tag = "General";
+        } else {
+            tag = tag.substring(0,1).toUpperCase() + tag.substring(1).toLowerCase();
+            this.tag = tag;
+        }
     }
 
     /** @return the event description */
@@ -244,7 +264,7 @@ public class Event {
             return "Not set";
         }
 
-        SimpleDateFormat fmt = new SimpleDateFormat("dd/MM/yyyy hh:mm", Locale.getDefault());
+        SimpleDateFormat fmt = new SimpleDateFormat("dd/MM/yyyy hh:mm aa", Locale.getDefault());
 
         String startStr = (regStartDate != null) ? fmt.format(regStartDate.toDate()) : "N/A";
         String endStr   = (regEndDate != null) ? fmt.format(regEndDate.toDate())   : "N/A";

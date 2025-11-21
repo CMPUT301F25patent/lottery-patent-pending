@@ -14,7 +14,7 @@
         android:background="@drawable/bg_event_form">
 
         <TextView
-            android:id="@+id/createNewEventText"
+            android:id="@+id/pageTitleText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Create New Event"
@@ -35,7 +35,7 @@
             android:padding="16dp"
             android:scaleType="centerInside"
             android:src="@drawable/ic_launcher_foreground"
-            app:layout_constraintTop_toBottomOf="@id/createNewEventText"
+            app:layout_constraintTop_toBottomOf="@id/pageTitleText"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginTop="20dp" />
@@ -58,7 +58,7 @@
             android:id="@+id/titleLabel"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="Event Name"
+            android:text="Event Name*"
             android:textColor="@android:color/white"
             android:textSize="14sp"
             app:layout_constraintTop_toBottomOf="@id/imagePrompt"
@@ -83,16 +83,103 @@
             android:layout_marginTop="4dp"
             android:layout_marginHorizontal="20dp" />
 
+        <!-- Event Tag label -->
+        <TextView
+            android:id="@+id/tagLabel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Event Tag"
+            android:textColor="@android:color/white"
+            android:textSize="14sp"
+            app:layout_constraintTop_toBottomOf="@id/titleEt"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="20dp"
+            android:layout_marginHorizontal="20dp" />
 
-        <!-- Description label -->
+        <!-- Event Tag Input -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tagLayout"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:hintEnabled="false"
+            app:endIconMode="dropdown_menu"
+            app:endIconTint="@android:color/white"
+            app:layout_constraintTop_toBottomOf="@id/tagLabel"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="4dp"
+            android:layout_marginHorizontal="20dp">
+
+            <AutoCompleteTextView
+                android:id="@+id/tagDropdown"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:background="@drawable/bg_edittext_rounded"
+                android:padding="10dp"
+                android:inputType="none"
+                android:hint="Event Tag"
+                android:textColor="@android:color/white"
+                android:textColorHint="#BBBBBB"
+                android:drawablePadding="8dp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Create New Tag label -->
+        <TextView
+            android:id="@+id/newTagLabel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Create New Tag"
+            android:textColor="@android:color/white"
+            android:textSize="14sp"
+            app:layout_constraintTop_toBottomOf="@id/tagLayout"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="12dp"
+            android:layout_marginHorizontal="20dp" />
+
+        <!-- New Tag Input -->
+        <EditText
+            android:id="@+id/newTagInput"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:background="@drawable/bg_edittext_rounded"
+            android:padding="10dp"
+            android:textColor="@android:color/white"
+            android:hint="Enter new tag"
+            android:textColorHint="#BBBBBB"
+            app:layout_constraintTop_toBottomOf="@id/newTagLabel"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/addTagButton"
+            android:layout_marginTop="4dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="8dp" />
+
+        <!-- Add Tag Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/addTagButton"
+            android:layout_width="wrap_content"
+            android:layout_height="50dp"
+            android:text="Add"
+            android:textSize="14sp"
+            android:backgroundTint="@color/light_blue"
+            android:textColor="@android:color/black"
+            app:layout_constraintTop_toBottomOf="@id/newTagLabel"
+            app:layout_constraintBottom_toBottomOf="@id/newTagInput"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="4dp"
+            android:layout_marginEnd="20dp" />
+
+        <!-- Event Description label -->
         <TextView
             android:id="@+id/descriptionLabel"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="Event Description"
+            android:text="Event Description*"
             android:textColor="@android:color/white"
             android:textSize="14sp"
-            app:layout_constraintTop_toBottomOf="@id/titleEt"
+            app:layout_constraintTop_toBottomOf="@id/addTagButton"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginTop="20dp"
@@ -151,7 +238,7 @@
             android:id="@+id/eventDateLabel"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="Event Date And Time"
+            android:text="Event Date And Time*"
             android:textColor="@android:color/white"
             android:textSize="14sp"
             app:layout_constraintTop_toBottomOf="@id/locationEt"
@@ -187,7 +274,7 @@
             android:id="@+id/regStartLabel"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="Registration Start"
+            android:text="Registration Start*"
             android:textColor="@android:color/white"
             android:textSize="14sp"
             app:layout_constraintTop_toBottomOf="@id/eventDateEt"
@@ -223,7 +310,7 @@
             android:id="@+id/regEndLabel"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="Registration End"
+            android:text="Registration End*"
             android:textColor="@android:color/white"
             android:textSize="14sp"
             app:layout_constraintTop_toBottomOf="@id/registrationStartDate"
@@ -256,7 +343,7 @@
             android:id="@+id/maxEntrantsLabel"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="Event Capacity"
+            android:text="Event Capacity*"
             android:textColor="@android:color/white"
             android:textSize="14sp"
             app:layout_constraintTop_toBottomOf="@id/registrationEndDate"
@@ -312,13 +399,13 @@
 
 
         <!-- Cancel Button -->
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/cancelButton"
             android:layout_width="0dp"
             android:layout_height="60dp"
-            android:background="#000000"
+            android:backgroundTint="@color/light_red"
             android:text="Cancel"
-            android:textColor="@android:color/white"
+            android:textColor="@android:color/black"
             android:textSize="18sp"
             app:layout_constraintTop_toBottomOf="@id/waitingListCapInput"
             app:layout_constraintStart_toStartOf="parent"
@@ -328,13 +415,13 @@
             android:layout_marginEnd="10dp" />
 
         <!-- Create Button -->
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/createEventButton"
             android:layout_width="0dp"
             android:layout_height="60dp"
-            android:background="#2C64FF"
+            android:backgroundTint="@color/light_blue"
             android:text="Create Event"
-            android:textColor="@android:color/white"
+            android:textColor="@android:color/black"
             android:textSize="18sp"
             app:layout_constraintTop_toBottomOf="@id/waitingListCapInput"
             app:layout_constraintStart_toEndOf="@id/cancelButton"
@@ -342,6 +429,7 @@
             android:layout_marginTop="30dp"
             android:layout_marginStart="10dp"
             android:layout_marginEnd="20dp" />
+
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.core.widget.NestedScrollView>
