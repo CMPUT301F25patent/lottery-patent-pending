@@ -184,6 +184,7 @@ public class FirebaseManager {
 
         data.put("id", event.getId());
         data.put("title", event.getTitle());
+        data.put("tag", event.getTag());
         data.put("description", event.getDescription());
         data.put("capacity", event.getCapacity());
         data.put("location", event.getLocation());
@@ -256,6 +257,7 @@ public class FirebaseManager {
 
         // Basic string fields
         String title = (String) data.get("title");
+        String tag = (String) data.get("tag");
         String description = (String) data.get("description");
         String location = (String) data.get("location");
 
@@ -285,6 +287,7 @@ public class FirebaseManager {
         // Create Event object
         Event event = new Event(title, description, capacity, organizer);
         event.setLocation(location);
+        event.setTag(tag);
 
         if (data.get("id") != null)
             event.setId((String) data.get("id"));
@@ -598,6 +601,77 @@ public class FirebaseManager {
                     callback.onSuccess(events);
                 })
                 .addOnFailureListener(callback::onFailure);
+    }
+
+
+    /**
+     * Fetches all available event tags from Firestore.
+     * Expects a collection "eventTags" where each document has a "name" field.
+     *
+     * @param callback callback with a List of tag strings
+     */
+    public void getAllEventTags(FirebaseCallback<List<String>> callback) {
+        db.collection("eventTags")
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    List<String> tags = new ArrayList<>();
+
+                    for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
+                        String name = doc.getString("name");
+                        if (name != null && !name.trim().isEmpty()) {
+                            tags.add(name.trim());
+                        }
+                    }
+
+                    callback.onSuccess(tags);
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
+
+    /**
+     * Adds or updates an event tag in the "eventTags" collection.
+     * Uses the normalized tag name as the document ID to avoid duplicates.
+     *
+     * @param rawTag   user-entered tag
+     * @param callback callback for success/failure (can be null if you don't care)
+     */
+    public void addEventTag(String rawTag, FirebaseCallback<Void> callback) {
+        if (rawTag == null) {
+            if (callback != null) {
+                callback.onFailure(new IllegalArgumentException("Tag cannot be null"));
+            }
+            return;
+        }
+
+        String trimmed = rawTag.trim();
+        if (trimmed.isEmpty()) {
+            if (callback != null) {
+                callback.onFailure(new IllegalArgumentException("Tag cannot be empty"));
+            }
+            return;
+        }
+
+        // Normalize: first letter uppercase, rest lowercase (same as your getEventsByTag)
+        String tag = trimmed.substring(0, 1).toUpperCase()
+                + trimmed.substring(1).toLowerCase();
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("name", tag);
+
+        // Use tag as doc ID so you don't get duplicate docs for same tag
+        db.collection("eventTags")
+                .document(tag)
+                .set(data, SetOptions.merge())
+                .addOnSuccessListener(aVoid -> {
+                    if (callback != null) {
+                        callback.onSuccess(null);
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    if (callback != null) {
+                        callback.onFailure(e);
+                    }
+                });
     }
 
 
