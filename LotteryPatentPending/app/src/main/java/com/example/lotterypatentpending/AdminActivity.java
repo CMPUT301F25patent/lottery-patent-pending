@@ -1,3 +1,5 @@
+package com.example.lotterypatentpending;
+
 /**
  * -----------------------------------------------------------------------------
  * FILE: AdminActivity.java
@@ -10,7 +12,7 @@
  *
  * DESIGN ROLE / PATTERN:
  *   - Serves as a Controller in the MVC pattern, mediating between user input
- *     (UI buttons) and navigation to management activities.
+ *     (UI buttons) and navigation to management views (fragments/activities).
  *   - Utilizes the Singleton instance of FirebaseManager for database operations,
  *     though this activity primarily handles navigation and access control.
  *
@@ -19,94 +21,152 @@
  *     authentication should replace this in production.
  *   - No verification mechanism yet to ensure admin privileges persist across
  *     activity transitions.
- *   - Home button only finishes the activity instead of returning to a true
- *     “home” screen.
+ *   - “Home” behaviour is simulated via back navigation (toolbar + bottom nav).
  *
  * AUTHOR: Ritvik Das
- * COLLABORATORS:
+ * COLLABORATORS: Erik Bacsa
  * -----------------------------------------------------------------------------
  */
 
-package com.example.lotterypatentpending;
-
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
-import android.widget.ImageButton;
-import android.widget.Toast;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 
-import androidx.activity.EdgeToEdge;
-import androidx.annotation.NonNull;
+import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 
 import com.example.lotterypatentpending.models.FirebaseManager;
-import com.example.lotterypatentpending.models.User;
-
-/**
- * The {@code AdminActivity} class represents the main administrator dashboard.
- * It allows an admin user to navigate to user management and event management
- * screens. Access to these functions is restricted to users with admin privileges.
- */
+import com.google.android.material.appbar.MaterialToolbar;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class AdminActivity extends AppCompatActivity {
 
     private FirebaseManager firebaseManager;
-    private User currentUser;
-    /**
-     * Initializes the admin dashboard screen.
-     * Sets up UI elements, Firebase access, and button listeners for navigation.
-     *
-     * @param savedInstanceState Saved state from a previous instance (if any).
-     */
+
+    // Root menu vs fragment container
+    private LinearLayout adminContent;
+    private FrameLayout adminFragmentContainer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_admin);
-
-        Button notifLogButton = findViewById(R.id.btnLog);
-        notifLogButton.setOnClickListener(v -> {
-            Intent intent = new Intent(AdminActivity.this, NotificationAdminActivity.class);
-            startActivity(intent);
-        });
+        setContentView(R.layout.admin_activity_main);
 
         firebaseManager = FirebaseManager.getInstance();
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
+        adminContent = findViewById(R.id.adminContent);
+        adminFragmentContainer = findViewById(R.id.adminFragmentContainer);
 
-        // For testing — in reality this will be passed in from login/session
-        currentUser = new User("admin001", "System Admin", "admin@email.com", "N/A", true);
+        // Start on main admin menu
+        adminContent.setVisibility(View.VISIBLE);
+        adminFragmentContainer.setVisibility(View.GONE);
 
-        Button btnBrowseUsers = findViewById(R.id.btnBrowseUsers);
-        Button btnBrowseEvents = findViewById(R.id.btnBrowseEvents);
-        ImageButton homeButton = findViewById(R.id.homeButton);
-        homeButton.setOnClickListener(v -> finish());
+        // --- Toolbar setup ---
+        MaterialToolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle("Admin Panel");
+        }
 
+        // Toolbar nav go to main on home click
+        toolbar.setNavigationOnClickListener(v -> finish());
 
-        btnBrowseUsers.setOnClickListener(v -> {
-            if (!currentUser.isAdmin()) {
-                Toast.makeText(this, "Access denied: Admin privileges required", Toast.LENGTH_SHORT).show();
-                return;
+        // Bottom nav as a Back button
+        BottomNavigationView bottomNav = findViewById(R.id.adminBottomNav);
+        if (bottomNav != null) {
+            bottomNav.setOnItemSelectedListener(item -> {
+                getOnBackPressedDispatcher().onBackPressed();
+                return true;
+            });
+        }
+
+        FragmentManager fm = getSupportFragmentManager();
+
+        // Toggle menu vs fragment whenever back stack changes
+        fm.addOnBackStackChangedListener(() -> {
+            if (fm.getBackStackEntryCount() == 0) {
+                // No fragments => show menu, hide fragment container
+                adminContent.setVisibility(View.VISIBLE);
+                adminFragmentContainer.setVisibility(View.GONE);
+            } else {
+                // Fragment(s) on stack => show fragment container, hide menu
+                adminContent.setVisibility(View.GONE);
+                adminFragmentContainer.setVisibility(View.VISIBLE);
             }
-            Intent intent = new Intent(AdminActivity.this, AdminUsersActivity.class);
-            startActivity(intent);
         });
 
-        btnBrowseEvents.setOnClickListener(v -> {
-            if (!currentUser.isAdmin()) {
-                Toast.makeText(this, "Access denied: Admin privileges required", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            Intent intent = new Intent(AdminActivity.this, AdminEventsActivity.class);
-            startActivity(intent);
-        });
+        // Handle system back / gestures with dispatcher
+        getOnBackPressedDispatcher().addCallback(this,
+                new OnBackPressedCallback(true) {
+                    @Override
+                    public void handleOnBackPressed() {
+                        FragmentManager fm = getSupportFragmentManager();
+                        if (fm.getBackStackEntryCount() > 0) {
+                            // If we’re in a fragment, go back to the admin menu
+                            fm.popBackStack();
+                        } else {
+                            // On main admin screen -> do NOTHING
+                            // (no finish(), stay in AdminActivity)
+                        }
+                    }
+                });
+
+        // Buttons
+        Button btnBrowseUsers       = findViewById(R.id.btnBrowseUsers);
+        Button btnBrowseEvents      = findViewById(R.id.btnBrowseEvents);
+        Button btnLog               = findViewById(R.id.btnLog);
+        Button btnImages            = findViewById(R.id.btnImages);
+        Button btnRemoveOrganizers  = findViewById(R.id.btnRemoveOrganizers);
+
+        // Users: show AdminUsersFragment
+        if (btnBrowseUsers != null) {
+            btnBrowseUsers.setOnClickListener(v ->
+                    showFragment(new AdminUsersFragment(), "AdminUsersFragment"));
+        }
+
+        // Events: show AdminEventsFragment
+        if (btnBrowseEvents != null) {
+            btnBrowseEvents.setOnClickListener(v ->
+                    showFragment(new AdminEventsFragment(), "AdminEventsFragment"));
+        }
+
+        // Notification log: still its own Activity
+        if (btnLog != null) {
+            btnLog.setOnClickListener(v -> {
+                Intent intent = new Intent(AdminActivity.this, NotificationAdminActivity.class);
+                startActivity(intent);
+            });
+        }
+
+        // Stubbed
+        if (btnImages != null) {
+            btnImages.setOnClickListener(v -> {
+                // TODO: open admin images screen
+            });
+        }
+
+        // Stubbed
+        if (btnRemoveOrganizers != null) {
+            btnRemoveOrganizers.setOnClickListener(v -> {
+                // TODO: open remove-organizer screen
+            });
+        }
+    }
+
+    /**
+     * Replaces the fragment container with the provided fragment and
+     * pushes the transaction onto the back stack.
+     */
+    private void showFragment(Fragment fragment, String tag) {
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.adminFragmentContainer, fragment, tag)
+                .addToBackStack(tag)
+                .commit();
     }
 }
