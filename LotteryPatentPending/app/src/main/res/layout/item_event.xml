@@ -11,19 +11,36 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
+        android:orientation="horizontal"
         android:layout_marginBottom="8dp">
 
         <TextView
             android:id="@+id/eventName"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="2"
             android:layout_gravity="center"
             android:text="Name Of Event"
             android:textStyle="bold"
             android:textSize="25sp"
             android:textColor="@color/black"/>
+
+        <TextView
+            android:id="@+id/eventTag"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Placeholder"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:background="@drawable/bg_tags"
+            />
     </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/grey"/>
 
     <!-- Event Start Date-->
     <LinearLayout

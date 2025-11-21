@@ -37,12 +37,14 @@ public class EventListAdapter extends ArrayAdapter<Event> {
         Event event = getItem(position);
 
         TextView name = convertView.findViewById(R.id.eventName);
+        TextView tag = convertView.findViewById(R.id.eventTag);
         TextView location = convertView.findViewById(R.id.eventLocation);
         TextView eventTime = convertView.findViewById(R.id.eventTime);
         TextView regTime = convertView.findViewById(R.id.regTime);
 
         if (event != null) {
             name.setText(event.getTitle());
+            tag.setText(event.getTag());
             location.setText(event.getLocation());
 
             //use helper to convert Timestamp of UTC time to local time(string)

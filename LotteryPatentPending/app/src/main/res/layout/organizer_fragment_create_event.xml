@@ -83,8 +83,95 @@
             android:layout_marginTop="4dp"
             android:layout_marginHorizontal="20dp" />
 
+        <!-- Event Tag label -->
+        <TextView
+            android:id="@+id/tagLabel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Event Tag"
+            android:textColor="@android:color/white"
+            android:textSize="14sp"
+            app:layout_constraintTop_toBottomOf="@id/titleEt"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="20dp"
+            android:layout_marginHorizontal="20dp" />
 
-        <!-- Description label -->
+        <!-- Event Tag Input -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tagLayout"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:hintEnabled="false"
+            app:endIconMode="dropdown_menu"
+            app:endIconTint="@android:color/white"
+            app:layout_constraintTop_toBottomOf="@id/tagLabel"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="4dp"
+            android:layout_marginHorizontal="20dp">
+
+            <AutoCompleteTextView
+                android:id="@+id/tagDropdown"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:background="@drawable/bg_edittext_rounded"
+                android:padding="10dp"
+                android:inputType="none"
+                android:hint="Event Tag"
+                android:textColor="@android:color/white"
+                android:textColorHint="#BBBBBB"
+                android:drawablePadding="8dp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Create New Tag label -->
+        <TextView
+            android:id="@+id/newTagLabel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Create New Tag"
+            android:textColor="@android:color/white"
+            android:textSize="14sp"
+            app:layout_constraintTop_toBottomOf="@id/tagLayout"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="12dp"
+            android:layout_marginHorizontal="20dp" />
+
+        <!-- New Tag Input -->
+        <EditText
+            android:id="@+id/newTagInput"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:background="@drawable/bg_edittext_rounded"
+            android:padding="10dp"
+            android:textColor="@android:color/white"
+            android:hint="Enter new tag"
+            android:textColorHint="#BBBBBB"
+            app:layout_constraintTop_toBottomOf="@id/newTagLabel"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/addTagButton"
+            android:layout_marginTop="4dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="8dp" />
+
+        <!-- Add Tag Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/addTagButton"
+            android:layout_width="wrap_content"
+            android:layout_height="50dp"
+            android:text="Add"
+            android:textSize="14sp"
+            android:backgroundTint="@color/light_blue"
+            android:textColor="@android:color/black"
+            app:layout_constraintTop_toBottomOf="@id/newTagLabel"
+            app:layout_constraintBottom_toBottomOf="@id/newTagInput"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="4dp"
+            android:layout_marginEnd="20dp" />
+
+        <!-- Event Description label -->
         <TextView
             android:id="@+id/descriptionLabel"
             android:layout_width="0dp"
@@ -92,7 +179,7 @@
             android:text="Event Description"
             android:textColor="@android:color/white"
             android:textSize="14sp"
-            app:layout_constraintTop_toBottomOf="@id/titleEt"
+            app:layout_constraintTop_toBottomOf="@id/addTagButton"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginTop="20dp"
