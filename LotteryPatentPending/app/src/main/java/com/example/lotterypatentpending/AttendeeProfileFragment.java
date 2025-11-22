@@ -66,7 +66,7 @@ public class AttendeeProfileFragment extends Fragment {
         phone = v.findViewById(R.id.attendeePhone);
         saveBtn = v.findViewById(R.id.profileSaveBtn);
         notificationsSwitch = v.findViewById(R.id.notifications);
-        viewEventHistoryBtn = v.findViewById(R.id.attendee_events_button_event_history);
+        viewEventHistoryBtn = v.findViewById(R.id.attendee_profile_button_view_event_history);
         fm = FirebaseManager.getInstance();
 
         //Get activity for this fragment

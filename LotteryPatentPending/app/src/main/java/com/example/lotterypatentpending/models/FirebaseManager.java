@@ -690,10 +690,17 @@ public class FirebaseManager {
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     List<Event> pastEvents = new ArrayList<>();
-                    for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+                    for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
                         try {
-                            Event event = document.toObject(Event.class);
-                            pastEvents.add(event);
+                            Map<String, Object> data = document.getData();
+                            if (data == null) {
+                                continue;
+                            }
+                            Event event = mapToEvent(data);
+                            if (event != null) {
+                                event.setId(document.getId());
+                                pastEvents.add(event);
+                            }
                         } catch (Exception e) {
                             Log.e("FirebaseManager", "Error parsing Event document: " + e.getMessage());
                         }
