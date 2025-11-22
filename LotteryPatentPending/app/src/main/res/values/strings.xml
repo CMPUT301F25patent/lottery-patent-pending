@@ -22,4 +22,5 @@
     <string name="leave">Leave</string>
     <string name="filter">Filter\n</string>
     <string name="search">Search</string>
+    <string name="message">Type your message here..</string>
 </resources>
