@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/nav_admin_back"
+        android:title="Back"
+        android:icon="@drawable/baseline_arrow_back_24"/>
+    <!-- You can change icon to a back arrow if you have one -->
+
+</menu>
