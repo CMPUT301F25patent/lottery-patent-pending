@@ -53,6 +53,9 @@
         <activity
             android:name=".NotificationAdminActivity"
             android:exported="false" />
+        <activity
+            android:name=".AdminOrganizersActivity"
+            android:exported="false" />
     </application>
 
 </manifest>

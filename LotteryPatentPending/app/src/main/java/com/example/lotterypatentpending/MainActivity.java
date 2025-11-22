@@ -127,7 +127,7 @@ public class MainActivity extends AppCompatActivity implements MainRegisterNewUs
         if (fm.findFragmentById(containerId) == null) {
             fm.beginTransaction()
                     .replace(containerId, new MainRegisterNewUserFragment())
-                    .commitAllowingStateLoss();
+                    .commit();
         }
     }
 

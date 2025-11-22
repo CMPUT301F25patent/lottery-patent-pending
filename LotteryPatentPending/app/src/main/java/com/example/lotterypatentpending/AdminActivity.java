@@ -174,6 +174,7 @@ public class AdminActivity extends AppCompatActivity {
                     return;
                 }
                 // TODO: open admin images screen
+                Toast.makeText(this, "Images screen not implemented yet.", Toast.LENGTH_SHORT).show();
             });
         }
 
@@ -184,7 +185,8 @@ public class AdminActivity extends AppCompatActivity {
                     showAdminDeniedToast();
                     return;
                 }
-                // TODO: open remove-organizer screen
+                Intent intent = new Intent(AdminActivity.this, AdminOrganizersActivity.class);
+                startActivity(intent);
             });
         }
     }
