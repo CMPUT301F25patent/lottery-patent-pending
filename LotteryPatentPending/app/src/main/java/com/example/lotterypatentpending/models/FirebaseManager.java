@@ -36,8 +36,10 @@ import java.util.Map;
 import java.util.HashMap;
 
 import com.example.lotterypatentpending.exceptions.UserNotFoundException;
+import com.example.lotterypatentpending.viewModels.UserEventRepository;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestoreException;
@@ -308,10 +310,30 @@ public class FirebaseManager {
             event.setRegEndDate((Timestamp) regEndObj);
         }
 
+
+//        Object wl = data.get("waitingList");
+//
+//        if (wl instanceof Map) {
+//            Map<String, Object> waitingList = (Map<String, Object>) wl;
+//
+//            deserializeWaitingList(waitingList, new FirebaseCallback<ArrayList<Pair<User, WaitingListState>>>() {
+//                @Override
+//                public void onSuccess(ArrayList<Pair<User, WaitingListState>> result) {
+//                    event.getWaitingList().setList(result);
+//                    Log.d("Firebase", "Successfully deserialized waiting list");
+//                }
+//
+//                @Override
+//                public void onFailure(Exception e) {
+//                    Log.e("Firebase", "Failed to deserialize waiting list", e);
+//                }
+//            });
+//        }
+
         return event;
     }
 
-    public List<Map<String, Object>> serializeWaitingList(List<Pair<User, WaitingListState>> list) {
+    public List<Map<String, Object>> serializeWaitingList(ArrayList<Pair<User, WaitingListState>> list) {
         List<Map<String, Object>> out = new ArrayList<>();
 
         for (Pair<User, WaitingListState> entry : list) {
@@ -324,24 +346,80 @@ public class FirebaseManager {
         return out;
     }
 
-//    public List<Pair<User, WaitingListState>> deserializeWaitingList(
-//            List<Map<String, Object>> storedList,
-//            UserEventRepository userRepo // however you load users
-//    ) {
-//        List<Pair<User, WaitingListState>> out = new ArrayList<>();
-//
-//        for (Map<String, Object> map : storedList) {
-//            String uid = (String) map.get("uid");
-//            String stateName = (String) map.get("state");
-//
-//            User user = userRepo.getInstance().getUser(); // however you fetch users
-//            WaitingListState state = WaitingListState.valueOf(stateName);
-//
-//            out.add(new Pair<>(user, state));
-//        }
-//
-//        return out;
-//    }
+    public void deserializeWaitingList(
+            Object rawWaitingList,
+            FirebaseCallback<ArrayList<Pair<User, WaitingListState>>> callback
+    ) {
+        ArrayList<Pair<User, WaitingListState>> out = new ArrayList<>();
+
+        if (rawWaitingList == null) {
+            Log.d("Firebase", "Waiting list is null, returning empty list");
+            callback.onSuccess(out);
+            return;
+        }
+
+        // Convert rawWaitingList to a List<Map<String,Object>>
+        List<Map<String, Object>> entries = new ArrayList<>();
+
+        // Waiting List is stored as List<Map<String, Object>> not numbered map according to my research so can probably Map condition in the future
+        if (rawWaitingList instanceof Map) { // Was confused as to whether it stored as a numbered map or list so i just did cases for both
+            // Numbered map: { "0": {...}, "1": {...} }
+            for (Object value : ((Map<?, ?>) rawWaitingList).values()) {
+                if (value instanceof Map) {
+                    entries.add((Map<String, Object>) value);
+                }
+            }
+        } else if (rawWaitingList instanceof List) { // this is the typical scenario but the above is because fb sometimes stores as a map so just for future scenarios
+            // True array
+            for (Object value : (List<?>) rawWaitingList) {
+                if (value instanceof Map) {
+                    entries.add((Map<String, Object>) value);
+                }
+            }
+        } else {
+            Log.w("Firebase", "Waiting list has unexpected type: " + rawWaitingList.getClass());
+            callback.onSuccess(out);
+            return;
+        }
+
+        if (entries.isEmpty()) {
+            Log.d("Firebase", "Waiting list is empty, returning empty list");
+            callback.onSuccess(out);
+            return;
+        }
+
+        final int total = entries.size();
+        final int[] loadedCount = {0};
+
+        for (Map<String, Object> entryMap : entries) {
+            String uid = (String) entryMap.get("uid");
+            String stateName = (String) entryMap.get("state");
+            WaitingListState state = WaitingListState.valueOf(stateName);
+
+            getUser(uid, new FirebaseCallback<User>() {
+                @Override
+                public void onSuccess(User user) {
+                    out.add(new Pair<>(user, state));
+                    Log.d("FB", "Added user " + uid + " to waiting list");
+                    loadedCount[0]++;
+                    if (loadedCount[0] == total) {
+                        Log.d("FB", "Finished deserializing waiting list");
+                        callback.onSuccess(out);
+                    }
+                }
+
+                @Override
+                public void onFailure(Exception e) {
+                    Log.e("FB", "Failed to fetch user " + uid, e);
+                    loadedCount[0]++;
+                    if (loadedCount[0] == total) {
+                        Log.d("FB", "Finished deserializing waiting list with some failures");
+                        callback.onSuccess(out);
+                    }
+                }
+            });
+        }
+    }
 
 
 
@@ -432,20 +510,31 @@ public class FirebaseManager {
      * @param eventId the associated event ID.
      */
     public void addEntrantToWaitingList(User entrant, WaitingListState state, String eventId) {
-        Map<String, Object> data = new HashMap<>();
-        data.put("userId", entrant.getUserId());
-        data.put("name", entrant.getName());
-        data.put("state", state.toString());  // store enum as String
+        Map<String, Object> entry = new HashMap<>();
+        entry.put("uid", entrant.getUserId());
+        entry.put("state", state.name());  // store enum as String
+
+//        db.collection("events")
+//                .document(eventId)
+//                .collection("waitingList")
+//                .document(entrant.getUserId())
+//                .set(data)
+//                .addOnSuccessListener(aVoid -> {
+//                    Log.d("FIREBASE", "Entrant added to waiting list successfully");
+//                })
+//                .addOnFailureListener(e -> {
+//                    Log.e("FIREBASE", "Failed to add entrant to waiting list", e);
+//                });
 
         db.collection("events")
                 .document(eventId)
-                .collection("waitingList")
-                .document(entrant.getUserId())
-                .set(data)
-                .addOnSuccessListener(aVoid ->
-                        System.out.println("Entrant added to waiting list: " + entrant.getName()))
-                .addOnFailureListener(e ->
-                        System.err.println("Error adding entrant: " + e.getMessage()));
+                .update("waitingList", FieldValue.arrayUnion(entry))
+                .addOnSuccessListener(aVoid -> {
+                    Log.d("FIREBASE", "Entrant added to waiting list successfully");
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("FIREBASE", "Failed to add entrant to waiting list", e);
+                });
     }
 
     // Updates an entrant’s waiting list state (e.g., SELECTED, ACCEPTED, DECLINED).
@@ -506,11 +595,10 @@ public class FirebaseManager {
     }
 
     public void addJoinedEventToEntrant(Event event, String userId) {
+
         db.collection("users")
                 .document(userId)
-                .collection("joinedEventIds")
-                .document(event.getId())
-                .set(event.getId())
+                .update("joinedEventIds", FieldValue.arrayUnion(event.getId()))
                 .addOnSuccessListener(aVoid -> {
                     System.out.println("Event added to entrant's joined list");
                 })
@@ -601,6 +689,41 @@ public class FirebaseManager {
                     callback.onSuccess(events);
                 })
                 .addOnFailureListener(callback::onFailure);
+    }
+
+    public void getEventWaitingList(String eventId, FirebaseCallback<ArrayList<Pair<User, WaitingListState>>> callback) {
+        db.collection("events").document(eventId).get()
+                .addOnSuccessListener(snapshot -> {
+                    if (!snapshot.exists()) {
+                        callback.onFailure(new FirebaseFirestoreException(
+                                "Event not found", FirebaseFirestoreException.Code.NOT_FOUND));
+                        return;
+                    }
+
+                    Object wlObj = snapshot.get("waitingList");
+                    if (wlObj instanceof List) {
+                        List<Map<String, Object>> waitingListMap = (List<Map<String, Object>>) wlObj;
+
+                        deserializeWaitingList(waitingListMap, new FirebaseCallback<ArrayList<Pair<User, WaitingListState>>>() {
+                            @Override
+                            public void onSuccess(ArrayList<Pair<User, WaitingListState>> result) {
+                                callback.onSuccess(result); // fully populated waiting list
+                            }
+
+                            @Override
+                            public void onFailure(Exception e) {
+                                callback.onFailure(e);
+                            }
+                        });
+                    } else {
+                        callback.onSuccess(new ArrayList<>());
+                        Log.d("Firebase", "Waiting List is Empty");// empty waiting list
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("Firebase", "Failed to getWaitingList" + e.getMessage());
+                    callback.onFailure(e);
+                });
     }
 
 

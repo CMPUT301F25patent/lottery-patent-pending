@@ -46,6 +46,10 @@
         android:id="@+id/OrganizerEventViewFragment"
         android:name="com.example.lotterypatentpending.OrganizerEventViewFragment"
         android:label="Event View" >
+
+        <action
+            android:id="@+id/action_EventView_to_WaitingList"
+            app:destination="@id/ViewWaitingListFragment" />
     </fragment>
 
     <!-- List of events -->
@@ -61,6 +65,13 @@
         <action
             android:id="@+id/action_viewEventsList_to_Edit_Event_view"
             app:destination="@id/CreateEditEventFragment" />
+    </fragment>
+
+    <!-- Event Waiting List -->
+    <fragment
+        android:id="@+id/ViewWaitingListFragment"
+        android:name="com.example.lotterypatentpending.OrganizerViewWaitingListFragment"
+        android:label="Event Waiting List">
     </fragment>
 
 </navigation>
