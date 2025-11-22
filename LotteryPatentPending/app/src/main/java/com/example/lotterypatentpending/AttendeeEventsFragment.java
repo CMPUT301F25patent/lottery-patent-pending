@@ -1,58 +1,72 @@
 package com.example.lotterypatentpending;
 
-import android.content.Context;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.ArrayAdapter;
+import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.PopupWindow;
+import android.widget.TextView;
 
+import com.example.lotterypatentpending.adapters.EventListAdapter;
+import com.example.lotterypatentpending.helpers.DateTimeFormatHelper;
+import com.example.lotterypatentpending.helpers.DateTimePickerHelper;
+import com.example.lotterypatentpending.helpers.LoadingOverlay;
+import com.example.lotterypatentpending.helpers.TagDropdownHelper;
 import com.example.lotterypatentpending.models.Event;
 import com.example.lotterypatentpending.models.FirebaseManager;
 import com.example.lotterypatentpending.viewModels.UserEventRepository;
+import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
+import com.google.firebase.Timestamp;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
- * Fragment that displays a list of events available to attendees.
- * Allows searching, browsing, and selecting an event to view details.
- *
- * This fragment is the default landing screen for attendees, showing
- * available events fetched from Firebase.
+ * @author Michael
+ * @contributor Michael, Erik
  */
+
 public class AttendeeEventsFragment extends Fragment {
     private UserEventRepository userEventRepo;
     private FirebaseManager fm;
-    /** List containing all events fetched from Firestore. */
-    private ArrayList<Event> allEventsList;
 
-    /** List containing events currently shown in the UI (may be filtered). */
-    private ArrayList<Event> shownEventsList;
+    private LoadingOverlay loading;
 
-    /** Adapter backing the event ListView. */
-    private ArrayAdapter<Event> eventsListAdapter;
+    private PopupWindow filterPopup;
 
-    /**
-     * Default constructor inflating the attendee events list layout.
-     */
+    private Timestamp filterStartTime;
+    private Timestamp filterEndTime;
+
+
+    private String filterTag = null;
+
+    // Master lists
+    private final ArrayList<Event> allEventsList = new ArrayList<>();
+    // TODO: implement  history
+    private final ArrayList<Event> historyEventsList = new ArrayList<>();
+    // What the ListView shows
+    private final ArrayList<Event> shownEventsList = new ArrayList<>();
+    private EventListAdapter eventsListAdapter; //custom adapter
+    // false = Browse (default), true = History
+    private boolean historyMode = false;
+
     public AttendeeEventsFragment() {
-        super(R.layout.fragment_attendee_events);
+        super(R.layout.attendee_fragment_events);
     }
 
-    /**
-     * Initializes the event list UI, fetches events from Firestore,
-     * and sets up handlers for search and event selection.
-     *
-     * @param view the fragment view
-     * @param savedInstanceState saved state, if any
-     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -60,37 +74,79 @@ public class AttendeeEventsFragment extends Fragment {
         userEventRepo = UserEventRepository.getInstance();
         fm = FirebaseManager.getInstance();
 
-        // get all events from Firebase
-        allEventsList = new ArrayList<>();
+        //Search bar
+        TextInputLayout til = view.findViewById(R.id.attendee_events_search_layout);
+        //Search bar input
+        TextInputEditText searchInput = view.findViewById(R.id.searchInput);
+
+
+        ListView eventsListView = view.findViewById(R.id.attendee_events_listview_events_list);
+        Button searchBtn = view.findViewById(R.id.btn_search);
+        Button browseEventsBtn = view.findViewById(R.id.attendee_events_button_browse_events);
+        Button historyBtn = view.findViewById(R.id.attendee_events_button_event_history);
+
+
+
+        // Attach loading screen
+        ViewGroup root = view.findViewById(R.id.attendee_events_root);
+        View overlayView = getLayoutInflater().inflate(
+                R.layout.loading_screen,
+                root,
+                false);
+
+        root.addView(overlayView);
+        loading = new LoadingOverlay(overlayView, null);
+
+        eventsListAdapter = new EventListAdapter(
+                requireContext(),
+                shownEventsList
+        );
+
+        //Set adapter to the list of Events
+        eventsListView.setAdapter(eventsListAdapter);
+
+        loading.show();
+
+        // Load events from Firebase safely
         fm.getAllEvents(new FirebaseManager.FirebaseCallback<ArrayList<Event>>() {
             @Override
             public void onSuccess(ArrayList<Event> result) {
-                allEventsList = result;
+                if (!isAdded()) return;
+
+                List<Event> safe = (result == null) ? new ArrayList<>() : result;
+                allEventsList.clear();
+                allEventsList.addAll(safe);
+
+                historyMode = false;
+                updateModeButtons(browseEventsBtn, historyBtn);
+                applyFilter(getQuery(searchInput));
+                if (loading != null) loading.hide();
             }
 
             @Override
             public void onFailure(Exception e) {
-                // TODO
+                if (!isAdded()) return;
+
+                // Keep lists empty;
+                shownEventsList.clear();
+                eventsListAdapter.notifyDataSetChanged();
+                if (loading != null) loading.hide();
+
             }
         });
 
-        // initially, show all events
-        shownEventsList = new ArrayList<>();
-        shownEventsList.addAll(allEventsList);
+        // Click handler for the end icon
+        //Search filter attach listener
+        til.setEndIconOnClickListener(v -> {
+            dateFilterPopup(v);
+        });
 
-        eventsListAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_list_item_1, shownEventsList);
-
-        ListView eventsListView = view.findViewById(R.id.attendee_events_listview_events_list);
-        EditText searchInput = view.findViewById(R.id.attendee_events_edittext_search);
-        Button searchButton = view.findViewById(R.id.attendee_events_button_search);
-        Button browseEvents = view.findViewById(R.id.attendee_events_button_browse_events);
-        Button eventHistory = view.findViewById(R.id.attendee_events_button_event_history);
-
-        eventsListView.setAdapter(eventsListAdapter);
-
-        eventsListView.setOnItemClickListener((parent, view1, position, id) -> {
+        // Click -> open details
+        eventsListView.setOnItemClickListener((parent, v1, position, id) -> {
+            if (position < 0 || position >= shownEventsList.size()) return;
             Event selectedEvent = shownEventsList.get(position);
             userEventRepo.setEvent(selectedEvent);
+
             AttendeeEventDetailsFragment fragment = new AttendeeEventDetailsFragment();
             requireActivity().getSupportFragmentManager()
                     .beginTransaction()
@@ -98,22 +154,189 @@ public class AttendeeEventsFragment extends Fragment {
                     .addToBackStack(null)
                     .commit();
         });
-        searchButton.setOnClickListener(v -> {
-            String query = searchInput.getText().toString().trim();
-            if (!query.isEmpty()) {
-                performSearch(query);
-            }
+
+        // Search button: run filter once
+        if (searchBtn != null) {
+            searchBtn.setOnClickListener(v -> applyFilter(getQuery(searchInput)));
+        }
+
+        // Keyboard Search / Enter: run filter
+        if (searchInput != null) {
+            searchInput.setOnEditorActionListener((TextView v1, int actionId, KeyEvent event) -> {
+                if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                    applyFilter(getQuery(searchInput));
+                    return true; // handled
+                }
+                return false;
+            });
+        }
+
+        // Mode buttons
+        browseEventsBtn.setOnClickListener(v -> {
+            historyMode = false;
+            updateModeButtons(browseEventsBtn, historyBtn);
+            applyFilter(getQuery(searchInput));
         });
 
+        historyBtn.setOnClickListener(v -> {
+            historyMode = true;
+            updateModeButtons(browseEventsBtn, historyBtn);
+            applyFilter(getQuery(searchInput));
+        });
 
+        // Visual default: Browse selected
+        historyMode = false;
+        updateModeButtons(browseEventsBtn, historyBtn);
     }
-    /**
-     * Filters events based on the user search query.
-     * (Method stub — implementation pending)
-     *
-     * @param query the text search query
-     */
-    private void performSearch(String query) {
 
+    private void updateModeButtons(Button browseBtn, Button historyBtn) {
+        // simple “selected = disabled” look
+        browseBtn.setEnabled(historyMode);     // if showing history, enable Browse
+        historyBtn.setEnabled(!historyMode);   // if showing browse, enable History
+    }
+
+    private String getQuery(@Nullable TextInputEditText et) {
+        if (et == null || et.getText() == null) return "";
+        return et.getText().toString();
+    }
+
+    /** Filter current base (browse/history) by query (case-insensitive). */
+    private void applyFilter(String query) {
+        String q = (query == null) ? "" : query.toLowerCase().trim();
+        List<Event> base = historyMode ? historyEventsList : allEventsList;
+
+        shownEventsList.clear();
+
+        for (Event e : base) {
+            // 1) Search bar: ONLY title
+            if (!matchesText(e.getTitle(), q)) continue;
+
+            // 2) Date filter
+            if (!overlaps(e.getDate(), filterStartTime, filterEndTime))
+                continue;
+
+            // 3) Tag filter from popup
+            if (filterTag != null && !filterTag.isEmpty()) {
+                String eventTag = e.getTag();
+                if (eventTag == null || !eventTag.equalsIgnoreCase(filterTag)) {
+                    continue;
+                }
+            }
+
+            shownEventsList.add(e);
+        }
+
+        eventsListAdapter.notifyDataSetChanged();
+    }
+
+    private static boolean overlaps(@Nullable Timestamp date, @Nullable Timestamp start, @Nullable Timestamp end) {
+        //cannot filter empty event show all events.
+        if (date == null) return true;
+
+        if (start != null && date.compareTo(start) < 0) return false;
+        if (end != null && date.compareTo(end) > 0) return false;
+
+        return true;
+    }
+
+    private static boolean matchesText(@Nullable String title, String query) {
+
+        if (query == null || query.isEmpty()) return true;
+
+        query = query.toLowerCase();
+
+        return title != null && title.toLowerCase().contains(query);
+    }
+
+
+    /**
+     *
+     * @param anchor will be anchored to view
+     * this is the pop-up for the filter being clicked
+     */
+    private void dateFilterPopup(View anchor) {
+
+        if (filterPopup != null && filterPopup.isShowing()){
+            filterPopup.dismiss();
+            return;
+        }
+
+        //Inflate popup layout
+        LayoutInflater inflater = LayoutInflater.from(requireContext());
+        View content = inflater.inflate(R.layout.attendee_popup_filter, null, false);
+
+        filterPopup = new PopupWindow(
+                content,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                true
+        );
+
+        filterPopup.setOutsideTouchable(true);
+        filterPopup.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
+        TextView startDate = content.findViewById(R.id.startDate);
+        TextView endDate = content.findViewById(R.id.endDate);
+        TextView clear = content.findViewById(R.id.clearSearch);
+        AutoCompleteTextView tagFilterDropdown = content.findViewById(R.id.tagFilterDropdown);
+
+        //Set dropdown
+        TagDropdownHelper.setupTagDropdown(requireContext(), tagFilterDropdown, fm);
+        // Prefill selected tag if user chose one before
+        if (filterTag != null && !filterTag.isEmpty()) {
+            tagFilterDropdown.setText(filterTag, false);
+        }
+
+        // Prefill the popup with any previously chosen range
+        if (filterStartTime != null) {
+            startDate.setText(DateTimeFormatHelper.formatTimestamp(filterStartTime));
+        }
+        if (filterEndTime != null) {
+            endDate.setText(DateTimeFormatHelper.formatTimestamp(filterEndTime));
+        }
+
+        //Attach a date picker to each date textView
+        DateTimePickerHelper.attachDateTimePicker(startDate, requireContext());
+        DateTimePickerHelper.attachDateTimePicker(endDate, requireContext());
+
+
+        filterPopup.setOnDismissListener(() -> {
+
+            filterStartTime = DateTimeFormatHelper.parseTimestamp(startDate.getText().toString());
+            filterEndTime = DateTimeFormatHelper.parseTimestamp(endDate.getText().toString());
+
+            // Save selected tag filter
+            String chosenTag = tagFilterDropdown.getText().toString().trim();
+            filterTag = chosenTag.isEmpty() ? null : chosenTag;
+
+            //save current filter
+            TextInputEditText searchText = requireView().findViewById(R.id.searchInput);
+            applyFilter(getQuery(searchText));
+
+        });
+
+        clear.setOnClickListener(v -> {
+            // clear stand and end dates
+            startDate.setText("");
+            endDate.setText("");
+
+            filterStartTime = null;
+            filterEndTime = null;
+
+            // clear tag filter
+            tagFilterDropdown.setText("");
+            filterTag = null;
+
+            // clear search
+            TextInputEditText searchText = requireView().findViewById(R.id.searchInput);
+            searchText.setText("");
+            applyFilter(getQuery(searchText));
+
+            // close popup
+            if (filterPopup != null) filterPopup.dismiss();
+        });
+
+        // anchor under icon
+        filterPopup.showAsDropDown(anchor, 0, 0);
     }
 }

@@ -2,6 +2,7 @@ package com.example.lotterypatentpending;
 
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -9,6 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.example.lotterypatentpending.helpers.LoadingOverlay;
 import com.example.lotterypatentpending.models.Event;
 import com.example.lotterypatentpending.models.FirebaseManager;
 import com.example.lotterypatentpending.models.User;
@@ -30,7 +32,7 @@ public class AttendeeEventDetailsFragment extends Fragment {
      * Default constructor that inflates the event details layout for attendees.
      */
     public AttendeeEventDetailsFragment() {
-        super(R.layout.fragment_attendee_event_details);
+        super(R.layout.attendee_fragment_event_details);
     }
     /**
      * Initializes UI components and wires up button actions for joining/leaving an event.
@@ -44,6 +46,8 @@ public class AttendeeEventDetailsFragment extends Fragment {
 
         userEventRepo = UserEventRepository.getInstance();
         fm = FirebaseManager.getInstance();
+
+
 
         TextView title = view.findViewById(R.id.attendee_event_details_textview_event_name);
         TextView description = view.findViewById(R.id.attendee_event_details_textview_description);

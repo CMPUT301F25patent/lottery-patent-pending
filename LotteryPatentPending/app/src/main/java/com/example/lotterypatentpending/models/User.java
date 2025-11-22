@@ -1,8 +1,14 @@
 package com.example.lotterypatentpending.models;
+import com.google.firebase.firestore.Exclude;
+
 import java.util.List;
 import java.util.ArrayList;
 
 
+/**
+ * Represents a user in the application. This class holds user profile information,
+ * their administrative status, and lists of events they have interacted with or organized.
+ */
 public class User {
 
     // Firestore will bind the doc id into this field automatically
@@ -18,12 +24,24 @@ public class User {
     private List<String> declinedEventIds = new ArrayList<>();
     private List<String> pastEventIds = new ArrayList<>();      // optional history
     private boolean notificationsOptIn = true;
-    private List<Event> organizedEvents = new ArrayList<Event>();
 
 
-    //For firebase, needs empty constructor
+    //Use Organized Events View Model for livedata.
+    //    private List<Event> organizedEvents = new ArrayList<Event>();
+
+
+    /**
+     * No-argument constructor required for Firestore object deserialization.
+     */
     public User(){}
-
+    /**
+     * Constructs a new User with all fields.
+     * @param userId The unique ID of the user.
+     * @param name The name of the user.
+     * @param email The email address of the user.
+     * @param contactInfo The contact information for the user.
+     * @param isAdmin A flag indicating if the user is an administrator.
+     */
     public User(String userId, String name, String email, String contactInfo, boolean isAdmin) {
         this.userId = userId;
         this.name = name;
@@ -31,7 +49,13 @@ public class User {
         this.contactInfo = contactInfo;
         this.isAdmin = isAdmin;
     }
-
+    /**
+     * Constructs a new non-admin User.
+     * @param userId The unique ID of the user.
+     * @param name The name of the user.
+     * @param email The email address of the user.
+     * @param contactInfo The contact information for the user.
+     */
     public User(String userId, String name, String email, String contactInfo) {
         this(userId, name, email, contactInfo, false);
     }
@@ -97,7 +121,10 @@ public class User {
     }
 
 
-    // Joined events
+    /**
+     * Adds an event ID to the list of joined events.
+     * @param eventId The ID of the event to add.
+     */
     public void addJoinedEvent(String eventId) {
         if (!joinedEventIds.contains(eventId)) {
             joinedEventIds.add(eventId);
@@ -149,19 +176,19 @@ public class User {
         }
     }
 
-    public List<Event> getOrganizedEvents(){
-        return organizedEvents;
-    }
+    /**
+     * Returns the list of events organized by this user.
+     *
+     * @return A List containing all events created or managed by the user.
+     */
 
-    public void addOrganizedEvent(Event event){
-        organizedEvents.add(event);
-    }
+    /**
+     * Sets the list of events organized by this user.
+     * (This is for remapping from database)
+     *
+     * @param organizedEvents The new List of events to associate with the user.
+     */
 
-    public Event createEvent(String title, String description, int capacity){
-        Event newEvent = new Event(title, description, capacity, this);
-        addOrganizedEvent(newEvent);
-        return newEvent;
-    }
 
     @Override
     public String toString() {
@@ -175,10 +202,13 @@ public class User {
                 ", pastEventIds=" + pastEventIds +
                 ", notificationsOptIn=" + notificationsOptIn +
                 ", isAdmin=" + isAdmin +
-                ", organizedEvents=" + organizedEvents +
                 '}';
     }
-
+    /**
+     * Compares two User objects based on their userId.
+     * @param o The object to compare against.
+     * @return True if the userIds are equal, false otherwise.
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o) {

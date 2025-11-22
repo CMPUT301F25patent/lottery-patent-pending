@@ -5,12 +5,17 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.ImageButton;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
+
+import com.example.lotterypatentpending.models.User;
+import com.example.lotterypatentpending.viewModels.EventViewModel;
+import com.example.lotterypatentpending.viewModels.UserEventRepository;
 
 /**
  * Fragment that serves as the main organizer dashboard.
@@ -27,8 +32,8 @@ public class OrganizerActivityFragment extends Fragment {
 
     Button create_event;
     Button view_events;
-//    Button back_button;
-    ImageButton home_button;
+    TextView greeting;
+
 
     /**
      * Inflates the fragment layout.
@@ -41,7 +46,7 @@ public class OrganizerActivityFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_organizer_activity, container, false);
+        return inflater.inflate(R.layout.organizer_fragment_organizer_activity, container, false);
 
     }
 
@@ -58,15 +63,26 @@ public class OrganizerActivityFragment extends Fragment {
         super.onViewCreated(v, savedInstanceState);
         create_event = v.findViewById(R.id.create_event);
         view_events = v.findViewById(R.id.view_events);
-        home_button = v.findViewById(R.id.homeButton);
+        greeting = v.findViewById(R.id.organizer_greeting);
+
+        User user = UserEventRepository.getInstance().getUser().getValue();
+        if (user != null) {
+            greeting.setText("Welcome, " + user.getName());
+        }
 
         create_event.setOnClickListener(view -> {
+            EventViewModel viewModel = new ViewModelProvider(requireActivity()).get(EventViewModel.class);
+            viewModel.setEvent(null);
+
             NavHostFragment.findNavController(OrganizerActivityFragment.this)
                     .navigate(R.id.action_main_to_createEvent);
+
         });
 
-        home_button.setOnClickListener(view -> {
-            requireActivity().finish();
+        view_events.setOnClickListener(view -> {
+            NavHostFragment.findNavController(OrganizerActivityFragment.this)
+                    .navigate(R.id.action_main_to_viewEventsList);
         });
+
     }
 }

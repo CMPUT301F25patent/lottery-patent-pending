@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/popup_root"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/bg_event_form"
+    android:padding="8dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginBottom="8dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Start Date"
+            android:textStyle="bold"
+            android:textColor="@color/white" />
+
+        <TextView
+            android:id="@+id/startDate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="None"
+            android:textColor="@color/black"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="@drawable/bg_white_rounded"
+            android:padding="4dp"
+            android:gravity="center"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginBottom="12dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="End Date"
+            android:textStyle="bold"
+            android:textColor="@color/white" />
+
+        <TextView
+            android:id="@+id/endDate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="None"
+            android:textColor="@color/black"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="@drawable/bg_white_rounded"
+            android:padding="4dp"
+            android:gravity="center"/>
+    </LinearLayout>
+
+    <!-- Tag Filter Label -->
+    <TextView
+        android:id="@+id/tagFilterLabel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textStyle="bold"
+        android:text="Filter by Tag"
+        android:textColor="@android:color/white"
+        android:layout_marginTop="12dp" />
+
+        <!-- Tag Filter Dropdown -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tagFilterLayout"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:hintEnabled="false"
+        app:endIconMode="dropdown_menu"
+        app:endIconTint="@android:color/black">
+
+        <AutoCompleteTextView
+            android:id="@+id/tagFilterDropdown"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="5dp"
+            android:inputType="none"
+            android:hint="None"
+            android:gravity="center"
+            android:textColorHint="@color/black"
+            android:textColor="@android:color/black"
+            android:background="@drawable/bg_white_rounded" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+
+    <View
+        android:layout_width="150dp"
+    android:layout_height="1dp"
+    android:layout_gravity="center_horizontal"
+    android:background="#55FFFFFF"
+    android:layout_marginTop="6dp"
+    android:layout_marginBottom="10dp"/>
+
+    <TextView
+        android:id="@+id/clearSearch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Clear Search"
+        android:textColor="@color/black"
+        android:clickable="true"
+        android:focusable="true"
+        android:background="@drawable/bg_white_rounded"
+        android:padding="5dp"
+        android:gravity="center"/>
+</LinearLayout>

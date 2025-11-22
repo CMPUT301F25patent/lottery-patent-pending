@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
+
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CAMERA" /> <!-- Say the app can run without a camera -->
     <uses-feature
@@ -23,12 +24,17 @@
             android:name=".AdminActivity"
             android:exported="false" />
         <activity
+            android:name=".AdminActivity"
+            android:exported="false" />
+        <activity
+            android:name=".User_interface.Inbox.InboxActivity"
+            android:exported="false" />
+        <activity
             android:name=".OrganizerActivity"
             android:exported="false" />
         <activity
             android:name=".AttendeeActivity"
             android:exported="false" />
-
         <activity
             android:name=".MainActivity"
             android:exported="true">
@@ -38,14 +44,15 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".AdminUsersActivity"
-            android:exported="false"/>
-        <activity android:name=".AdminEventsActivity"
+        <activity
+            android:name=".AdminUsersActivity"
             android:exported="false" />
-        <activity android:name=".AdminOrganizersActivity"
+        <activity
+            android:name=".AdminEventsActivity"
             android:exported="false" />
-
-
+        <activity
+            android:name=".NotificationAdminActivity"
+            android:exported="false" />
     </application>
 
 </manifest>

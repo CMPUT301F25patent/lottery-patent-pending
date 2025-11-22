@@ -1,61 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#303030">
-
-    <!-- Page Title Bar -->
-    <TextView
-        android:id="@+id/titleBar"
-        android:layout_width="0dp"
-        android:layout_height="48dp"
-        android:background="#1A1A1A"
-        android:gravity="center"
-        android:text="Organizer Page"
-        android:textSize="24sp"
-        android:textColor="#FFFFFF"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-    <!-- Top Tabs -->
-    <LinearLayout
-        android:id="@+id/tabContainer"
-        android:layout_width="0dp"
-        android:layout_height="48dp"
-        android:orientation="horizontal"
-        android:gravity="center"
-        android:background="#1A1A1A"
-        app:layout_constraintTop_toBottomOf="@id/titleBar"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
-
-        <TextView
-            android:id="@+id/tabEvent"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="match_parent"
-            android:gravity="center"
-            android:text="Event"
-            android:textColor="#FFFFFF"
-            android:textSize="20sp" />
-
-        <View
-            android:layout_width="1dp"
-            android:layout_height="24dp"
-            android:background="#FFFFFF" />
-
-        <TextView
-            android:id="@+id/tabSignupList"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="match_parent"
-            android:gravity="center"
-            android:text="Sign-up List"
-            android:textColor="#FFFFFF"
-            android:textSize="20sp" />
-    </LinearLayout>
+    android:background="@color/grey">
 
     <!-- Scrollable Content -->
     <androidx.core.widget.NestedScrollView
@@ -63,8 +12,8 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:fillViewport="true"
-        app:layout_constraintTop_toBottomOf="@id/tabContainer"
-        app:layout_constraintBottom_toTopOf="@id/bottom_nav"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
@@ -121,37 +70,113 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent" />
 
+
             <!-- Max Entrants -->
+
+            <ImageButton
+                android:id="@+id/notiBtn"
+                android:layout_width="33dp"
+                android:layout_height="33dp"
+                android:background="@android:color/transparent"
+                android:padding="8dp"
+                android:src="@drawable/ic_notification_white_24dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="1.0"
+                app:layout_constraintStart_toEndOf="@+id/descHeader"
+                app:layout_constraintTop_toBottomOf="@+id/eventTitle" />
+
+            <TextView
+                android:id="@+id/location"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="Location: TBD"
+                android:textColor="#FFFFFF"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/eventLongDescription" />
+
+            <!-- Divider -->
+            <TextView
+                android:id="@+id/eventDate"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="Date: TBD"
+                android:textColor="#FFFFFF"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/location" />
+
+            <TextView
+                android:id="@+id/regStart"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="Registartion Start: TBD"
+                android:textColor="#FFFFFF"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/eventDate" />
+
+            <TextView
+                android:id="@+id/regEnd"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="Registration End: TBD"
+                android:textColor="#FFFFFF"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/regStart" />
+
             <TextView
                 android:id="@+id/maxEntrants"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
                 android:text="Event Capacity: 30"
                 android:textColor="#FFFFFF"
-                android:layout_marginTop="24dp"
-                app:layout_constraintTop_toBottomOf="@id/eventLongDescription"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent" />
+                app:layout_constraintTop_toBottomOf="@id/regEnd" />
 
             <TextView
                 android:id="@+id/waitingListCap"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
                 android:text="Waiting List Capacity: 30"
                 android:textColor="#FFFFFF"
-                android:layout_marginTop="24dp"
-                app:layout_constraintTop_toBottomOf="@id/maxEntrants"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent" />
+                app:layout_constraintTop_toBottomOf="@id/maxEntrants" />
 
-            <!-- Divider -->
+            <TextView
+                android:id="@+id/tag"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="Tag: General"
+                android:textColor="#FFFFFF"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/waitingListCap" />
+
             <View
                 android:id="@+id/divider1"
                 android:layout_width="0dp"
                 android:layout_height="1dp"
                 android:background="#777777"
                 android:layout_marginTop="16dp"
-                app:layout_constraintTop_toBottomOf="@id/waitingListCap"
+                app:layout_constraintTop_toBottomOf="@id/tag"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent" />
 
@@ -215,38 +240,5 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.core.widget.NestedScrollView>
 
-    <!-- Bottom Nav Buttons -->
-    <LinearLayout
-        android:id="@+id/bottom_nav"
-        android:layout_width="0dp"
-        android:layout_height="64dp"
-        android:background="#1A1A1A"
-        android:gravity="center"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
-
-        <ImageButton
-            android:id="@+id/backButton"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:background="#000000"
-            android:padding="8dp"
-            android:src="@drawable/baseline_arrow_back_24"
-            app:tint="@android:color/white"/>
-
-        <Space
-            android:layout_width="0dp"
-            android:layout_height="1dp"
-            android:layout_weight="1" />
-
-        <ImageButton
-            android:id="@+id/homeButton"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:background="#000000"
-            android:padding="8dp"
-            android:src="@drawable/ic_home" />
-    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

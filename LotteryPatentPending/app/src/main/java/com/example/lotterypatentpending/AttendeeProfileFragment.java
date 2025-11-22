@@ -17,8 +17,6 @@ import com.example.lotterypatentpending.models.User;
 import com.example.lotterypatentpending.viewModels.UserEventRepository;
 import com.google.firebase.auth.FirebaseAuth;
 
-import org.jspecify.annotations.Nullable;
-
 
 /**
  * Class AttendeeActivity
@@ -47,7 +45,7 @@ public class AttendeeProfileFragment extends Fragment {
      * Default constructor that inflates the attendee profile layout.
      */
     public AttendeeProfileFragment(){
-        super(R.layout.fragment_attendee_profile);
+        super(R.layout.attendee_fragment_profile);
     }
 
 

@@ -21,37 +21,21 @@
  *   - Some asynchronous error cases (e.g., network disconnect) may not
  *     propagate up to UI properly.
  *
- * AUTHOR: Ritvik Das
- * CONTRIBUTORS:
+ * @AUTHOR: Ritvik Das
+ * @CONTRIBUTORS: Erik Bacsa
  * -----------------------------------------------------------------------------
  */
 
 package com.example.lotterypatentpending.models;
 
-import android.os.Build;
 import android.util.Log;
 import androidx.core.util.Pair;
-import android.widget.Toast;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.HashMap;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
 import com.example.lotterypatentpending.exceptions.UserNotFoundException;
-import com.example.lotterypatentpending.models.Event;
-import com.example.lotterypatentpending.models.Notification;
-import com.example.lotterypatentpending.models.User;
-import com.example.lotterypatentpending.models.WaitingListState;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -59,10 +43,8 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.example.lotterypatentpending.models.FirebaseManager.FirebaseCallback;
 import com.google.firebase.firestore.SetOptions;
+
 
 
 /**
@@ -173,13 +155,13 @@ public class FirebaseManager {
                 .addOnFailureListener(e -> {
                     Log.e("FIREBASE", "Failed to save event", e);
                 });
-    };
+    }
 
     public void deleteEventFromDB(Event event){
-        CollectionReference eventsRef = db.collection("Events");
+        CollectionReference eventsRef = db.collection("events");
         DocumentReference eventDocRef = eventsRef.document(event.getId());
         eventDocRef.delete();
-    };
+    }
 
 //    public void updateEventInDB(Event event){
 //        CollectionReference eventsRef = db.collection("Events");
@@ -202,6 +184,7 @@ public class FirebaseManager {
 
         data.put("id", event.getId());
         data.put("title", event.getTitle());
+        data.put("tag", event.getTag());
         data.put("description", event.getDescription());
         data.put("capacity", event.getCapacity());
         data.put("location", event.getLocation());
@@ -209,22 +192,10 @@ public class FirebaseManager {
         data.put("waitingListCapacity", event.getWaitingListCapacity());
         data.put("geolocationRequired", event.isGeolocationRequired());
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy hh:mm a");
+        data.put("date",          event.getDate());         // Timestamp or null
+        data.put("regStartDate",  event.getRegStartDate()); // Timestamp or null
+        data.put("regEndDate",    event.getRegEndDate());   // Timestamp or null  : null);
 
-            // Dates & times as strings
-            data.put("event_date", event.getDate() != null
-                    ? event.getDate().format(formatter)
-                : null);
-
-            data.put("regStartDate", event.getRegStartDate() != null
-                    ? event.getRegStartDate().format(formatter)
-                    : null);
-
-            data.put("regEndDate", event.getRegEndDate() != null
-                    ? event.getRegEndDate().format(formatter)
-                    : null);
-        }
 
 
         // Organizer is just a User
@@ -286,6 +257,7 @@ public class FirebaseManager {
 
         // Basic string fields
         String title = (String) data.get("title");
+        String tag = (String) data.get("tag");
         String description = (String) data.get("description");
         String location = (String) data.get("location");
 
@@ -307,57 +279,33 @@ public class FirebaseManager {
             String contact = (String) organizerMap.get("contactInfo");
             boolean isAdmin = organizerMap.get("isAdmin") != null && (boolean) organizerMap.get("isAdmin");
             organizer = new User(id, name, email, contact, isAdmin);
-
         } else if (orgObj instanceof String) {
-            // Firestore stored only the organizer UID string
             organizer = new User();
-            organizer.setUserId((String) orgObj);  // ✅ Correct — UID, not a name
+            organizer.setUserId((String) orgObj);
         }
 
         // Create Event object
         Event event = new Event(title, description, capacity, organizer);
         event.setLocation(location);
+        event.setTag(tag);
 
         if (data.get("id") != null)
             event.setId((String) data.get("id"));
 
-        // Date parsing - use SimpleDateFormat for compatibility
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault());
-
-        try {
-            Object dateObj = data.get("date_time");
-            if (dateObj != null) {
-                Date parsed = sdf.parse(dateObj.toString());
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && parsed != null) {
-                    event.setDate(parsed.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
-                }
-            }
-        } catch (Exception e) {
-            Log.w("FirebaseManager", "Failed to parse date_time: " + e.getMessage());
+        // Read timestamps directly
+        Object dateObj = data.get("date");
+        if (dateObj instanceof Timestamp) {
+            event.setDate((Timestamp) dateObj);
         }
 
-        try {
-            Object regStartObj = data.get("regStartDate");
-            if (regStartObj != null) {
-                Date parsed = sdf.parse(regStartObj.toString());
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && parsed != null) {
-                    event.setRegStartDate(parsed.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
-                }
-            }
-        } catch (Exception e) {
-            Log.w("FirebaseManager", "Failed to parse regStartDate: " + e.getMessage());
+        Object regStartObj = data.get("regStartDate");
+        if (regStartObj instanceof Timestamp) {
+            event.setRegStartDate((Timestamp) regStartObj);
         }
 
-        try {
-            Object regEndObj = data.get("regEndDate");
-            if (regEndObj != null) {
-                Date parsed = sdf.parse(regEndObj.toString());
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && parsed != null) {
-                    event.setRegEndDate(parsed.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
-                }
-            }
-        } catch (Exception e) {
-            Log.w("FirebaseManager", "Failed to parse regEndDate: " + e.getMessage());
+        Object regEndObj = data.get("regEndDate");
+        if (regEndObj instanceof Timestamp) {
+            event.setRegEndDate((Timestamp) regEndObj);
         }
 
         return event;
@@ -632,6 +580,100 @@ public class FirebaseManager {
                 .addOnSuccessListener(callback::onSuccess)
                 .addOnFailureListener(callback::onFailure);
     }
+
+    public void getOrganizedEventsOnce(String userId, FirebaseCallback<ArrayList<Event>> callback) {
+        db.collection("events")
+                // IMPORTANT: match the field name used in eventToMap
+                .whereEqualTo("organizer", userId)
+                .get()
+                .addOnSuccessListener(snap -> {
+                    ArrayList<Event> events = new ArrayList<>();
+                    for (DocumentSnapshot doc : snap.getDocuments()) {
+                        Map<String, Object> data = doc.getData();
+                        if (data == null) continue;
+
+                        Event event = mapToEvent(data);
+                        if (event != null) {
+                            event.setId(doc.getId());
+                            events.add(event);
+                        }
+                    }
+                    callback.onSuccess(events);
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
+
+
+    /**
+     * Fetches all available event tags from Firestore.
+     * Expects a collection "eventTags" where each document has a "name" field.
+     *
+     * @param callback callback with a List of tag strings
+     */
+    public void getAllEventTags(FirebaseCallback<List<String>> callback) {
+        db.collection("eventTags")
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    List<String> tags = new ArrayList<>();
+
+                    for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
+                        String name = doc.getString("name");
+                        if (name != null && !name.trim().isEmpty()) {
+                            tags.add(name.trim());
+                        }
+                    }
+
+                    callback.onSuccess(tags);
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
+
+    /**
+     * Adds or updates an event tag in the "eventTags" collection.
+     * Uses the normalized tag name as the document ID to avoid duplicates.
+     *
+     * @param rawTag   user-entered tag
+     * @param callback callback for success/failure (can be null if you don't care)
+     */
+    public void addEventTag(String rawTag, FirebaseCallback<Void> callback) {
+        if (rawTag == null) {
+            if (callback != null) {
+                callback.onFailure(new IllegalArgumentException("Tag cannot be null"));
+            }
+            return;
+        }
+
+        String trimmed = rawTag.trim();
+        if (trimmed.isEmpty()) {
+            if (callback != null) {
+                callback.onFailure(new IllegalArgumentException("Tag cannot be empty"));
+            }
+            return;
+        }
+
+        // Normalize: first letter uppercase, rest lowercase (same as your getEventsByTag)
+        String tag = trimmed.substring(0, 1).toUpperCase()
+                + trimmed.substring(1).toLowerCase();
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("name", tag);
+
+        // Use tag as doc ID so you don't get duplicate docs for same tag
+        db.collection("eventTags")
+                .document(tag)
+                .set(data, SetOptions.merge())
+                .addOnSuccessListener(aVoid -> {
+                    if (callback != null) {
+                        callback.onSuccess(null);
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    if (callback != null) {
+                        callback.onFailure(e);
+                    }
+                });
+    }
+
 
 
 

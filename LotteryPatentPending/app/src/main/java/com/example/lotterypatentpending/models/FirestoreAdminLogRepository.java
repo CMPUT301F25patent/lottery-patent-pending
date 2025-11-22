@@ -13,14 +13,34 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * Firestore-backed writer/reader for admin notification logs.
+ *
+ * <p>Data lives under admin/notificationsLog/records.
+ * Also exposes a realtime listener for auto-updating UIs.
+ *
+ * @author Moffat
+ * @maintainer Moffat
+ */
+
 public class FirestoreAdminLogRepository implements AdminLogRepository {
 
+    /** The root collection for all admin-related data. */
     private static final String ROOT = "admin";
+    /** The specific document that contains the notification log sub-collection. */
     private static final String DOC  = "notificationsLog";
+    /** The sub-collection where individual log records are stored. */
     private static final String SUB  = "records";
 
+    /** An instance of the FirebaseFirestore client. */
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
-
+    /**
+     * Records a new {@link NotificationLog} to the Firestore database.
+     *
+     * @param log The {@link NotificationLog} object to be saved.
+     * @return A {@link CompletableFuture<Void>} that completes when the operation
+     *         is successful, or completes exceptionally on failure.
+     */
     @Override
     public CompletableFuture<Void> record(NotificationLog log) {
         CompletableFuture<Void> f = new CompletableFuture<>();

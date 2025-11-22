@@ -1,12 +1,12 @@
 package com.example.lotterypatentpending.models;
 
 
-import android.os.Build;
+import com.google.firebase.Timestamp;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
 /**
@@ -22,20 +22,23 @@ import java.util.UUID;
  *
  * @author Ebuka
  * @maintainer Ebuka
+ * @contributor Erik
  */
 public class Event {
     private String id;
     private String title;
+
+    private String tag;
     private String description;
-    private LocalDateTime date;
     private int capacity;
     private int waitingListCapacity;
     private String location;
     private WaitingList waitingList;
     private List<User> selectedEntrants;
     private User organizer;
-    private LocalDateTime regStartDate;
-    private LocalDateTime regEndDate;
+    private Timestamp date;
+    private Timestamp regStartDate;
+    private Timestamp regEndDate;
     private boolean active;
     private boolean geolocationRequired;
 
@@ -57,13 +60,14 @@ public class Event {
     public Event(String title, String description, int capacity, User organizer){
         this.id = UUID.randomUUID().toString();
         this.title = title;
+        this.tag = "General";
         this.description = description;
         this.capacity = capacity;
         this.organizer = organizer;
-        this.date = null;
         this.location = null;
         this.waitingList = new WaitingList();
         this.selectedEntrants = new ArrayList<>();
+        this.date = null;
         this.regStartDate = null;
         this.regEndDate = null;
         this.active = false;
@@ -81,6 +85,23 @@ public class Event {
         this.title = title;
     }
 
+    /**
+     * @return tag of event
+     */
+    public String getTag(){ return tag;}
+
+    /**
+     * @param tag Set the tag of the event
+     */
+    public void setTag(String tag){
+        if (tag == null || tag.trim().isEmpty()){
+            this.tag = "General";
+        } else {
+            tag = tag.substring(0,1).toUpperCase() + tag.substring(1).toLowerCase();
+            this.tag = tag;
+        }
+    }
+
     /** @return the event description */
     public String getDescription() {
         return description;
@@ -89,16 +110,6 @@ public class Event {
     /** @param description Sets the event description */
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    /** @return the date and time of the event */
-    public LocalDateTime getDate() {
-        return date;
-    }
-
-    /** @param date Sets the event date */
-    public void setDate(LocalDateTime date) {
-        this.date = date;
     }
 
     /** @return the maximum number of participants */
@@ -121,23 +132,33 @@ public class Event {
         this.location = location;
     }
 
+    /** @return the date and time of the event */
+    public Timestamp getDate() {
+        return date;
+    }
+
+    /** @param date Sets the event date */
+    public void setDate(Timestamp date) {
+        this.date = date;
+    }
+
     /** @return the registration start date */
-    public LocalDateTime getRegStartDate() {
+    public Timestamp getRegStartDate() {
         return regStartDate;
     }
 
     /** @param regStartDate Sets the registration start date */
-    public void setRegStartDate(LocalDateTime regStartDate) {
+    public void setRegStartDate(Timestamp regStartDate) {
         this.regStartDate = regStartDate;
     }
 
     /** @return the registration end date */
-    public LocalDateTime getRegEndDate() {
+    public Timestamp getRegEndDate() {
         return regEndDate;
     }
 
     /** @param regEndDate Sets the registration end date */
-    public void setRegEndDate(LocalDateTime regEndDate) {
+    public void setRegEndDate(Timestamp regEndDate) {
         this.regEndDate = regEndDate;
     }
 
@@ -214,30 +235,41 @@ public class Event {
      *
      * @return true if event is active, false otherwise
      */
-    public boolean isActive(){
-        if(regStartDate == null && regEndDate == null){
+    public boolean isActive() {
+        if (regStartDate == null && regEndDate == null) {
             active = false;
+            return false;
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-        }
+        Timestamp now = Timestamp.now();
 
-        LocalDateTime now = null;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            now = LocalDateTime.now();
-        }
+        boolean afterStart = (regStartDate != null) && now.compareTo(regStartDate) >= 0;
+        boolean beforeEnd  = (regEndDate != null) && now.compareTo(regEndDate) <= 0;
 
-        boolean afterStart = (regStartDate != null) && now.isAfter(regStartDate);
-        boolean beforeEnd = (regEndDate != null) && now.isBefore(regEndDate);
-
-        if(regStartDate != null && regEndDate != null){
+        if (regStartDate != null && regEndDate != null) {
             active = afterStart && beforeEnd;
-        }else{
+        } else {
             active = afterStart || beforeEnd;
         }
 
         return active;
+    }
+
+    /**
+     *
+     * @return a string with formatted start & end time
+     */
+    public String getFormattedRegWindow() {
+        if (regStartDate == null && regEndDate == null) {
+            return "Not set";
+        }
+
+        SimpleDateFormat fmt = new SimpleDateFormat("dd/MM/yyyy hh:mm aa", Locale.getDefault());
+
+        String startStr = (regStartDate != null) ? fmt.format(regStartDate.toDate()) : "N/A";
+        String endStr   = (regEndDate != null) ? fmt.format(regEndDate.toDate())   : "N/A";
+
+        return startStr + "  –  " + endStr;
     }
 
 
