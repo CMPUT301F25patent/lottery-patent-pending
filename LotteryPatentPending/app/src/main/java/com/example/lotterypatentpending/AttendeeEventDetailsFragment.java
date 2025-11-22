@@ -1,10 +1,12 @@
 package com.example.lotterypatentpending;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -97,6 +99,8 @@ public class AttendeeEventDetailsFragment extends Fragment {
             userEventRepo.setUser(currentUser);
             userEventRepo.setEvent(currentEvent);
 
+            Toast.makeText(getContext(), "Joined Event!", Toast.LENGTH_SHORT).show();
+
             return true;
         }
         else {
@@ -114,6 +118,7 @@ public class AttendeeEventDetailsFragment extends Fragment {
         Event currentEvent = userEventRepo.getEvent().getValue();
 
         if (currentUser != null && currentEvent != null) {
+            Log.d("DEBUG", "leaveEventHelper() event.getId() = " + currentEvent.getId());
             fm.removeEntrantFromWaitingList(currentEvent.getId(), currentUser.getUserId());
             fm.removeJoinedEventFromEntrant(currentEvent.getId(), currentUser.getUserId());
 
@@ -122,6 +127,8 @@ public class AttendeeEventDetailsFragment extends Fragment {
 
             userEventRepo.setUser(currentUser);
             userEventRepo.setEvent(currentEvent);
+
+            Toast.makeText(getContext(), "Left Event", Toast.LENGTH_SHORT).show();
 
             return true;
         }
