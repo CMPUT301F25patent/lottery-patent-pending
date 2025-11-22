@@ -111,15 +111,4 @@
         android:backgroundTint="@color/light_red"
         android:layout_gravity="center"/>
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/attendee_profile_button_view_event_history"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:text="View Event History"
-        android:textColor="@android:color/black"
-        android:backgroundTint="@color/light_red"
-        android:layout_gravity="center"/>
-    
-
 </LinearLayout>

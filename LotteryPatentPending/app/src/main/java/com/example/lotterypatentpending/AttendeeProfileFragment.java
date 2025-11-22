@@ -45,8 +45,6 @@ public class AttendeeProfileFragment extends Fragment {
     private Button saveBtn;
     /** Current logged-in user object. */
     private User user;
-    private Button viewEventHistoryBtn;
-    private FirebaseManager fm;
 
     /**
      * Default constructor that inflates the attendee profile layout.
@@ -66,8 +64,6 @@ public class AttendeeProfileFragment extends Fragment {
         phone = v.findViewById(R.id.attendeePhone);
         saveBtn = v.findViewById(R.id.profileSaveBtn);
         notificationsSwitch = v.findViewById(R.id.notifications);
-        viewEventHistoryBtn = v.findViewById(R.id.attendee_profile_button_view_event_history);
-        fm = FirebaseManager.getInstance();
 
         //Get activity for this fragment
         AttendeeActivity activity = (AttendeeActivity) requireActivity();
@@ -136,60 +132,6 @@ public class AttendeeProfileFragment extends Fragment {
                     .show();
         });
 
-        // view events history button
-        viewEventHistoryBtn.setOnClickListener(view -> {
-            if (user == null) {
-                Log.e("ViewEventHistory", "ERROR: User is null");
-                return;
-            }
-
-            fm.getUserPastEvents(user, new FirebaseManager.FirebaseCallback<List<Event>>() {
-
-                @Override
-                public void onSuccess(List<Event> result) {
-                    if (result.isEmpty()) {
-                        Toast.makeText(getContext(), "You have no past events recorded.", Toast.LENGTH_SHORT).show();
-                    }
-                    else {
-                        showPastEventsPopup(result);
-                    }
-                }
-
-                @Override
-                public void onFailure(Exception e) {
-
-                }
-            });
-        });
-
-    }
-
-    private void showPastEventsPopup(List<Event> events) {
-        String[] eventTitles = new String[events.size()];
-        for (int i = 0; i < events.size(); i++) {
-            eventTitles[i] = events.get(i).getTitle();
-        }
-
-        new AlertDialog.Builder(requireContext())
-                .setTitle("Past Events")
-                // setItems displays a scrollable list from a String array
-                .setItems(eventTitles, (dialog, which) -> {
-                    Event selectedEvent = events.get(which);
-                    UserEventRepository uer = UserEventRepository.getInstance();
-                    uer.setEvent(selectedEvent);
-                    showEventDetails(selectedEvent);
-                })
-                .setPositiveButton("Close", (dialog, id) -> dialog.dismiss())
-                .show();
-    }
-
-    private void showEventDetails(Event event) {
-        AttendeeEventDetailsFragment fragment = new AttendeeEventDetailsFragment();
-        requireActivity().getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.attendeeContainer, fragment)
-                .addToBackStack(null)
-                .commit();
     }
 
 }
