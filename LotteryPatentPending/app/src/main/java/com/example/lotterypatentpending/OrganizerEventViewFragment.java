@@ -28,6 +28,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.fragment.NavHostFragment;
 
 import com.example.lotterypatentpending.helpers.DateTimeFormatHelper;
 import com.example.lotterypatentpending.models.QRGenerator;
@@ -49,7 +50,7 @@ public class OrganizerEventViewFragment extends Fragment {
     private TextView eventTitle, eventDescr, eventLocation, eventDate, eventRegStart, eventRegEnd, maxEntrants, waitListCap, eventTag;
     private ImageView qrView;
     private String eventId;
-    private Button generateQRCode;
+    private Button viewWLBtn, viewMapBtn, viewAttendantsBtn, generateQRCode;
     private CheckBox geoLocationReq;
     private ImageButton notiButton;
     private OrganizerNotifier organizerNotifier;
@@ -103,6 +104,9 @@ public class OrganizerEventViewFragment extends Fragment {
         qrView = v.findViewById(R.id.qrImage);
         geoLocationReq = v.findViewById(R.id.geoCheck);
         notiButton = v.findViewById(R.id.notiBtn);
+        viewWLBtn = v.findViewById(R.id.viewWLBtn);
+        viewMapBtn = v.findViewById(R.id.viewMapBtn);
+        viewAttendantsBtn = v.findViewById(R.id.viewAttendantsBtn);
 
         EventViewModel viewModel = new ViewModelProvider(requireActivity()).get(EventViewModel.class);
         viewModel.getEvent().observe(getViewLifecycleOwner(), event -> {
@@ -175,6 +179,19 @@ public class OrganizerEventViewFragment extends Fragment {
 
         generateQRCode.setOnClickListener(view ->{
             generateEventQRCode(eventId, qrView);
+        });
+
+        viewWLBtn.setOnClickListener(view -> {
+            NavHostFragment.findNavController(OrganizerEventViewFragment.this)
+                    .navigate(R.id.action_EventView_to_WaitingList);
+        });
+
+        viewMapBtn.setOnClickListener(view -> {
+
+        });
+
+        viewAttendantsBtn.setOnClickListener(view -> {
+
         });
 
     }
