@@ -6,6 +6,7 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
 import android.view.KeyEvent;
@@ -18,6 +19,7 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.PopupWindow;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.lotterypatentpending.adapters.EventListAdapter;
 import com.example.lotterypatentpending.helpers.DateTimeFormatHelper;
@@ -26,6 +28,7 @@ import com.example.lotterypatentpending.helpers.LoadingOverlay;
 import com.example.lotterypatentpending.helpers.TagDropdownHelper;
 import com.example.lotterypatentpending.models.Event;
 import com.example.lotterypatentpending.models.FirebaseManager;
+import com.example.lotterypatentpending.models.User;
 import com.example.lotterypatentpending.viewModels.UserEventRepository;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
@@ -181,7 +184,7 @@ public class AttendeeEventsFragment extends Fragment {
         historyBtn.setOnClickListener(v -> {
             historyMode = true;
             updateModeButtons(browseEventsBtn, historyBtn);
-            applyFilter(getQuery(searchInput));
+            getPastEvents(getQuery(searchInput));
         });
 
         // Visual default: Browse selected
@@ -339,4 +342,33 @@ public class AttendeeEventsFragment extends Fragment {
         // anchor under icon
         filterPopup.showAsDropDown(anchor, 0, 0);
     }
+
+    private void getPastEvents(String searchInput) {
+        User user = userEventRepo.getUser().getValue();
+        assert user != null;
+        fm.getUserPastEvents(user, new FirebaseManager.FirebaseCallback<List<Event>>() {
+            @Override
+            public void onSuccess(List<Event> result) {
+                historyEventsList.clear();
+                if (result != null) {
+                    historyEventsList.addAll(result);
+                }
+
+                // Apply the filter
+                applyFilter(searchInput);
+
+                if (historyEventsList.isEmpty()) {
+                    Toast.makeText(getContext(), "No past events found.", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                historyEventsList.clear();
+                applyFilter(searchInput);
+                Toast.makeText(getContext(), "Failed to load history: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
 }

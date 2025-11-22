@@ -38,9 +38,11 @@ import java.util.HashMap;
 import com.example.lotterypatentpending.exceptions.UserNotFoundException;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FieldPath;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.SetOptions;
@@ -674,6 +676,43 @@ public class FirebaseManager {
                 });
     }
 
+    public void getUserPastEvents(User user, FirebaseCallback<List<Event>> callback) {
+        List<String> eventIds = user.getPastEventIds();
+
+        if (eventIds == null || eventIds.isEmpty()) {
+            // empty, return instantly
+            callback.onSuccess(new ArrayList<>());
+            return;
+        }
+
+        db.collection("events")
+                .whereIn(FieldPath.documentId(), eventIds)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    List<Event> pastEvents = new ArrayList<>();
+                    for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
+                        try {
+                            Map<String, Object> data = document.getData();
+                            if (data == null) {
+                                continue;
+                            }
+                            Event event = mapToEvent(data);
+                            if (event != null) {
+                                event.setId(document.getId());
+                                pastEvents.add(event);
+                            }
+                        } catch (Exception e) {
+                            Log.e("FirebaseManager", "Error parsing Event document: " + e.getMessage());
+                        }
+                    }
+
+                    callback.onSuccess(pastEvents);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("FirebaseManager", "Error fetching past events: " + e.getMessage());
+                    callback.onFailure(e);
+                });
+    }
 
 
 
