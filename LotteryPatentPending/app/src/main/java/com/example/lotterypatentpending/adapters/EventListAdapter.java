@@ -88,9 +88,9 @@ public class EventListAdapter extends ArrayAdapter<Event> {
 
             String wlText;
             if (wlCap == -1) {
-                wlText = "Waiting list: N/A";
+                wlText = "N/A";
             } else {
-                wlText = "Waiting list: " + currentSize + " / " + wlCap;
+                wlText =  currentSize + " / " + wlCap;
             }
             waitlist.setText(wlText);
 
