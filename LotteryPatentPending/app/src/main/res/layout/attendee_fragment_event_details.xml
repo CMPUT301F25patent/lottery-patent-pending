@@ -1,60 +1,307 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    android:background="@color/grey">
 
-    <TextView
-        android:id="@+id/attendee_event_details_textview_event_name"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/placeholder_text"
+    <!-- Scrollable Content -->
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scrollArea"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        android:layout_margin="16dp"
+
+        android:background="@drawable/bg_list_rounded"
+        android:scrollbarThumbVertical="@drawable/scrollbar_thumb_vertical"
+        android:scrollbarTrackVertical="@android:color/transparent"
+        android:scrollbarStyle="outsideOverlay"
+
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/attendee_event_details_scrollview_description">
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
-    </TextView>
-
-    <ScrollView
-        android:id="@+id/attendee_event_details_scrollview_description"
-        android:layout_width="match_parent"
-        android:layout_height="200dp"
-        app:layout_constraintTop_toBottomOf="@id/attendee_event_details_textview_event_name"
-        app:layout_constraintBottom_toTopOf="@id/attendee_event_details_button_join">
-        <TextView
-            android:id="@+id/attendee_event_details_textview_description"
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/content"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:scrollbars="vertical"
-            android:text="@string/placeholder_text"
-            android:fadingEdge="vertical"
-            android:overScrollMode="ifContentScrolls">
+            android:padding="16dp">
 
-        </TextView>
+            <!-- Event Title -->
+            <TextView
+                android:id="@+id/eventTitle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="Event Title"
+                android:textSize="18sp"
+                android:textColor="#FFFFFF"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
 
-    </ScrollView>
+            <!-- Image Placeholder -->
+            <ImageView
+                android:id="@+id/eventImage"
+                android:layout_width="200dp"
+                android:layout_height="200dp"
+                android:layout_marginTop="12dp"
+                android:src="@drawable/ic_launcher_foreground"
+                app:layout_constraintTop_toBottomOf="@id/eventTitle"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
 
-    <Button
-        android:id="@+id/attendee_event_details_button_join"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/join"
-        app:layout_constraintTop_toBottomOf="@id/attendee_event_details_scrollview_description"
-        app:layout_constraintBottom_toTopOf="@id/attendee_event_details_button_leave"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent">
+            <!-- Event Description Header -->
+            <TextView
+                android:id="@+id/descHeader"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Event Description"
+                android:textColor="#7FC9FF"
+                android:paddingTop="12dp"
+                app:layout_constraintTop_toBottomOf="@id/eventImage"
+                app:layout_constraintStart_toStartOf="parent" />
 
-    </Button>
+            <!-- Long Description Text -->
+            <TextView
+                android:id="@+id/eventLongDescription"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:layout_marginTop="8dp"
+                android:text="Learn to swim in a fun and supportive environment! This 6-week class focuses on water safety, floating, and basic stroke techniques..."
+                app:layout_constraintTop_toBottomOf="@id/descHeader"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
 
-    <Button
-        android:id="@+id/attendee_event_details_button_leave"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/leave"
-        app:layout_constraintTop_toBottomOf="@id/attendee_event_details_button_join"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent">
+            <!-- ================= LOCATION ================= -->
 
-    </Button>
+            <!-- Location header -->
+            <TextView
+                android:id="@+id/locationHeader"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="Location"
+                android:textColor="#7FC9FF"
+                android:textSize="14sp"
+                app:layout_constraintTop_toBottomOf="@id/eventLongDescription"
+                app:layout_constraintStart_toStartOf="parent" />
+
+            <!-- Location value -->
+            <TextView
+                android:id="@+id/location"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="TBD"
+                android:textColor="#FFFFFF"
+                app:layout_constraintTop_toBottomOf="@id/locationHeader"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+            <!-- ================= EVENT DATE ================= -->
+
+            <!-- Event date header -->
+            <TextView
+                android:id="@+id/eventDateHeader"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="Event Date"
+                android:textColor="#7FC9FF"
+                android:textSize="14sp"
+                app:layout_constraintTop_toBottomOf="@id/location"
+                app:layout_constraintStart_toStartOf="parent" />
+
+            <!-- Event date value -->
+            <TextView
+                android:id="@+id/eventDate"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="TBD"
+                android:textColor="#FFFFFF"
+                app:layout_constraintTop_toBottomOf="@id/eventDateHeader"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+            <!-- ================= REGISTRATION START ================= -->
+
+            <!-- Reg start header -->
+            <TextView
+                android:id="@+id/regStartHeader"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="Registration Start"
+                android:textColor="#7FC9FF"
+                android:textSize="14sp"
+                app:layout_constraintTop_toBottomOf="@id/eventDate"
+                app:layout_constraintStart_toStartOf="parent" />
+
+            <!-- Reg start value -->
+            <TextView
+                android:id="@+id/regStart"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="TBD"
+                android:textColor="#FFFFFF"
+                app:layout_constraintTop_toBottomOf="@id/regStartHeader"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+            <!-- ================= REGISTRATION END ================= -->
+
+            <!-- Reg end header -->
+            <TextView
+                android:id="@+id/regEndHeader"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="Registration End"
+                android:textColor="#7FC9FF"
+                android:textSize="14sp"
+                app:layout_constraintTop_toBottomOf="@id/regStart"
+                app:layout_constraintStart_toStartOf="parent" />
+
+            <!-- Reg end value -->
+            <TextView
+                android:id="@+id/regEnd"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="TBD"
+                android:textColor="#FFFFFF"
+                app:layout_constraintTop_toBottomOf="@id/regEndHeader"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+            <!-- ================= EVENT CAPACITY ================= -->
+
+            <!-- Event capacity header -->
+            <TextView
+                android:id="@+id/maxEntrantsHeader"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="Event Capacity"
+                android:textColor="#7FC9FF"
+                android:textSize="14sp"
+                app:layout_constraintTop_toBottomOf="@id/regEnd"
+                app:layout_constraintStart_toStartOf="parent" />
+
+            <!-- Event capacity value -->
+            <TextView
+                android:id="@+id/maxEntrants"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="30"
+                android:textColor="#FFFFFF"
+                app:layout_constraintTop_toBottomOf="@id/maxEntrantsHeader"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+            <!-- ================= WAITING LIST CAP ================= -->
+
+            <!-- Waiting list header -->
+            <TextView
+                android:id="@+id/waitingListHeader"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="Waiting List Capacity"
+                android:textColor="#7FC9FF"
+                android:textSize="14sp"
+                app:layout_constraintTop_toBottomOf="@id/maxEntrants"
+                app:layout_constraintStart_toStartOf="parent" />
+
+            <!-- Waiting list value -->
+            <TextView
+                android:id="@+id/waitingListCap"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="30"
+                android:textColor="#FFFFFF"
+                app:layout_constraintTop_toBottomOf="@id/waitingListHeader"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+            <!-- ================= TAG ================= -->
+
+            <!-- Tag header -->
+            <TextView
+                android:id="@+id/tagHeader"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="Tag"
+                android:textColor="#7FC9FF"
+                android:textSize="14sp"
+                app:layout_constraintTop_toBottomOf="@id/waitingListCap"
+                app:layout_constraintStart_toStartOf="parent" />
+
+            <!-- Tag value -->
+            <TextView
+                android:id="@+id/tag"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="General"
+                android:textColor="#FFFFFF"
+                app:layout_constraintTop_toBottomOf="@id/tagHeader"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+            <!-- Divider -->
+            <View
+                android:id="@+id/divider1"
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:background="#777777"
+                android:layout_marginTop="16dp"
+                app:layout_constraintTop_toBottomOf="@id/tag"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+            <!-- Event Settings Header -->
+            <TextView
+                android:id="@+id/eventSettingsHeader"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="Event Settings"
+                android:textColor="#7FC9FF"
+                app:layout_constraintTop_toBottomOf="@id/divider1"
+                app:layout_constraintStart_toStartOf="parent" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/Join"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:backgroundTint="@color/white_grey"
+                android:text="Join"
+                android:textColor="@color/black"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/eventSettingsHeader"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/Leave"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:backgroundTint="@color/white_grey"
+                android:text="Leave"
+                android:textColor="@color/black"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/eventSettingsHeader"
+                android:visibility="gone"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.core.widget.NestedScrollView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -31,16 +31,20 @@ public class EventListAdapter extends ArrayAdapter<Event> {
         void onDelete(Event event);
     }
 
+    private final boolean showActions;
+
     private OnEventActionListener listener;
 
     public EventListAdapter(@NonNull Context context, @NonNull List<Event> events){
         super(context, 0, events);
+        this.showActions = false;
     }
 
     public EventListAdapter(@NonNull Context context, @NonNull List<Event> events,
                             OnEventActionListener listener) {
         super(context, 0, events);
         this.listener = listener;
+        this.showActions = true;
     }
 
     @Override
@@ -57,8 +61,10 @@ public class EventListAdapter extends ArrayAdapter<Event> {
         TextView location = convertView.findViewById(R.id.eventLocation);
         TextView eventTime = convertView.findViewById(R.id.eventTime);
         TextView regTime = convertView.findViewById(R.id.regTime);
+        TextView waitlist = convertView.findViewById(R.id.eventWaitlist);
         ImageButton editBtn = convertView.findViewById(R.id.btnEdit);
         ImageButton deleteBtn = convertView.findViewById(R.id.btnDelete);
+
 
         if (event != null) {
             name.setText(event.getTitle());
@@ -72,17 +78,40 @@ public class EventListAdapter extends ArrayAdapter<Event> {
             eventTime.setText(formattedTime);
             regTime.setText(event.getFormattedRegWindow());
 
-            editBtn.setOnClickListener(v -> {
-                if (listener != null) {
-                    listener.onEdit(event);
-                }
-            });
+            //  Compute waiting list text: "X / Y" or "N/A"
+            int wlCap = event.getWaitingListCapacity();
+            int currentSize = 0;
+            if (event.getWaitingList() != null &&
+                    event.getWaitingList().getList() != null) {
+                currentSize = event.getWaitingList().getList().size();
+            }
 
-            deleteBtn.setOnClickListener(v -> {
-                if (listener != null) {
-                    listener.onDelete(event);
-                }
-            });
+            String wlText;
+            if (wlCap == -1) {
+                wlText = "N/A";
+            } else {
+                wlText =  currentSize + " / " + wlCap;
+            }
+            waitlist.setText(wlText);
+
+            if (!showActions) {
+                // Any fragment that used the 2-arg constructor:
+                // hide buttons completely
+                editBtn.setVisibility(View.GONE);
+                deleteBtn.setVisibility(View.GONE);
+            } else {
+                // Only OrganizerViewEventsListFragment uses this path
+                editBtn.setVisibility(View.VISIBLE);
+                deleteBtn.setVisibility(View.VISIBLE);
+
+                editBtn.setOnClickListener(v -> {
+                    if (listener != null) listener.onEdit(event);
+                });
+
+                deleteBtn.setOnClickListener(v -> {
+                    if (listener != null) listener.onDelete(event);
+                });
+            }
 
         }
 
