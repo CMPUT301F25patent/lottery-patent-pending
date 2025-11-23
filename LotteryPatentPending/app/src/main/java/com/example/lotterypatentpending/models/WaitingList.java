@@ -6,6 +6,7 @@ import com.example.lotterypatentpending.exceptions.UserInListException;
 import com.example.lotterypatentpending.exceptions.UserNotInListException;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This class represents a waiting list for an event that entrants can join.
@@ -142,6 +143,15 @@ public class WaitingList {
             }
         }
         return n;
+    }
+
+    public List<User> getUsersOnly(){
+        ArrayList<User> users = new ArrayList<>();
+        for (Pair<User, WaitingListState> pair : list) {
+            users.add(pair.first);
+        }
+
+        return users;
     }
 
 }
