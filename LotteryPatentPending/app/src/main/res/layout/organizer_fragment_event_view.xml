@@ -71,8 +71,7 @@
                 app:layout_constraintEnd_toEndOf="parent" />
 
 
-            <!-- Max Entrants -->
-
+            <!-- Notifications button -->
             <ImageButton
                 android:id="@+id/notiBtn"
                 android:layout_width="33dp"
@@ -85,6 +84,36 @@
                 app:layout_constraintStart_toEndOf="@+id/descHeader"
                 app:layout_constraintTop_toBottomOf="@+id/eventTitle" />
 
+            <!-- View Waiting List Button -->
+            <Button
+                android:id="@+id/viewWLBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Waiting List"
+                android:layout_marginTop="20dp"
+                app:layout_constraintTop_toBottomOf="@id/eventLongDescription"
+                app:layout_constraintStart_toStartOf="parent" />
+
+            <Button
+                android:id="@+id/viewMapBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="20dp"
+                android:text="View Map"
+                app:layout_constraintStart_toEndOf="@+id/viewWLBtn"
+                app:layout_constraintTop_toBottomOf="@id/eventLongDescription" />
+
+            <Button
+                android:id="@+id/viewAttendantsBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="Attendants"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/viewMapBtn"
+                app:layout_constraintTop_toBottomOf="@id/eventLongDescription" />
+
             <TextView
                 android:id="@+id/location"
                 android:layout_width="0dp"
@@ -95,9 +124,8 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/eventLongDescription" />
+                app:layout_constraintTop_toBottomOf="@id/viewWLBtn" />
 
-            <!-- Divider -->
             <TextView
                 android:id="@+id/eventDate"
                 android:layout_width="0dp"
@@ -170,6 +198,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/waitingListCap" />
 
+            <!-- Divider -->
             <View
                 android:id="@+id/divider1"
                 android:layout_width="0dp"
