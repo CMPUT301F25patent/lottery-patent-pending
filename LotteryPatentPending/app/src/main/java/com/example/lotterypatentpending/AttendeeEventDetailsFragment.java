@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -32,6 +33,8 @@ public class AttendeeEventDetailsFragment extends Fragment {
     private Button joinButton;
     private Button leaveButton;
 
+    private TextView waitListCap;
+
     public AttendeeEventDetailsFragment() {
         super(R.layout.attendee_fragment_event_details);
     }
@@ -44,7 +47,6 @@ public class AttendeeEventDetailsFragment extends Fragment {
         userEventRepo = UserEventRepository.getInstance();
         fm = FirebaseManager.getInstance();
 
-        // These IDs must match your XML:
         TextView title       = view.findViewById(R.id.eventTitle);
         TextView description = view.findViewById(R.id.eventLongDescription);
         TextView location    = view.findViewById(R.id.location);
@@ -52,7 +54,7 @@ public class AttendeeEventDetailsFragment extends Fragment {
         TextView regStart    = view.findViewById(R.id.regStart);
         TextView regEnd      = view.findViewById(R.id.regEnd);
         TextView capacity    = view.findViewById(R.id.maxEntrants);
-        TextView waitListCap = view.findViewById(R.id.waitingListCap);
+        waitListCap = view.findViewById(R.id.waitingListCap);
         TextView tag         = view.findViewById(R.id.tag);
 
         joinButton  = view.findViewById(R.id.Join);
@@ -99,32 +101,27 @@ public class AttendeeEventDetailsFragment extends Fragment {
         // Capacity: just the number as text
         String capacityValue = String.valueOf(currentEvent.getCapacity());
 
-        // Waiting list: -1 means N/A
-        String waitListValue;
-        int wlCap = currentEvent.getWaitingListCapacity();
-        if (wlCap == -1) {
-            waitListValue = "N/A";
-        } else {
-            waitListValue = String.valueOf(wlCap);
-        }
+
 
         // Tag: just the tag value
         String tagValue = currentEvent.getTag() == null
                 ? "General"
                 : currentEvent.getTag();
 
-        // ---- Push formatted values into TextViews ----
+        //  Push formatted values into TextViews
         location.setText(locationValue);
         date.setText(dateValue);
         regStart.setText(regStartValue);
         regEnd.setText(regEndValue);
         capacity.setText(capacityValue);
-        waitListCap.setText(waitListValue);
+        // Waiting list: -1 means N/A
+        refreshWaitingListUI(currentEvent, currentUser);
         tag.setText(tagValue);
 
-        // ---- Join/Leave button state ----
+        //  Join/Leave button state
         boolean isJoined = isUserJoined(currentUser, currentEvent);
         updateButtonVisibility(isJoined);
+
 
         joinButton.setOnClickListener(v -> {
             if (joinEventHelper()) {
@@ -156,21 +153,49 @@ public class AttendeeEventDetailsFragment extends Fragment {
         User currentUser  = userEventRepo.getUser().getValue();
         Event currentEvent = userEventRepo.getEvent().getValue();
 
-        if (currentUser != null && currentEvent != null) {
-            // Firestore
-            fm.addJoinedEventToEntrant(currentEvent, currentUser.getUserId());
-            fm.addEntrantToWaitingList(currentUser, WaitingListState.ENTERED, currentEvent.getId());
-
-            // Local model
-            currentEvent.addToWaitingList(currentUser);
-            currentUser.addJoinedEvent(currentEvent.getId());
-
-            userEventRepo.setUser(currentUser);
-            userEventRepo.setEvent(currentEvent);
-
-            return true;
+        if (currentUser == null || currentEvent == null || getContext() == null) {
+            return false;
         }
-        return false;
+
+
+        // 1) Check if already joined
+        if (isUserJoined(currentUser, currentEvent)) {
+            Toast.makeText(getContext(),
+                    "You are already on the waiting list for this event.",
+                    Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
+        // 2) Enforce waiting list capacity
+        int wlCap = currentEvent.getWaitingListCapacity();
+        if (wlCap != -1) { // -1 means "no limit"
+            int currentSize = getCurrentWaitingListSize(currentEvent);
+            if (currentSize >= wlCap) {
+                Toast.makeText(getContext(),
+                        "Waiting list is full.",
+                        Toast.LENGTH_SHORT).show();
+                return false;
+            }
+        }
+
+        // 3) Firestore writes
+        fm.addJoinedEventToEntrant(currentEvent, currentUser.getUserId());
+        fm.addEntrantToWaitingList(currentUser, WaitingListState.ENTERED, currentEvent.getId());
+
+        //  4) Local model updates
+        currentEvent.addToWaitingList(currentUser);
+        currentUser.addJoinedEvent(currentEvent.getId());
+
+        userEventRepo.setEvent(currentEvent);
+
+        // Waiting list: -1 means N/A
+        refreshWaitingListUI(currentEvent, currentUser);
+
+        Toast.makeText(getContext(),
+                "Joined event waiting list.",
+                Toast.LENGTH_SHORT).show();
+
+        return true;
     }
 
     /**
@@ -190,8 +215,14 @@ public class AttendeeEventDetailsFragment extends Fragment {
             currentEvent.removeFromWaitingList(currentUser);
             currentUser.removeJoinedEvent(currentEvent.getId());
 
+            refreshWaitingListUI(currentEvent, currentUser);
+
             userEventRepo.setUser(currentUser);
             userEventRepo.setEvent(currentEvent);
+
+            Toast.makeText(getContext(),
+                    "Left event waiting list.",
+                    Toast.LENGTH_SHORT).show();
 
             return true;
         }
@@ -221,6 +252,45 @@ public class AttendeeEventDetailsFragment extends Fragment {
         } else {
             joinButton.setVisibility(View.VISIBLE);
             leaveButton.setVisibility(View.GONE);
+        }
+    }
+
+    private int getCurrentWaitingListSize(@NonNull Event event) {
+        if (event.getWaitingList() == null ||
+                event.getWaitingList().getList() == null) {
+            return 0;
+        }
+        return event.getWaitingList().getList().size();
+    }
+
+    private void refreshWaitingListUI(@NonNull Event event, @Nullable User user) {
+        // 1) Compute sizes
+        int wlCap = event.getWaitingListCapacity();
+        int currentSize = getCurrentWaitingListSize(event);
+
+        // 2) Update "X / Y" (or N/A)
+        String waitListValue;
+        if (wlCap == -1) {
+            waitListValue = "N/A";
+        } else {
+            waitListValue = currentSize + " / " + wlCap;
+        }
+        waitListCap.setText(waitListValue);
+
+        // 3) Show correct button (Join vs Leave)
+        boolean isJoined = isUserJoined(user, event);
+        updateButtonVisibility(isJoined);
+
+        // 4) If not joined and full -> disable Join
+        if (!isJoined && wlCap != -1 && currentSize >= wlCap) {
+            joinButton.setEnabled(false);
+            joinButton.setAlpha(0.5f);
+            joinButton.setText("Waiting list full");
+        } else {
+            // reset Join button to normal state
+            joinButton.setEnabled(true);
+            joinButton.setAlpha(1f);
+            joinButton.setText("Join");
         }
     }
 }

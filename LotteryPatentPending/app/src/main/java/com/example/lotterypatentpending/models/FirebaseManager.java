@@ -272,6 +272,15 @@ public class FirebaseManager {
         if (capObj instanceof Long) capacity = ((Long) capObj).intValue();
         else if (capObj instanceof Integer) capacity = (Integer) capObj;
 
+        // Waiting list capacity handling
+        int waitingListCapacity = -1; // default "no limit"
+        Object wlCapObj = data.get("waitingListCapacity");
+        if (wlCapObj instanceof Long) {
+            waitingListCapacity = ((Long) wlCapObj).intValue();
+        } else if (wlCapObj instanceof Integer) {
+            waitingListCapacity = (Integer) wlCapObj;
+        }
+
         // Organizer handling (can be Map or String)
         User organizer = null;
         Object orgObj = data.get("organizer");
@@ -293,6 +302,7 @@ public class FirebaseManager {
         Event event = new Event(title, description, capacity, organizer);
         event.setLocation(location);
         event.setTag(tag);
+        event.setWaitingListCapacity(waitingListCapacity);
 
         if (data.get("id") != null)
             event.setId((String) data.get("id"));

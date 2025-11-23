@@ -121,6 +121,31 @@
             android:textColor="@color/black"/>
     </LinearLayout>
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginBottom="8dp">
+
+        <TextView
+            android:id="@+id/eventWaitlistLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Waitlist Capacity"
+            android:textStyle="bold"
+            android:textSize="14sp"
+            android:textColor="@color/black"/>
+
+        <TextView
+            android:id="@+id/eventWaitlist"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="N/A"
+            android:textSize="13sp"
+            android:textColor="@color/black"/>
+    </LinearLayout>
+
+
     <!-- Edit/Delete Row -->
     <LinearLayout
         android:layout_width="match_parent"
@@ -130,6 +155,7 @@
         android:paddingTop="8dp">
 
         <ImageButton
+            android:visibility="gone"
             android:id="@+id/btnEdit"
             android:layout_width="30dp"
             android:layout_height="30dp"
@@ -139,9 +165,11 @@
             android:background="@android:color/transparent"
             android:focusable="false"
             android:focusableInTouchMode="false"
-            android:clickable="true"/>
+            android:clickable="true"
+            android:gravity="end"/>
 
         <ImageButton
+            android:visibility="gone"
             android:id="@+id/btnDelete"
             android:layout_width="30dp"
             android:layout_height="30dp"
@@ -152,7 +180,8 @@
             android:background="@android:color/transparent"
             android:focusable="false"
             android:focusableInTouchMode="false"
-            android:clickable="true"/>
+            android:clickable="true"
+            android:gravity="end"/>
     </LinearLayout>
 
 </LinearLayout>
