@@ -36,6 +36,8 @@ import com.example.lotterypatentpending.models.QRGenerator;
 import com.example.lotterypatentpending.viewModels.EventViewModel;
 
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.util.Base64;
 
 
 /**
@@ -132,24 +134,15 @@ public class OrganizerEventViewFragment extends Fragment {
             String waitListText = "Waiting List Capacity: ";
             String tagText = "Tag: " + event.getTag();
             // Load event poster from Storage (if it exists)
-            FirebaseManager.getInstance().loadEventPoster(event.getId(),
-                    new com.example.lotterypatentpending.models.FirebaseManager.FirebaseCallback<Bitmap>() {
-                        @Override
-                        public void onSuccess(Bitmap result) {
-                            if (posterImage != null) {
-                                posterImage.setImageBitmap(result);
-                                posterImage.setVisibility(View.VISIBLE);
-                            }
-                        }
-
-                        @Override
-                        public void onFailure(Exception e) {
-                            // If no image or error, just keep it hidden
-                            if (posterImage != null) {
-                                posterImage.setVisibility(View.GONE);
-                            }
-                        }
-                    });
+            byte[] posterBytes = event.getPosterBytes();
+            if (posterBytes != null && posterBytes.length > 0) {
+                Bitmap bmp = BitmapFactory.decodeByteArray(posterBytes, 0, posterBytes.length);
+                posterImage.setImageBitmap(bmp);
+                posterImage.setVisibility(View.VISIBLE);
+            } else {
+                posterImage.setImageDrawable(null);
+                posterImage.setVisibility(View.GONE);
+            }
 
 
             if(wlCap == -1){
@@ -192,6 +185,8 @@ public class OrganizerEventViewFragment extends Fragment {
             eventId = event.getId();
 
             geoLocationReq.setChecked(event.isGeolocationRequired());
+
+
 
         });
 

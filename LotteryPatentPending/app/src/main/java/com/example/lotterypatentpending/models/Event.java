@@ -75,6 +75,17 @@ public class Event {
         this.geolocationRequired = false;
     }
 
+    private byte[] posterBytes; // compressed JPEG data for the poster
+
+    public byte[] getPosterBytes() {
+        return posterBytes;
+    }
+
+    public void setPosterBytes(byte[] posterBytes) {
+        this.posterBytes = posterBytes;
+    }
+
+
     /** @return the title of the event */
     public String getTitle() {
         return title;
