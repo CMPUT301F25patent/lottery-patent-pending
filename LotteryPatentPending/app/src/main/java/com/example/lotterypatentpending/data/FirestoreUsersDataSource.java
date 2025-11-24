@@ -25,33 +25,29 @@ public class FirestoreUsersDataSource implements UserDataSource {
 
     @Override
     public CompletableFuture<List<String>> getEntrantIds(String eventId, Group group) {
-        final CompletableFuture<List<String>> f = new CompletableFuture<>();
-
-        String sub;
-        switch (group) {
-            case WAITLIST:
-                sub = "waitingList";
-                break;
-            case SELECTED:
-                sub = "selected";
-                break;
-            case CANCELLED:
-                sub = "cancelled";
-                break;
-            default:
-                sub = "waitingList";
-                break;
-        }
+        CompletableFuture<List<String>> f = new CompletableFuture<>();
 
         db.collection("events")
                 .document(eventId)
-                .collection(sub)
                 .get()
-                .addOnSuccessListener((QuerySnapshot snap) -> {
+                .addOnSuccessListener(doc -> {
                     List<String> ids = new ArrayList<>();
-                    for (DocumentSnapshot d : snap.getDocuments()) {
-                        String uid = d.getString("userId");
-                        if (uid != null) ids.add(uid);
+                    Map<String, Object> map = null;
+
+                    switch (group) {
+                        case WAITLIST:
+                            map = (Map<String, Object>) doc.get("waitingList");
+                            break;
+                        case SELECTED:
+                            map = (Map<String, Object>) doc.get("selectedEntrants");
+                            break;
+                        case CANCELLED:
+                            map = (Map<String, Object>) doc.get("cancelledEntrants");
+                            break;
+                    }
+
+                    if (map != null) {
+                        ids.addAll(map.keySet()); // keys are your uids
                     }
                     f.complete(ids);
                 })
@@ -59,6 +55,7 @@ public class FirestoreUsersDataSource implements UserDataSource {
 
         return f;
     }
+
 
     @Override
     public CompletableFuture<List<String>> filterOptedIn(String eventId, List<String> candidateUserIds) {
