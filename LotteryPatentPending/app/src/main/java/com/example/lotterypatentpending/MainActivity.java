@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -64,8 +65,7 @@ public class MainActivity extends AppCompatActivity implements MainRegisterNewUs
                 startActivity(new Intent(this, AttendeeActivity.class)));
         organizerBtn.setOnClickListener(v ->
                 startActivity(new Intent(this, OrganizerActivity.class)));
-        adminBtn.setOnClickListener(v ->
-                startActivity(new Intent(this, AdminActivity.class)));
+        adminBtn.setOnClickListener(v -> handleAdminButtonClick());
 
         //Get firebase auth
         FirebaseAuth auth = FirebaseAuth.getInstance();
@@ -87,6 +87,21 @@ public class MainActivity extends AppCompatActivity implements MainRegisterNewUs
                     });
         }
 
+    }
+    /**
+     * Checks if the current user is an admin before launching the AdminActivity.
+     */
+    private void handleAdminButtonClick() {
+        User currentUser = UserEventRepository.getInstance().getUser().getValue();
+
+        // Check if user data is loaded and if the user is an admin
+        if (currentUser != null && currentUser.isAdmin()) {
+            // User is an admin, grant access
+            startActivity(new Intent(this, AdminActivity.class));
+        } else {
+            // User is not an admin or user data isn't loaded yet, deny access
+            Toast.makeText(this, "Access Denied: Admin privileges required.", Toast.LENGTH_LONG).show();
+        }
     }
 
 
