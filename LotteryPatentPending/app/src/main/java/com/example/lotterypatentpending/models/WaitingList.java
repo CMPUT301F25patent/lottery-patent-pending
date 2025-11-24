@@ -175,4 +175,15 @@ public class WaitingList {
         return users;
     }
 
+    public List<User> getSelectedEntrants() {
+        List<User> selectedUsers = new ArrayList<>();
+
+        for (Pair<User, WaitingListState> pair : this.list) {
+            if (pair.second == WaitingListState.SELECTED) {
+                selectedUsers.add(pair.first);
+            }
+        }
+
+        return selectedUsers;
+    }
 }

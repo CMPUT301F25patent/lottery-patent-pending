@@ -293,7 +293,7 @@ public class AttendeeEventDetailsFragment extends Fragment {
         cancelButton.setVisibility(View.GONE);
         leaveButton.setVisibility(View.GONE);
 
-        if (currentEvent.containsUser(currentUser)) {
+        if (!currentEvent.containsUser(currentUser)) {
             joinButton.setVisibility(View.VISIBLE);
             joinButton.setOnClickListener(v -> {
                 joinEventHelper();
@@ -312,7 +312,7 @@ public class AttendeeEventDetailsFragment extends Fragment {
                 acceptButton.setVisibility(View.VISIBLE);
                 declineButton.setVisibility(View.VISIBLE);
                 acceptButton.setOnClickListener(v -> {
-
+                    acceptEventHelper();
                 });
                 declineButton.setOnClickListener(v -> {
 
