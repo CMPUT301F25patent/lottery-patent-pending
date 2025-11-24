@@ -32,6 +32,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.util.Log;
+
 import android.widget.ImageView;
 
 import androidx.core.util.Pair;
@@ -56,6 +57,9 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.SetOptions;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.google.firebase.firestore.Blob;
+
+
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -248,8 +252,10 @@ public class FirebaseManager {
         data.put("waitingList", serializeWaitingList(event.getWaitingList().getList()));
 
         if (event.getPosterBytes() != null && event.getPosterBytes().length > 0) {
-            data.put("posterBlob", event.getPosterBytes()); // Firestore will store this as a Blob
+            Blob posterBlob = Blob.fromBytes(event.getPosterBytes());
+            data.put("posterBlob", posterBlob);
         }
+
 
         return data;
 
