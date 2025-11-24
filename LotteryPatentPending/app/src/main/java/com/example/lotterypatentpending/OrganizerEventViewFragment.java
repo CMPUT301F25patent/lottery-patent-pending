@@ -134,15 +134,7 @@ public class OrganizerEventViewFragment extends Fragment {
             String waitListText = "Waiting List Capacity: ";
             String tagText = "Tag: " + event.getTag();
             // Load event poster from Storage (if it exists)
-            byte[] posterBytes = event.getPosterBytes();
-            if (posterBytes != null && posterBytes.length > 0) {
-                Bitmap bmp = BitmapFactory.decodeByteArray(posterBytes, 0, posterBytes.length);
-                posterImage.setImageBitmap(bmp);
-                posterImage.setVisibility(View.VISIBLE);
-            } else {
-                posterImage.setImageDrawable(null);
-                posterImage.setVisibility(View.GONE);
-            }
+
 
 
             if(wlCap == -1){
@@ -186,6 +178,15 @@ public class OrganizerEventViewFragment extends Fragment {
 
             geoLocationReq.setChecked(event.isGeolocationRequired());
 
+            byte[] posterBytes = event.getPosterBytes();
+            if (posterBytes != null && posterBytes.length > 0) {
+                Bitmap bmp = BitmapFactory.decodeByteArray(posterBytes, 0, posterBytes.length);
+                posterImage.setImageBitmap(bmp);
+                posterImage.setVisibility(View.VISIBLE);
+            } else {
+                posterImage.setImageDrawable(null);
+                posterImage.setVisibility(View.GONE);
+            }
 
 
         });

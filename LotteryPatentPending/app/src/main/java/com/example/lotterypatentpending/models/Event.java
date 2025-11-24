@@ -313,13 +313,13 @@ public class Event {
      * @param entrant User joining the event
      */
     public void joinEvent(User entrant){
-       if(waitingListCapacity != -1){
-           if(waitingList.getList().size() < waitingListCapacity && !inWaitingList(entrant)){
-               waitingList.addEntrant(entrant);
-           }
-       }else{
-           waitingList.addEntrant(entrant);
-       }
+        if(waitingListCapacity != -1){
+            if(waitingList.getList().size() < waitingListCapacity && !inWaitingList(entrant)){
+                waitingList.addEntrant(entrant);
+            }
+        }else{
+            waitingList.addEntrant(entrant);
+        }
     }
 
     /**
