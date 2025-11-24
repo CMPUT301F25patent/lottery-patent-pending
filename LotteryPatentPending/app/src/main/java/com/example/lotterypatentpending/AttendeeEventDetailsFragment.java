@@ -3,8 +3,12 @@ package com.example.lotterypatentpending;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -35,6 +39,9 @@ public class AttendeeEventDetailsFragment extends Fragment {
 
     private TextView waitListCap;
 
+
+    private ImageView posterImage;
+
     public AttendeeEventDetailsFragment() {
         super(R.layout.attendee_fragment_event_details);
     }
@@ -60,12 +67,24 @@ public class AttendeeEventDetailsFragment extends Fragment {
         joinButton  = view.findViewById(R.id.Join);
         leaveButton = view.findViewById(R.id.Leave);
 
+        posterImage = view.findViewById(R.id.eventImage);
+
         // Get current event + user from repo
         Event currentEvent = Objects.requireNonNull(userEventRepo.getEvent().getValue());
         User currentUser   = userEventRepo.getUser().getValue();
 
         title.setText(currentEvent.getTitle());
         description.setText(currentEvent.getDescription());
+
+        byte[] posterBytes = currentEvent.getPosterBytes();
+        if (posterBytes != null && posterBytes.length > 0) {
+            Bitmap bmp = BitmapFactory.decodeByteArray(posterBytes, 0, posterBytes.length);
+            posterImage.setImageBitmap(bmp);
+            posterImage.setVisibility(View.VISIBLE);
+        } else {
+            posterImage.setImageDrawable(null);
+            posterImage.setVisibility(View.GONE);
+        }
 
         // Location
         String locationValue;
@@ -121,6 +140,8 @@ public class AttendeeEventDetailsFragment extends Fragment {
         //  Join/Leave button state
         boolean isJoined = isUserJoined(currentUser, currentEvent);
         updateButtonVisibility(isJoined);
+
+
 
 
         joinButton.setOnClickListener(v -> {
