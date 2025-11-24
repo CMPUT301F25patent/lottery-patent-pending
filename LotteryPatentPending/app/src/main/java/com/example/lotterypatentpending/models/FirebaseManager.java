@@ -28,7 +28,12 @@
 
 package com.example.lotterypatentpending.models;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.util.Log;
+import android.widget.ImageView;
+
 import androidx.core.util.Pair;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -49,7 +54,8 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.SetOptions;
-
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 
 /**
@@ -921,6 +927,112 @@ public class FirebaseManager {
 
 
     // for listeners
+
+    /**
+     * Creates or updates an image metadata record in the "images" collection.
+     * If {@code image.id} is null or empty, a new document is created.
+     *
+     * @param image    the {@link ImageRecord} to save.
+     * @param callback optional callback invoked on completion.
+     */
+    public void addOrUpdateImage(ImageRecord image, FirebaseCallback<Void> callback) {
+        String id = image.getId();
+        DocumentReference docRef;
+
+        if (id != null && !id.trim().isEmpty()) {
+            docRef = db.collection("images").document(id);
+        } else {
+            docRef = db.collection("images").document();
+            image.setId(docRef.getId());
+        }
+
+        docRef.set(image)
+                .addOnSuccessListener(aVoid -> {
+                    Log.d("FirebaseManager", "Image metadata saved: " + image.getId());
+                    if (callback != null) {
+                        callback.onSuccess(null);
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("FirebaseManager", "Error saving image metadata", e);
+                    if (callback != null) {
+                        callback.onFailure(e);
+                    }
+                });
+    }
+
+
+    /**
+     * Uploads an event poster image to Firebase Storage under
+     * path: eventPosters/{eventId}.jpg
+     *
+     * @param eventId  the event id
+     * @param imageUri the local Uri selected from gallery
+     * @param callback returns the download URL string on success
+     */
+    public void uploadEventPoster(String eventId, Uri imageUri, FirebaseCallback<String> callback) {
+        if (eventId == null || eventId.trim().isEmpty() || imageUri == null) {
+            if (callback != null) {
+                callback.onFailure(new IllegalArgumentException("Invalid eventId or imageUri"));
+            }
+            return;
+        }
+
+        StorageReference ref = FirebaseStorage.getInstance()
+                .getReference()
+                .child("eventPosters")
+                .child(eventId + ".jpg");
+
+        ref.putFile(imageUri)
+                .continueWithTask(task -> {
+                    if (!task.isSuccessful()) {
+                        throw task.getException();
+                    }
+                    return ref.getDownloadUrl();
+                })
+                .addOnSuccessListener(uri -> {
+                    if (callback != null) {
+                        callback.onSuccess(uri.toString());
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    if (callback != null) {
+                        callback.onFailure(e);
+                    }
+                });
+    }
+
+    /**
+     * Loads an event poster bitmap from Firebase Storage (if it exists)
+     * and returns it via callback. If the file does not exist, onFailure
+     * will be called.
+     */
+    public void loadEventPoster(String eventId, FirebaseCallback<Bitmap> callback) {
+        if (eventId == null || eventId.trim().isEmpty()) {
+            if (callback != null) {
+                callback.onFailure(new IllegalArgumentException("Invalid eventId"));
+            }
+            return;
+        }
+
+        StorageReference ref = FirebaseStorage.getInstance()
+                .getReference()
+                .child("eventPosters")
+                .child(eventId + ".jpg");
+
+        final long ONE_MB = 1024 * 1024;
+
+        ref.getBytes(ONE_MB)
+                .addOnSuccessListener(bytes -> {
+                    Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                    if (callback != null) callback.onSuccess(bmp);
+                })
+                .addOnFailureListener(e -> {
+                    if (callback != null) callback.onFailure(e);
+                });
+    }
+
+
 
     /**
      * Callback interface used by all FirebaseManager asynchronous methods.

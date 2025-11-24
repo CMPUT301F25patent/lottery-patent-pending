@@ -18,6 +18,7 @@ import com.example.lotterypatentpending.data.UserDataSource;
 import com.example.lotterypatentpending.domain.OrganizerNotifier;
 import com.example.lotterypatentpending.models.AdminLogRepository;
 import com.example.lotterypatentpending.models.Event;
+import com.example.lotterypatentpending.models.FirebaseManager;
 import com.example.lotterypatentpending.models.FirestoreAdminLogRepository;
 import com.example.lotterypatentpending.models.FirestoreNotificationRepository;
 import com.example.lotterypatentpending.models.NotificationRepository;
@@ -34,6 +35,9 @@ import com.example.lotterypatentpending.helpers.DateTimeFormatHelper;
 import com.example.lotterypatentpending.models.QRGenerator;
 import com.example.lotterypatentpending.viewModels.EventViewModel;
 
+import android.graphics.Bitmap;
+
+
 /**
  * Fragment that displays the details of a selected Event.
  * <p>
@@ -49,6 +53,9 @@ public class OrganizerEventViewFragment extends Fragment {
 
     private TextView eventTitle, eventDescr, eventLocation, eventDate, eventRegStart, eventRegEnd, maxEntrants, waitListCap, eventTag;
     private ImageView qrView;
+
+    private ImageView posterImage;
+
     private String eventId;
     private Button viewWLBtn, viewMapBtn, viewAttendantsBtn, generateQRCode;
     private CheckBox geoLocationReq;
@@ -107,6 +114,8 @@ public class OrganizerEventViewFragment extends Fragment {
         viewWLBtn = v.findViewById(R.id.viewWLBtn);
         viewMapBtn = v.findViewById(R.id.viewMapBtn);
         viewAttendantsBtn = v.findViewById(R.id.viewAttendantsBtn);
+        posterImage = v.findViewById(R.id.eventImage);
+
 
         EventViewModel viewModel = new ViewModelProvider(requireActivity()).get(EventViewModel.class);
         viewModel.getEvent().observe(getViewLifecycleOwner(), event -> {
@@ -122,6 +131,26 @@ public class OrganizerEventViewFragment extends Fragment {
             int wlCap = event.getWaitingListCapacity();
             String waitListText = "Waiting List Capacity: ";
             String tagText = "Tag: " + event.getTag();
+            // Load event poster from Storage (if it exists)
+            FirebaseManager.getInstance().loadEventPoster(event.getId(),
+                    new com.example.lotterypatentpending.models.FirebaseManager.FirebaseCallback<Bitmap>() {
+                        @Override
+                        public void onSuccess(Bitmap result) {
+                            if (posterImage != null) {
+                                posterImage.setImageBitmap(result);
+                                posterImage.setVisibility(View.VISIBLE);
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Exception e) {
+                            // If no image or error, just keep it hidden
+                            if (posterImage != null) {
+                                posterImage.setVisibility(View.GONE);
+                            }
+                        }
+                    });
+
 
             if(wlCap == -1){
                 waitListText += "N/A";

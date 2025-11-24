@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
@@ -40,32 +41,19 @@
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginTop="20dp" />
 
-        <TextView
-            android:id="@+id/imagePrompt"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Choose Image for Event Poster"
-            android:textColor="@android:color/white"
-            android:textSize="14sp"
-            app:layout_constraintTop_toBottomOf="@id/posterImage"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginTop="8dp" />
-
 
         <!-- Event Name label -->
         <TextView
             android:id="@+id/titleLabel"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginHorizontal="20dp"
             android:text="Event Name*"
             android:textColor="@android:color/white"
             android:textSize="14sp"
-            app:layout_constraintTop_toBottomOf="@id/imagePrompt"
-            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginTop="20dp"
-            android:layout_marginHorizontal="20dp" />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/btnSelectPoster" />
 
         <!-- Event Name Input -->
         <EditText
@@ -429,6 +417,16 @@
             android:layout_marginTop="30dp"
             android:layout_marginStart="10dp"
             android:layout_marginEnd="20dp" />
+
+        <Button
+            android:id="@+id/btnSelectPoster"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Select Event Poster"
+            android:backgroundTint="@color/light_blue"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/posterImage" />
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>
