@@ -8,6 +8,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.util.Pair;
 import androidx.fragment.app.Fragment;
 
 import com.example.lotterypatentpending.helpers.DateTimeFormatHelper;
@@ -26,14 +27,16 @@ import java.util.Objects;
  * This fragment is typically shown when an attendee taps on an event in the event list.
  */
 public class AttendeeEventDetailsFragment extends Fragment {
-
     private UserEventRepository userEventRepo;
     private FirebaseManager fm;
-
+    private TextView waitListCap;
     private Button joinButton;
+    private Button acceptButton;
+    private Button declineButton;
+    private Button rejoinButton;
+    private Button cancelButton;
     private Button leaveButton;
 
-    private TextView waitListCap;
 
     public AttendeeEventDetailsFragment() {
         super(R.layout.attendee_fragment_event_details);
@@ -242,16 +245,55 @@ public class AttendeeEventDetailsFragment extends Fragment {
         return user.getJoinedEventIds().contains(event.getId());
     }
 
+    private WaitingListState getUserState(@Nullable User user, @Nullable Event event) {
+        if (user == null || event == null) {
+            return WaitingListState.NOT_IN;
+        }
+        if (user.getJoinedEventIds() == null || user.getAcceptedEventIds() == null || user.getDeclinedEventIds() == null) {
+            return WaitingListState.NOT_IN;
+        }
+        for (Pair<User, WaitingListState> u: event.getWaitingList().getList()) {
+            if (user.getUserId().equals(u.first.getUserId())) {
+                return u.second;
+            }
+        }
+        return WaitingListState.NOT_IN;
+    }
+
     /**
      * Only show one of the buttons at a time.
      */
-    private void updateButtonVisibility(boolean isJoined) {
-        if (isJoined) {
-            joinButton.setVisibility(View.GONE);
-            leaveButton.setVisibility(View.VISIBLE);
-        } else {
-            joinButton.setVisibility(View.VISIBLE);
-            leaveButton.setVisibility(View.GONE);
+    private void updateButtonVisibility(WaitingListState state) {
+        joinButton.setVisibility(View.GONE);
+        acceptButton.setVisibility(View.GONE);
+        declineButton.setVisibility(View.GONE);
+        rejoinButton.setVisibility(View.GONE);
+        cancelButton.setVisibility(View.GONE);
+        leaveButton.setVisibility(View.GONE);
+
+        switch (state) {
+            case ENTERED:
+                leaveButton.setVisibility(View.VISIBLE);
+                break;
+            case SELECTED:
+                acceptButton.setVisibility(View.VISIBLE);
+                declineButton.setVisibility(View.VISIBLE);
+                break;
+            case NOT_SELECTED:
+                break;
+            case ACCEPTED:
+                cancelButton.setVisibility(View.VISIBLE);
+                break;
+            case DECLINED:
+                rejoinButton.setVisibility(View.VISIBLE);
+                leaveButton.setVisibility(View.VISIBLE);
+                break;
+            case CANCELED:
+                rejoinButton.setVisibility(View.VISIBLE);
+                leaveButton.setVisibility(View.VISIBLE);
+                break;
+            case NOT_IN:
+                throw new RuntimeException("ERROR: User not in list!");
         }
     }
 
