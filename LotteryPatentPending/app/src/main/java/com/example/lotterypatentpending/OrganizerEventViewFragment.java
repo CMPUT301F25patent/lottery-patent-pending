@@ -187,7 +187,16 @@ public class OrganizerEventViewFragment extends Fragment {
         });
 
         viewMapBtn.setOnClickListener(view -> {
+            Event currentEvent = viewModel.getEvent().getValue();
 
+            if(currentEvent.isGeolocationRequired()) {
+                NavHostFragment.findNavController(OrganizerEventViewFragment.this)
+                        .navigate(R.id.action_EventView_to_MapView);
+            }else{
+                Toast.makeText(requireContext(),
+                        "Enable geo-location to view entrant locations.",
+                        Toast.LENGTH_LONG).show();
+            }
         });
 
         viewAttendantsBtn.setOnClickListener(view -> {

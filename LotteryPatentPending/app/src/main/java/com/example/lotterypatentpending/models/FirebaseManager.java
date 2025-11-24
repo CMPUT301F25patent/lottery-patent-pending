@@ -265,6 +265,7 @@ public class FirebaseManager {
         String tag = (String) data.get("tag");
         String description = (String) data.get("description");
         String location = (String) data.get("location");
+        boolean geolocationRequired = (boolean) data.get("geolocationRequired");
 
         // Capacity handling
         int capacity = 0;
@@ -303,6 +304,7 @@ public class FirebaseManager {
         event.setLocation(location);
         event.setTag(tag);
         event.setWaitingListCapacity(waitingListCapacity);
+        event.setGeolocationRequired(geolocationRequired);
 
         if (data.get("id") != null)
             event.setId((String) data.get("id"));
@@ -916,6 +918,45 @@ public class FirebaseManager {
                     Log.e("FirebaseManager", "Error fetching past events: " + e.getMessage());
                     callback.onFailure(e);
                 });
+    }
+
+    public void saveLocationToFirestore(String userId, double lat, double lng) {
+
+        Map<String, Object> locationMap = new HashMap<>();
+        locationMap.put("lat", lat);
+        locationMap.put("lng", lng);
+
+        Map<String, Object> update = new HashMap<>();
+        update.put("location", locationMap);
+
+        db.collection("users")
+                .document(userId)
+                .set(update, SetOptions.merge())   // ⬅ merge so you don’t overwrite other fields
+                .addOnSuccessListener(a -> Log.d("FIREBASE", "Location saved"))
+                .addOnFailureListener(e -> Log.e("FIREBASE", "Error", e));
+    }
+
+    public ArrayList<UserLocation> getEntrantLocations(String eventId){
+        ArrayList<UserLocation> locations = new ArrayList<>();
+
+        this.getEventWaitingList(eventId, new FirebaseCallback<ArrayList<Pair<User, WaitingListState>>>() {
+            @Override
+            public void onSuccess(ArrayList<Pair<User, WaitingListState>> result) {
+                for (Pair<User, WaitingListState> pair : result) {
+                    User user = pair.first;
+                    locations.add(user.getLocation());
+                }
+
+                Log.d("Firebase", "Successfully retrieved user locations");
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Log.e("Firebase", "Failed to get user locations", e);
+            }
+        });
+
+        return locations;
     }
 
 
