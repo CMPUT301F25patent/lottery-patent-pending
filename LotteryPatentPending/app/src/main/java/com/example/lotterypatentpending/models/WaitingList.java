@@ -106,6 +106,27 @@ public class WaitingList {
         return in;
     }
 
+    public boolean updateEntrantState(User entrant, WaitingListState state) {
+        int index = -1;
+        for (int i = 0; i < this.list.size(); i++) {
+            Pair<User, WaitingListState> pair = this.list.get(i);
+            if (pair.first.getUserId() != null && pair.first.getUserId().equals(entrant.getUserId())) {
+                index = i;
+                break;
+            }
+        }
+
+        if (index != -1) {
+            Pair<User, WaitingListState> newPair = new Pair<>(entrant, state);
+            this.list.remove(index);
+            this.list.add(index, newPair);
+
+            return true;
+        }
+
+        return false;
+    }
+
     public int getCapacity() {
         return capacity;
     }

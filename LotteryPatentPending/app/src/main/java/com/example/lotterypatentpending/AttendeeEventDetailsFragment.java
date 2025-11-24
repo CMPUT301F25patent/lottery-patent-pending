@@ -37,7 +37,6 @@ public class AttendeeEventDetailsFragment extends Fragment {
     private Button cancelButton;
     private Button leaveButton;
 
-
     public AttendeeEventDetailsFragment() {
         super(R.layout.attendee_fragment_event_details);
     }
@@ -60,8 +59,13 @@ public class AttendeeEventDetailsFragment extends Fragment {
         waitListCap = view.findViewById(R.id.waitingListCap);
         TextView tag         = view.findViewById(R.id.tag);
 
-        joinButton  = view.findViewById(R.id.Join);
-        leaveButton = view.findViewById(R.id.Leave);
+        joinButton  = view.findViewById(R.id.attendee_event_details_button_join);
+        leaveButton = view.findViewById(R.id.attendee_event_details_button_leave);
+        acceptButton = view.findViewById(R.id.attendee_event_details_button_accept);
+        declineButton = view.findViewById(R.id.attendee_event_details_button_decline);
+        rejoinButton = view.findViewById(R.id.attendee_event_details_button_rejoin);
+        cancelButton = view.findViewById(R.id.attendee_event_details_button_cancel);
+
 
         // Get current event + user from repo
         Event currentEvent = Objects.requireNonNull(userEventRepo.getEvent().getValue());
@@ -122,21 +126,8 @@ public class AttendeeEventDetailsFragment extends Fragment {
         tag.setText(tagValue);
 
         //  Join/Leave button state
-        boolean isJoined = isUserJoined(currentUser, currentEvent);
-        updateButtonVisibility(isJoined);
-
-
-        joinButton.setOnClickListener(v -> {
-            if (joinEventHelper()) {
-                updateButtonVisibility(true);
-            }
-        });
-
-        leaveButton.setOnClickListener(v -> {
-            if (leaveEventHelper()) {
-                updateButtonVisibility(false);
-            }
-        });
+        WaitingListState userState = getUserState(currentUser, currentEvent);
+        updateButtons(userState);
     }
 
     @Override
@@ -232,6 +223,34 @@ public class AttendeeEventDetailsFragment extends Fragment {
         return false;
     }
 
+    private boolean acceptEventHelper() {
+        User currentUser  = userEventRepo.getUser().getValue();
+        Event currentEvent = userEventRepo.getEvent().getValue();
+
+        if (currentUser != null && currentEvent != null) {
+            // local
+            currentEvent.updateEntrantState(currentUser, WaitingListState.ACCEPTED);
+            currentUser.removeJoinedEvent(currentEvent.getId());
+            currentUser.addAcceptedEvent(currentEvent.getId());
+
+            // firestore
+            fm.updateEntrantState(currentEvent.getId(), currentUser.getUserId(), WaitingListState.ACCEPTED);
+            fm.addOrUpdateUser(currentUser);
+
+            userEventRepo.setUser(currentUser);
+            userEventRepo.setEvent(currentEvent);
+
+            refreshWaitingListUI(currentEvent, currentUser);
+
+            Toast.makeText(getContext(),
+                    "Accepted event!",
+                    Toast.LENGTH_SHORT).show();
+
+            return true;
+        }
+        return false;
+    }
+
     /**
      * Uses User.joinedEventIds to decide if this user is already joined to this event.
      */
@@ -263,7 +282,10 @@ public class AttendeeEventDetailsFragment extends Fragment {
     /**
      * Only show one of the buttons at a time.
      */
-    private void updateButtonVisibility(WaitingListState state) {
+    private void updateButtons(WaitingListState state) {
+        User currentUser  = userEventRepo.getUser().getValue();
+        Event currentEvent = userEventRepo.getEvent().getValue();
+
         joinButton.setVisibility(View.GONE);
         acceptButton.setVisibility(View.GONE);
         declineButton.setVisibility(View.GONE);
@@ -271,13 +293,30 @@ public class AttendeeEventDetailsFragment extends Fragment {
         cancelButton.setVisibility(View.GONE);
         leaveButton.setVisibility(View.GONE);
 
+        if (currentEvent.containsUser(currentUser)) {
+            joinButton.setVisibility(View.VISIBLE);
+            joinButton.setOnClickListener(v -> {
+                joinEventHelper();
+            });
+            return;
+        }
+
         switch (state) {
             case ENTERED:
                 leaveButton.setVisibility(View.VISIBLE);
+                leaveButton.setOnClickListener(v -> {
+                    leaveEventHelper();
+                });
                 break;
             case SELECTED:
                 acceptButton.setVisibility(View.VISIBLE);
                 declineButton.setVisibility(View.VISIBLE);
+                acceptButton.setOnClickListener(v -> {
+
+                });
+                declineButton.setOnClickListener(v -> {
+
+                });
                 break;
             case NOT_SELECTED:
                 break;
@@ -306,6 +345,8 @@ public class AttendeeEventDetailsFragment extends Fragment {
     }
 
     private void refreshWaitingListUI(@NonNull Event event, @Nullable User user) {
+        User currentUser  = userEventRepo.getUser().getValue();
+        Event currentEvent = userEventRepo.getEvent().getValue();
         // 1) Compute sizes
         int wlCap = event.getWaitingListCapacity();
         int currentSize = getCurrentWaitingListSize(event);
@@ -320,19 +361,7 @@ public class AttendeeEventDetailsFragment extends Fragment {
         waitListCap.setText(waitListValue);
 
         // 3) Show correct button (Join vs Leave)
-        boolean isJoined = isUserJoined(user, event);
-        updateButtonVisibility(isJoined);
-
-        // 4) If not joined and full -> disable Join
-        if (!isJoined && wlCap != -1 && currentSize >= wlCap) {
-            joinButton.setEnabled(false);
-            joinButton.setAlpha(0.5f);
-            joinButton.setText("Waiting list full");
-        } else {
-            // reset Join button to normal state
-            joinButton.setEnabled(true);
-            joinButton.setAlpha(1f);
-            joinButton.setText("Join");
-        }
+        WaitingListState userState = getUserState(currentUser, currentEvent);
+        updateButtons(userState);
     }
 }
