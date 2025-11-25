@@ -13,6 +13,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@color/grey"
         android:orientation="vertical"
         android:padding="16dp">
 
@@ -40,9 +41,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:textSize="12sp"
-            android:textColor="@android:color/darker_gray"
+            android:ellipsize="end"
             android:maxLines="1"
-            android:ellipsize="end"/>
+            android:textColor="@android:color/background_light"
+            android:textSize="12sp" />
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

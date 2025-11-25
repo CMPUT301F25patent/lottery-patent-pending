@@ -1,5 +1,7 @@
 package com.example.lotterypatentpending.User_interface.Inbox;
 
+import android.app.AlertDialog;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.view.*; import android.widget.TextView;
 import androidx.annotation.NonNull; import androidx.recyclerview.widget.*;
@@ -28,42 +30,71 @@ public class NotificationAdapter extends ListAdapter<Notification, NotificationA
     public NotificationAdapter(OnClick onClick){ super(DIFF); this.onClick=onClick; }
 
     static DiffUtil.ItemCallback<Notification> DIFF = new DiffUtil.ItemCallback<>() {
-        public boolean areItemsTheSame(@NonNull Notification a,@NonNull Notification b){ return a.equals(b); }
+        public boolean areItemsTheSame(@NonNull Notification a, @NonNull Notification b) {
+            return a.getId() != null && a.getId().equals(b.getId());
+        }
         public boolean areContentsTheSame(@NonNull Notification a,@NonNull Notification b){ return a.equals(b); }
     };
 
     static class Holder extends RecyclerView.ViewHolder {
-        TextView title, body, meta;
+        TextView title, body, meta, readBadge;
         Holder(View v){
             super(v);
             title=v.findViewById(R.id.title);
             body=v.findViewById(R.id.body);
-            meta=v.findViewById(R.id.meta);}
+            meta=v.findViewById(R.id.meta);
+            readBadge = v.findViewById(R.id.readBadge);}
     }
 
     @NonNull
     @Override
-    public Holder onCreateViewHolder(@NonNull ViewGroup parent,int v){
+    public Holder onCreateViewHolder(@NonNull ViewGroup parent,int viewType){
         View row = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_notification, parent, false);
         return new Holder(row);}
-    @Override public void onBindViewHolder(@NonNull Holder h,int pos){
+    @Override
+    public void onBindViewHolder(@NonNull Holder h, int pos){
         Notification n = getItem(pos);
         h.title.setText(n.getTitle());
-        h.body.setText(n.getBody());
-        String ts = n.getCreatedAt()==null? "" : new SimpleDateFormat("MMM d, HH:mm", Locale.getDefault()).format(n.getCreatedAt());
-        h.meta.setText(n.getCategory()+" • "+ts);
-        // Style based on read/unread
+        // Body preview (truncate to 1–2 lines)
+        String preview = n.getBody();
+        if (preview.length() > 80) preview = preview.substring(0, 77) + "…";
+        h.body.setText(preview);
+
+        String ts = n.getCreatedAt() == null ? "" :
+                new SimpleDateFormat("MMM d, HH:mm", Locale.getDefault()).format(n.getCreatedAt());
+        h.meta.setText(n.getCategory() + " • " + ts);
+
+        // ===== READ / UNREAD UI =====
         if (n.isRead()) {
-            // Read: normal weight, slightly dimmed
+            h.title.setTextColor(Color.parseColor("#B0B0B0"));
+            h.body.setTextColor(Color.parseColor("#A6A6A6"));
             h.title.setTypeface(null, Typeface.NORMAL);
-            h.itemView.setAlpha(0.6f);
+            h.itemView.setAlpha(0.75f);
+
+            h.readBadge.setVisibility(View.VISIBLE);
+            h.readBadge.setText("✓ Read");
+
         } else {
-            // Unread: bold title, full opacity
+            h.title.setTextColor(Color.WHITE);
+            h.body.setTextColor(Color.parseColor("#DDDDDD"));
             h.title.setTypeface(null, Typeface.BOLD);
-            h.itemView.setAlpha(1.0f);
+            h.itemView.setAlpha(1f);
+
+            h.readBadge.setVisibility(View.GONE);
         }
-        h.itemView.setOnClickListener(v -> onClick.open(n));
+
+        // ===== CLICK =====
+        h.itemView.setOnClickListener(v -> {
+            onClick.open(n);
+
+            // Show full message dialog
+            new AlertDialog.Builder(v.getContext())
+                    .setTitle(n.getTitle())
+                    .setMessage(n.getBody())
+                    .setPositiveButton("Close", null)
+                    .show();
+        });
     }
 }
 

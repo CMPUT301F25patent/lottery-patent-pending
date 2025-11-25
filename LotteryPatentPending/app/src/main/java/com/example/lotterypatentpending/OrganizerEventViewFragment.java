@@ -353,8 +353,21 @@ public class OrganizerEventViewFragment extends Fragment {
         return currentOrganizerId;
     }
 
+    private boolean ensureEventAndOrganizerLoaded() {
+        if (currentEvent == null) {
+            Toast.makeText(getContext(), "Event not loaded yet. Please try again.", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        if (currentOrganizerId == null || currentOrganizerId.isEmpty()) {
+            Toast.makeText(getContext(), "Organizer not loaded yet. Please try again.", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        return true;
+    }
+
     /** Chosen entrants – still needs real chosenIds list wired up later. */
     private void sendChosenSignUp(String body) {
+        if (!ensureEventAndOrganizerLoaded()) return;
         String orgId = currentOrganizerId();
         String eventId = currentEvent.getId();
         String title = "Sign up for " + currentEvent.getTitle();
@@ -382,6 +395,7 @@ public class OrganizerEventViewFragment extends Fragment {
     }
 
     private void sendWaitlist(String body) {
+        if (!ensureEventAndOrganizerLoaded()) return;
         String orgId = currentOrganizerId();
         String eventId = currentEvent.getId();
         String title = "Update for " + currentEvent.getTitle();
@@ -400,6 +414,7 @@ public class OrganizerEventViewFragment extends Fragment {
     }
 
     private void sendSelected(String body) {
+        if (!ensureEventAndOrganizerLoaded()) return;
         String orgId = currentOrganizerId();
         String eventId = currentEvent.getId();
         String title = "Update for " + currentEvent.getTitle();
@@ -418,6 +433,7 @@ public class OrganizerEventViewFragment extends Fragment {
     }
 
     private void sendCancelled(String body) {
+        if (!ensureEventAndOrganizerLoaded()) return;
         String orgId = currentOrganizerId();
         String eventId = currentEvent.getId();
         String title = "Event cancelled: " + currentEvent.getTitle();
