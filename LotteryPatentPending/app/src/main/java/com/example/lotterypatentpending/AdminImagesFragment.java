@@ -86,7 +86,7 @@ public class AdminImagesFragment extends Fragment implements AdminImagesAdapter.
 
         // Create a container layout to hold the ImageView and provide padding
         FrameLayout container = new FrameLayout(getContext());
-        container.setPadding(50, 50, 50, 50);
+        container.setPadding(30, 30, 30, 30);
         ImageView fullImageView = new ImageView(getContext());
 
         fullImageView.setAdjustViewBounds(true);
@@ -100,7 +100,7 @@ public class AdminImagesFragment extends Fragment implements AdminImagesAdapter.
 
         // create a dialog and set the CONTAINER as its content
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-        builder.setView(container); // Set the container, which has padding
+        builder.setView(container); // Set the container, which has minor padding
 
         AlertDialog dialog = builder.create();
         dialog.show();

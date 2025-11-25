@@ -114,7 +114,7 @@ public class AdminImagesAdapter extends RecyclerView.Adapter<AdminImagesAdapter.
             itemView.setOnClickListener(v -> listener.onImageClick(event));
             itemView.setOnLongClickListener(v -> {
                 listener.onImageLongClick(event);
-                return true; // long click
+                return true; // Consume the long-click event
             });
         }
     }

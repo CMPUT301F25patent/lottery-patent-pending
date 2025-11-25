@@ -25,8 +25,7 @@ public class SquareImageView extends AppCompatImageView {
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        // passes the width measurement specification
-        // for both the width and the height, forcing a square aspect ratio.
+        // passes the width measurement specification for both the width and the height, forcing a square aspect ratio.
         super.onMeasure(widthMeasureSpec, widthMeasureSpec);
     }
 }
