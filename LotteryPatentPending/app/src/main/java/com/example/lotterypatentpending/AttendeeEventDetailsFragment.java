@@ -3,8 +3,12 @@ package com.example.lotterypatentpending;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -67,12 +71,24 @@ public class AttendeeEventDetailsFragment extends Fragment {
         cancelButton = view.findViewById(R.id.attendee_event_details_button_cancel);
 
 
+        posterImage = view.findViewById(R.id.eventImage);
+
         // Get current event + user from repo
         Event currentEvent = Objects.requireNonNull(userEventRepo.getEvent().getValue());
         User currentUser   = userEventRepo.getUser().getValue();
 
         title.setText(currentEvent.getTitle());
         description.setText(currentEvent.getDescription());
+
+        byte[] posterBytes = currentEvent.getPosterBytes();
+        if (posterBytes != null && posterBytes.length > 0) {
+            Bitmap bmp = BitmapFactory.decodeByteArray(posterBytes, 0, posterBytes.length);
+            posterImage.setImageBitmap(bmp);
+            posterImage.setVisibility(View.VISIBLE);
+        } else {
+            posterImage.setImageDrawable(null);
+            posterImage.setVisibility(View.GONE);
+        }
 
         // Location
         String locationValue;

@@ -73,6 +73,17 @@ public class Event {
         this.geolocationRequired = false;
     }
 
+    private byte[] posterBytes; // compressed JPEG data for the poster
+
+    public byte[] getPosterBytes() {
+        return posterBytes;
+    }
+
+    public void setPosterBytes(byte[] posterBytes) {
+        this.posterBytes = posterBytes;
+    }
+
+
     /** @return the title of the event */
     public String getTitle() {
         return title;
@@ -290,13 +301,13 @@ public class Event {
      * @param entrant User joining the event
      */
     public void joinEvent(User entrant){
-       if(waitingListCapacity != -1){
-           if(waitingList.getList().size() < waitingListCapacity && !inWaitingList(entrant)){
-               waitingList.addEntrant(entrant);
-           }
-       }else{
-           waitingList.addEntrant(entrant);
-       }
+        if(waitingListCapacity != -1){
+            if(waitingList.getList().size() < waitingListCapacity && !inWaitingList(entrant)){
+                waitingList.addEntrant(entrant);
+            }
+        }else{
+            waitingList.addEntrant(entrant);
+        }
     }
 
     /**
