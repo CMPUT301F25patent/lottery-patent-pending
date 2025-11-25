@@ -34,7 +34,6 @@ public class Event {
     private int waitingListCapacity;
     private String location;
     private WaitingList waitingList;
-    private List<User> selectedEntrants;
     private User organizer;
     private Timestamp date;
     private Timestamp regStartDate;
@@ -66,7 +65,6 @@ public class Event {
         this.organizer = organizer;
         this.location = null;
         this.waitingList = new WaitingList();
-        this.selectedEntrants = new ArrayList<>();
         this.date = null;
         this.regStartDate = null;
         this.regEndDate = null;
@@ -191,16 +189,6 @@ public class Event {
     /** @param waitingList Sets the event waiting list */
     public void setWaitingList(WaitingList waitingList) {
         this.waitingList = waitingList;
-    }
-
-    /** @return list of selected entrants */
-    public List<User> getSelectedEntrants() {
-        return selectedEntrants;
-    }
-
-    /** @param selectedEntrants Sets the selected entrants list */
-    public void setSelectedEntrants(List<User> selectedEntrants) {
-        this.selectedEntrants = selectedEntrants;
     }
 
     /** @return the event organizer */
@@ -330,6 +318,17 @@ public class Event {
      */
     public boolean inWaitingList(User entrant) {
         return this.waitingList.checkEntrant(entrant);
+    }
+
+    public boolean containsUser(User user) {
+        if (user == null) {
+            return false;
+        }
+        return waitingList.checkEntrant(user);
+    }
+
+    public boolean updateEntrantState(User entrant, WaitingListState state) {
+        return this.waitingList.updateEntrantState(entrant, state);
     }
 
 }

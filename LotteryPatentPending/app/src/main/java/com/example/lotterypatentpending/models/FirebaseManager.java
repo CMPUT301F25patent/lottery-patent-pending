@@ -244,7 +244,7 @@ public class FirebaseManager {
 
         // Entrants
         List<String> selectedEntrants = new ArrayList<>();
-        for (User u : event.getSelectedEntrants()) {
+        for (User u : event.getWaitingList().getSelectedEntrants()) {
             selectedEntrants.add(u.getUserId());
         }
         data.put("selectedEntrants", selectedEntrants);
