@@ -41,6 +41,8 @@ public class AttendeeEventDetailsFragment extends Fragment {
     private Button cancelButton;
     private Button leaveButton;
 
+    private ImageView posterImage;
+
     public AttendeeEventDetailsFragment() {
         super(R.layout.attendee_fragment_event_details);
     }
