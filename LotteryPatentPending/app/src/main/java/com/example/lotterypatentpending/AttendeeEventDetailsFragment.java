@@ -17,6 +17,7 @@ import androidx.fragment.app.Fragment;
 
 import com.example.lotterypatentpending.helpers.DateTimeFormatHelper;
 import com.example.lotterypatentpending.models.Event;
+import com.example.lotterypatentpending.models.EventState;
 import com.example.lotterypatentpending.models.FirebaseManager;
 import com.example.lotterypatentpending.models.User;
 import com.example.lotterypatentpending.viewModels.UserEventRepository;
@@ -397,6 +398,7 @@ public class AttendeeEventDetailsFragment extends Fragment {
     private void refreshWaitingListUI(@NonNull Event event, @Nullable User user) {
         User currentUser  = userEventRepo.getUser().getValue();
         Event currentEvent = userEventRepo.getEvent().getValue();
+        EventState currentEventState = currentEvent.getEventState();
         // 1) Compute sizes
         int wlCap = event.getWaitingListCapacity();
         int currentSize = getCurrentWaitingListSize(event);
@@ -411,9 +413,7 @@ public class AttendeeEventDetailsFragment extends Fragment {
         waitListCap.setText(waitListValue);
 
         // 3) Check event state
-        if (currentEvent.isPastEndDate()) {
-
-        }
+        // TODO: need to do stuff like block event stuff if past reg date and not in
 
         // 4) Show correct buttons
         WaitingListState userState = getUserState(currentUser, currentEvent);
