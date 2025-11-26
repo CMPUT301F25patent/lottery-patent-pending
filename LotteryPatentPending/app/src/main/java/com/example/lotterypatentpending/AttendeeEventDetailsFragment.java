@@ -192,11 +192,13 @@ public class AttendeeEventDetailsFragment extends Fragment {
 
         // 3) Firestore writes
         fm.addJoinedEventToEntrant(currentEvent, currentUser.getUserId());
+        fm.addPastEventToEntrant(currentEvent, currentUser.getUserId());
         fm.addEntrantToWaitingList(currentUser, WaitingListState.ENTERED, currentEvent.getId());
 
         //  4) Local model updates
         currentEvent.addToWaitingList(currentUser);
         currentUser.addJoinedEvent(currentEvent.getId());
+        currentUser.addPastEvent(currentEvent.getId());
 
         userEventRepo.setEvent(currentEvent);
 
@@ -269,6 +271,34 @@ public class AttendeeEventDetailsFragment extends Fragment {
         return false;
     }
 
+    private boolean declineEventHelper() {
+        User currentUser  = userEventRepo.getUser().getValue();
+        Event currentEvent = userEventRepo.getEvent().getValue();
+
+        if (currentUser != null && currentEvent != null) {
+            // local
+            currentEvent.updateEntrantState(currentUser, WaitingListState.DECLINED);
+            currentUser.removeJoinedEvent(currentEvent.getId());
+            currentUser.addDeclinedEvent(currentEvent.getId());
+
+            // firestore
+            fm.updateEntrantState(currentEvent.getId(), currentUser.getUserId(), WaitingListState.DECLINED);
+            fm.addOrUpdateUser(currentUser);
+
+            userEventRepo.setUser(currentUser);
+            userEventRepo.setEvent(currentEvent);
+
+            refreshWaitingListUI(currentEvent, currentUser);
+
+            Toast.makeText(getContext(),
+                    "Declined event!",
+                    Toast.LENGTH_SHORT).show();
+
+            return true;
+        }
+        return false;
+    }
+
     /**
      * Uses User.joinedEventIds to decide if this user is already joined to this event.
      */
@@ -333,10 +363,12 @@ public class AttendeeEventDetailsFragment extends Fragment {
                     acceptEventHelper();
                 });
                 declineButton.setOnClickListener(v -> {
-
+                    declineEventHelper();
                 });
                 break;
             case NOT_SELECTED:
+                rejoinButton.setVisibility(View.VISIBLE);
+                leaveButton.setVisibility(View.VISIBLE);
                 break;
             case ACCEPTED:
                 cancelButton.setVisibility(View.VISIBLE);
@@ -378,7 +410,12 @@ public class AttendeeEventDetailsFragment extends Fragment {
         }
         waitListCap.setText(waitListValue);
 
-        // 3) Show correct button (Join vs Leave)
+        // 3) Check event state
+        if (currentEvent.isPastEndDate()) {
+
+        }
+
+        // 4) Show correct buttons
         WaitingListState userState = getUserState(currentUser, currentEvent);
         updateButtons(userState);
     }

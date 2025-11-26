@@ -5,6 +5,7 @@ import com.google.firebase.Timestamp;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
@@ -328,6 +329,10 @@ public class Event {
 
     public boolean updateEntrantState(User entrant, WaitingListState state) {
         return this.waitingList.updateEntrantState(entrant, state);
+    }
+
+    public boolean isPastEndDate() {
+        return (new Timestamp(new Date()).compareTo(this.regEndDate) >= 0);
     }
 
 }
