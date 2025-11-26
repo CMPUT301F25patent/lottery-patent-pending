@@ -33,6 +33,7 @@ import com.example.lotterypatentpending.viewModels.UserEventRepository;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.ListenerRegistration;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,12 +54,12 @@ public class AttendeeEventsFragment extends Fragment {
     private Timestamp filterStartTime;
     private Timestamp filterEndTime;
 
+    private ListenerRegistration eventsListener;
 
     private String filterTag = null;
 
     // Master lists
     private final ArrayList<Event> allEventsList = new ArrayList<>();
-    // TODO: implement  history
     private final ArrayList<Event> historyEventsList = new ArrayList<>();
     // What the ListView shows
     private final ArrayList<Event> shownEventsList = new ArrayList<>();
@@ -110,8 +111,8 @@ public class AttendeeEventsFragment extends Fragment {
 
         loading.show();
 
-        // Load events from Firebase safely
-        fm.getAllEvents(new FirebaseManager.FirebaseCallback<ArrayList<Event>>() {
+        // Load events from Firebase as LIVE data
+        eventsListener = fm.getAllEventsLive(new FirebaseManager.FirebaseCallback<ArrayList<Event>>() {
             @Override
             public void onSuccess(ArrayList<Event> result) {
                 if (!isAdded()) return;
@@ -122,7 +123,7 @@ public class AttendeeEventsFragment extends Fragment {
 
                 historyMode = false;
                 updateModeButtons(browseEventsBtn, historyBtn);
-                applyFilter(getQuery(searchInput));
+                applyFilter(getQuery(searchInput));   // rebuild shownEventsList
                 if (loading != null) loading.hide();
             }
 
@@ -130,11 +131,9 @@ public class AttendeeEventsFragment extends Fragment {
             public void onFailure(Exception e) {
                 if (!isAdded()) return;
 
-                // Keep lists empty;
                 shownEventsList.clear();
                 eventsListAdapter.notifyDataSetChanged();
                 if (loading != null) loading.hide();
-
             }
         });
 
@@ -190,6 +189,16 @@ public class AttendeeEventsFragment extends Fragment {
         // Visual default: Browse selected
         historyMode = false;
         updateModeButtons(browseEventsBtn, historyBtn);
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+
+        if (eventsListener != null) {
+            eventsListener.remove();
+            eventsListener = null;
+        }
     }
 
     private void updateModeButtons(Button browseBtn, Button historyBtn) {

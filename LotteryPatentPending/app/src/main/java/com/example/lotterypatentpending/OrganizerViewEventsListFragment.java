@@ -27,8 +27,10 @@ import com.example.lotterypatentpending.viewModels.UserEventRepository;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.firebase.firestore.ListenerRegistration;
 
 import java.util.ArrayList;
+import java.util.EventListener;
 
 /**
  * Fragment allowing organizers to view their event list (future
@@ -50,6 +52,7 @@ public class OrganizerViewEventsListFragment extends Fragment {
     // events currently shown in the list (after filtering)
     private final ArrayList<Event> visibleEvents = new ArrayList<>();
     private LoadingOverlay loading;
+    private ListenerRegistration organizedEventsListener;
 
 
     /**
@@ -143,33 +146,39 @@ public class OrganizerViewEventsListFragment extends Fragment {
         // show spinner while loading Firestore data
         loading.show();
 
-        fm.getOrganizedEventsOnce(userId, new FirebaseManager.FirebaseCallback<ArrayList<Event>>() {
-            @Override
-            public void onSuccess(ArrayList<Event> events) {
-                if (!isAdded()) return;
-                allEvents.clear();
-                allEvents.addAll(events);
+        organizedEventsListener = fm.getOrganizedEvents(userId,
+                new FirebaseManager.FirebaseCallback<ArrayList<Event>>() {
+                    @Override
+                    public void onSuccess(ArrayList<Event> events) {
+                        if (!isAdded()) return;
 
+                        allEvents.clear();
+                        if (events != null) {
+                            allEvents.addAll(events);
+                        }
 
-                visibleEvents.clear();
-                visibleEvents.addAll(events);
-                refreshListFromVisible();
-                if (loading != null) loading.hide();
+                        visibleEvents.clear();
+                        visibleEvents.addAll(allEvents);
+                        refreshListFromVisible();
 
-            }
+                        if (loading != null) loading.hide();
+                    }
 
-            @Override
-            public void onFailure(Exception e) {
-                Log.e("ViewOrgEvents", "Failed to load organized events", e);
+                    @Override
+                    public void onFailure(Exception e) {
+                        Log.e("ViewOrgEvents", "Failed to load organized events", e);
 
-                if (!isAdded()) return;
+                        if (!isAdded()) return;
 
-                if (getContext() != null) {
-                    Toast.makeText(getContext(), "Failed to load events", Toast.LENGTH_SHORT).show();
-                }
-                if (loading != null) loading.hide();
-            }
-        });
+                        visibleEvents.clear();
+                        refreshListFromVisible();
+
+                        if (getContext() != null) {
+                            Toast.makeText(getContext(), "Failed to load events", Toast.LENGTH_SHORT).show();
+                        }
+                        if (loading != null) loading.hide();
+                    }
+                });
 
     // Clicking a row opens that event (from filtered list)
         listView.setOnItemClickListener((parent, view, position, id) -> {
@@ -201,6 +210,16 @@ public class OrganizerViewEventsListFragment extends Fragment {
             }
             return false;
         });
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+
+        if (organizedEventsListener != null) {
+            organizedEventsListener.remove();
+            organizedEventsListener = null;
+        }
     }
 
     private void refreshListFromVisible(){
