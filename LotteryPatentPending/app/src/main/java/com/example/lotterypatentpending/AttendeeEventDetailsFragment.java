@@ -6,11 +6,15 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresPermission;
@@ -46,6 +50,7 @@ public class AttendeeEventDetailsFragment extends Fragment {
     private Button rejoinButton;
     private Button cancelButton;
     private Button leaveButton;
+    private ImageView posterImage;
 
     private final int LOCATION_REQ_CODE = 1001;
 
@@ -58,6 +63,8 @@ public class AttendeeEventDetailsFragment extends Fragment {
                     onLocationPermissionDenied();
                 }
             });
+
+
 
     public AttendeeEventDetailsFragment() {
         super(R.layout.attendee_fragment_event_details);
@@ -89,12 +96,24 @@ public class AttendeeEventDetailsFragment extends Fragment {
         cancelButton = view.findViewById(R.id.attendee_event_details_button_cancel);
 
 
+        posterImage = view.findViewById(R.id.eventImage);
+
         // Get current event + user from repo
         Event currentEvent = Objects.requireNonNull(userEventRepo.getEvent().getValue());
         User currentUser   = userEventRepo.getUser().getValue();
 
         title.setText(currentEvent.getTitle());
         description.setText(currentEvent.getDescription());
+
+        byte[] posterBytes = currentEvent.getPosterBytes();
+        if (posterBytes != null && posterBytes.length > 0) {
+            Bitmap bmp = BitmapFactory.decodeByteArray(posterBytes, 0, posterBytes.length);
+            posterImage.setImageBitmap(bmp);
+            posterImage.setVisibility(View.VISIBLE);
+        } else {
+            posterImage.setImageDrawable(null);
+            posterImage.setVisibility(View.GONE);
+        }
 
         // Location
         String locationValue;

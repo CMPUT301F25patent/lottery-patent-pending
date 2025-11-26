@@ -54,14 +54,13 @@ public class InboxActivity extends AppCompatActivity {
         rv.setLayoutManager(new LinearLayoutManager(this));
 
         adapter = new NotificationAdapter(n -> {
-            // On click: mark as read (if it has an id) and visually fade it
+            // Mark as read
             if (!n.isRead() && n.getId() != null) {
                 repo.markRead(n.getUserId(), n.getId());
                 n.setRead(true);
+
                 int pos = adapter.getCurrentList().indexOf(n);
-                if (pos >= 0) {
-                    adapter.notifyItemChanged(pos);
-                }
+                if (pos >= 0) adapter.notifyItemChanged(pos);
             }
         });
         rv.setAdapter(adapter);

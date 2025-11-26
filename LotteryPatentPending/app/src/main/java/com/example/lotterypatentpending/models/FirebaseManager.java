@@ -28,7 +28,13 @@
 
 package com.example.lotterypatentpending.models;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.util.Log;
+
+import android.widget.ImageView;
+
 import androidx.core.util.Pair;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -49,6 +55,20 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.SetOptions;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.firestore.Blob;
+
+
+
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.util.Log;
+
+import com.google.firebase.firestore.Blob;
+import com.google.firebase.firestore.SetOptions;
+
+import java.io.ByteArrayOutputStream;
 
 
 
@@ -231,7 +251,14 @@ public class FirebaseManager {
 
         data.put("waitingList", serializeWaitingList(event.getWaitingList().getList()));
 
+        if (event.getPosterBytes() != null && event.getPosterBytes().length > 0) {
+            Blob posterBlob = Blob.fromBytes(event.getPosterBytes());
+            data.put("posterBlob", posterBlob);
+        }
+
+
         return data;
+
 
     }
 
@@ -343,6 +370,14 @@ public class FirebaseManager {
                     Log.e("Firebase", "Failed to deserialize waiting list", e);
                 }
             });
+        }
+
+        Object posterObj = data.get("posterBlob");
+        if (posterObj instanceof Blob) {
+            Blob blob = (Blob) posterObj;
+            event.setPosterBytes(blob.toBytes());
+        } else if (posterObj instanceof byte[]) {
+            event.setPosterBytes((byte[]) posterObj);
         }
 
         return event;
@@ -965,6 +1000,203 @@ public class FirebaseManager {
 
 
     // for listeners
+
+    /**
+     * Creates or updates an image metadata record in the "images" collection.
+     * If {@code image.id} is null or empty, a new document is created.
+     *
+     * @param image    the {@link ImageRecord} to save.
+     * @param callback optional callback invoked on completion.
+     */
+    public void addOrUpdateImage(ImageRecord image, FirebaseCallback<Void> callback) {
+        String id = image.getId();
+        DocumentReference docRef;
+
+        if (id != null && !id.trim().isEmpty()) {
+            docRef = db.collection("images").document(id);
+        } else {
+            docRef = db.collection("images").document();
+            image.setId(docRef.getId());
+        }
+
+        docRef.set(image)
+                .addOnSuccessListener(aVoid -> {
+                    Log.d("FirebaseManager", "Image metadata saved: " + image.getId());
+                    if (callback != null) {
+                        callback.onSuccess(null);
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("FirebaseManager", "Error saving image metadata", e);
+                    if (callback != null) {
+                        callback.onFailure(e);
+                    }
+                });
+    }
+
+
+    /**
+     * Uploads an event poster image to Firebase Storage under
+     * path: eventPosters/{eventId}.jpg
+     *
+     * @param eventId  the event id
+     * @param imageUri the local Uri selected from gallery
+     * @param callback returns the download URL string on success
+     */
+    public void uploadEventPoster(String eventId, Uri imageUri, FirebaseCallback<String> callback) {
+        if (eventId == null || eventId.trim().isEmpty() || imageUri == null) {
+            if (callback != null) {
+                callback.onFailure(new IllegalArgumentException("Invalid eventId or imageUri"));
+            }
+            return;
+        }
+
+        StorageReference ref = FirebaseStorage.getInstance()
+                .getReference()
+                .child("eventPosters")
+                .child(eventId + ".jpg");
+
+        ref.putFile(imageUri)
+                .continueWithTask(task -> {
+                    if (!task.isSuccessful()) {
+                        throw task.getException();
+                    }
+                    return ref.getDownloadUrl();
+                })
+                .addOnSuccessListener(uri -> {
+                    if (callback != null) {
+                        callback.onSuccess(uri.toString());
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    if (callback != null) {
+                        callback.onFailure(e);
+                    }
+                });
+    }
+
+    // --- IMAGE HELPERS FOR EVENT POSTERS ---------------------------------
+
+    /**
+     * Scales a bitmap so that its longest edge is at most maxEdge pixels.
+     */
+    private Bitmap scaleBitmapToMaxEdge(Bitmap src, int maxEdge) {
+        if (src == null) return null;
+
+        int w = src.getWidth();
+        int h = src.getHeight();
+        int max = Math.max(w, h);
+
+        if (max <= maxEdge) {
+            return src; // already small enough
+        }
+
+        float scale = (float) maxEdge / (float) max;
+        int newW = Math.round(w * scale);
+        int newH = Math.round(h * scale);
+
+        return Bitmap.createScaledBitmap(src, newW, newH, true);
+    }
+
+    /**
+     * Compress a bitmap to JPEG, trying to keep it under maxBytes.
+     * Returns null if we couldn't get under the limit.
+     */
+    private byte[] compressToJpegUnderLimit(Bitmap bmp, int maxBytes) {
+        if (bmp == null) return null;
+
+        int quality = 80; // start reasonably high, then step down
+        while (quality >= 40) {
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            bmp.compress(Bitmap.CompressFormat.JPEG, quality, out);
+            byte[] data = out.toByteArray();
+            if (data.length <= maxBytes) {
+                return data;
+            }
+            quality -= 10;
+        }
+        return null; // still too big at low quality
+    }
+
+    /**
+     * Stores a scaled event poster inside the event document as a Blob field.
+     * This avoids using Firebase Storage and stays within Firestore document size limits
+     * by downscaling & compressing.
+     */
+    public void uploadEventPosterInline(String eventId,
+                                        Bitmap originalBitmap,
+                                        FirebaseCallback<Void> callback) {
+        if (eventId == null || eventId.trim().isEmpty() || originalBitmap == null) {
+            if (callback != null) {
+                callback.onFailure(new IllegalArgumentException("Invalid eventId or bitmap"));
+            }
+            return;
+        }
+
+        Bitmap scaled = scaleBitmapToMaxEdge(originalBitmap, 600);
+
+        byte[] jpegBytes = compressToJpegUnderLimit(scaled, 900 * 1024);
+        if (jpegBytes == null) {
+            if (callback != null) {
+                callback.onFailure(new IllegalStateException("Poster image too large even after compression"));
+            }
+            return;
+        }
+
+        Blob posterBlob = Blob.fromBytes(jpegBytes);
+        Map<String, Object> update = new HashMap<>();
+        update.put("posterBlob", posterBlob);
+
+        db.collection("events")
+                .document(eventId)
+                .set(update, SetOptions.merge())
+                .addOnSuccessListener(aVoid -> {
+                    Log.d("FirebaseManager", "Poster saved inline for event: " + eventId);
+                    if (callback != null) {
+                        callback.onSuccess(null);
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("FirebaseManager", "Failed to save poster inline", e);
+                    if (callback != null) {
+                        callback.onFailure(e);
+                    }
+                });
+    }
+
+
+    /**
+     * Loads an event poster bitmap from Firebase Storage (if it exists)
+     * and returns it via callback. If the file does not exist, onFailure
+     * will be called.
+     */
+    public void loadEventPoster(String eventId, FirebaseCallback<Bitmap> callback) {
+        if (eventId == null || eventId.trim().isEmpty()) {
+            if (callback != null) {
+                callback.onFailure(new IllegalArgumentException("Invalid eventId"));
+            }
+            return;
+        }
+
+        StorageReference ref = FirebaseStorage.getInstance()
+                .getReference()
+                .child("eventPosters")
+                .child(eventId + ".jpg");
+
+        final long ONE_MB = 1024 * 1024;
+
+        ref.getBytes(ONE_MB)
+                .addOnSuccessListener(bytes -> {
+                    Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                    if (callback != null) callback.onSuccess(bmp);
+                })
+                .addOnFailureListener(e -> {
+                    if (callback != null) callback.onFailure(e);
+                });
+    }
+
+
+
 
     /**
      * Callback interface used by all FirebaseManager asynchronous methods.

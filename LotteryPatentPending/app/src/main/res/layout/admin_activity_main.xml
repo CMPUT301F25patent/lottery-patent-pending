@@ -45,7 +45,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:backgroundTint="@color/white_grey"
-            android:text="Images"
+            android:text="Browse Images"
             android:textColor="@color/black"
             android:textSize="18sp" />
 

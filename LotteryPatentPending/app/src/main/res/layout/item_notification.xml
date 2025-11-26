@@ -1,23 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:padding="12dp"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
-    <TextView
-        android:id="@+id/title"
-        android:textStyle="bold"
-        android:textSize="16sp"
+    android:layout_height="wrap_content"
+    android:layout_margin="12dp"
+    android:background="@color/black"
+    android:padding="16dp"
+    android:radius="14dp">
+
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
-    <TextView
-        android:id="@+id/body"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
-    <TextView
-        android:id="@+id/meta"
-        android:textSize="12sp"
-        android:textColor="@android:color/darker_gray"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
-</LinearLayout>
+        android:layout_height="wrap_content"
+        android:background="@color/dark_grey"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/notif_title"
+            android:textColor="@android:color/white"
+            android:textSize="17sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/body"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:text="@string/Inbox_message"
+            android:textColor="#DDDDDD"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/meta"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text="@string/Inbox_timestamp"
+            android:textColor="#C1BDBD"
+            android:textSize="12sp" />
+
+        <TextView
+            android:id="@+id/readBadge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:layout_marginTop="6dp"
+            android:text="@string/Inbox_read"
+            android:textColor="#A6A6A6"
+            android:textSize="12sp"
+            android:visibility="gone" />
+
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>
 

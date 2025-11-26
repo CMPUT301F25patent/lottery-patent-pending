@@ -165,18 +165,22 @@ public class AdminActivity extends AppCompatActivity {
                 startActivity(intent);
             });
         }
-
-        // Stubbed: Images (only if admin)
         if (btnImages != null) {
             btnImages.setOnClickListener(v -> {
                 if (!isAdmin()) {
                     showAdminDeniedToast();
                     return;
                 }
-                // TODO: open admin images screen
-                Toast.makeText(this, "Images screen not implemented yet.", Toast.LENGTH_SHORT).show();
+                // Navigate to the AdminImagesFragment
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.adminFragmentContainer, new AdminImagesFragment())
+                        .addToBackStack(null) // Allows user to press back
+                        .commit();
             });
         }
+
+
+
 
         // Stubbed: Remove organizers (only if admin)
         if (btnRemoveOrganizers != null) {

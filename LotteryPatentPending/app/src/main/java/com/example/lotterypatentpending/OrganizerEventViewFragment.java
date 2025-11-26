@@ -18,6 +18,7 @@ import com.example.lotterypatentpending.data.UserDataSource;
 import com.example.lotterypatentpending.domain.OrganizerNotifier;
 import com.example.lotterypatentpending.models.AdminLogRepository;
 import com.example.lotterypatentpending.models.Event;
+import com.example.lotterypatentpending.models.FirebaseManager;
 import com.example.lotterypatentpending.models.FirestoreAdminLogRepository;
 import com.example.lotterypatentpending.models.FirestoreNotificationRepository;
 import com.example.lotterypatentpending.models.NotificationRepository;
@@ -34,6 +35,11 @@ import com.example.lotterypatentpending.helpers.DateTimeFormatHelper;
 import com.example.lotterypatentpending.models.QRGenerator;
 import com.example.lotterypatentpending.viewModels.EventViewModel;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.util.Base64;
+
+
 /**
  * Fragment that displays the details of a selected Event.
  * <p>
@@ -49,6 +55,9 @@ public class OrganizerEventViewFragment extends Fragment {
 
     private TextView eventTitle, eventDescr, eventLocation, eventDate, eventRegStart, eventRegEnd, maxEntrants, waitListCap, eventTag;
     private ImageView qrView;
+
+    private ImageView posterImage;
+
     private String eventId;
     private Button viewWLBtn, viewMapBtn, viewAttendantsBtn, generateQRCode;
     private CheckBox geoLocationReq;
@@ -107,6 +116,8 @@ public class OrganizerEventViewFragment extends Fragment {
         viewWLBtn = v.findViewById(R.id.viewWLBtn);
         viewMapBtn = v.findViewById(R.id.viewMapBtn);
         viewAttendantsBtn = v.findViewById(R.id.viewAttendantsBtn);
+        posterImage = v.findViewById(R.id.eventImage);
+
 
         EventViewModel viewModel = new ViewModelProvider(requireActivity()).get(EventViewModel.class);
         viewModel.getEvent().observe(getViewLifecycleOwner(), event -> {
@@ -122,6 +133,9 @@ public class OrganizerEventViewFragment extends Fragment {
             int wlCap = event.getWaitingListCapacity();
             String waitListText = "Waiting List Capacity: ";
             String tagText = "Tag: " + event.getTag();
+            // Load event poster from Storage (if it exists)
+
+
 
             if(wlCap == -1){
                 waitListText += "N/A";
@@ -163,6 +177,17 @@ public class OrganizerEventViewFragment extends Fragment {
             eventId = event.getId();
 
             geoLocationReq.setChecked(event.isGeolocationRequired());
+
+            byte[] posterBytes = event.getPosterBytes();
+            if (posterBytes != null && posterBytes.length > 0) {
+                Bitmap bmp = BitmapFactory.decodeByteArray(posterBytes, 0, posterBytes.length);
+                posterImage.setImageBitmap(bmp);
+                posterImage.setVisibility(View.VISIBLE);
+            } else {
+                posterImage.setImageDrawable(null);
+                posterImage.setVisibility(View.GONE);
+            }
+
 
         });
 
@@ -337,8 +362,21 @@ public class OrganizerEventViewFragment extends Fragment {
         return currentOrganizerId;
     }
 
+    private boolean ensureEventAndOrganizerLoaded() {
+        if (currentEvent == null) {
+            Toast.makeText(getContext(), "Event not loaded yet. Please try again.", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        if (currentOrganizerId == null || currentOrganizerId.isEmpty()) {
+            Toast.makeText(getContext(), "Organizer not loaded yet. Please try again.", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        return true;
+    }
+
     /** Chosen entrants – still needs real chosenIds list wired up later. */
     private void sendChosenSignUp(String body) {
+        if (!ensureEventAndOrganizerLoaded()) return;
         String orgId = currentOrganizerId();
         String eventId = currentEvent.getId();
         String title = "Sign up for " + currentEvent.getTitle();
@@ -366,6 +404,7 @@ public class OrganizerEventViewFragment extends Fragment {
     }
 
     private void sendWaitlist(String body) {
+        if (!ensureEventAndOrganizerLoaded()) return;
         String orgId = currentOrganizerId();
         String eventId = currentEvent.getId();
         String title = "Update for " + currentEvent.getTitle();
@@ -384,6 +423,7 @@ public class OrganizerEventViewFragment extends Fragment {
     }
 
     private void sendSelected(String body) {
+        if (!ensureEventAndOrganizerLoaded()) return;
         String orgId = currentOrganizerId();
         String eventId = currentEvent.getId();
         String title = "Update for " + currentEvent.getTitle();
@@ -402,6 +442,7 @@ public class OrganizerEventViewFragment extends Fragment {
     }
 
     private void sendCancelled(String body) {
+        if (!ensureEventAndOrganizerLoaded()) return;
         String orgId = currentOrganizerId();
         String eventId = currentEvent.getId();
         String title = "Event cancelled: " + currentEvent.getTitle();
