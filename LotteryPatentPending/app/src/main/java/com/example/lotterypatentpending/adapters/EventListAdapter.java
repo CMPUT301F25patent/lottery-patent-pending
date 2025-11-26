@@ -80,6 +80,7 @@ public class EventListAdapter extends ArrayAdapter<Event> {
 
             //  Compute waiting list text: "X / Y" or "N/A"
             int wlCap = event.getWaitingListCapacity();
+
             int currentSize = 0;
             if (event.getWaitingList() != null &&
                     event.getWaitingList().getList() != null) {

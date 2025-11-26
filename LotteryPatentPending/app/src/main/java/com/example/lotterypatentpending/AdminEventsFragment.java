@@ -23,6 +23,7 @@ import com.example.lotterypatentpending.models.Event;
 import com.example.lotterypatentpending.models.FirebaseManager;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.firebase.firestore.ListenerRegistration;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,6 +45,8 @@ public class AdminEventsFragment extends Fragment {
     private final ArrayList<Event> allEvents = new ArrayList<>();
     // events currently shown (after filtering)
     private final ArrayList<Event> visibleEvents = new ArrayList<>();
+
+    private ListenerRegistration eventsListener;
 
     private EventListAdapter eventListAdapter;
     private LoadingOverlay loading;
@@ -145,7 +148,7 @@ public class AdminEventsFragment extends Fragment {
      * Loads all events from Firestore and populates allEvents + visibleEvents.
      */
     private void loadEventsFromFirebase() {
-        firebaseManager.getAllEvents(new FirebaseManager.FirebaseCallback<ArrayList<Event>>() {
+        eventsListener = firebaseManager.getAllEventsLive(new FirebaseManager.FirebaseCallback<ArrayList<Event>>() {
             @Override
             public void onSuccess(ArrayList<Event> result) {
                 if (!isAdded()) return;
@@ -174,6 +177,16 @@ public class AdminEventsFragment extends Fragment {
                         "Failed to load events", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+
+        if (eventsListener != null) {
+            eventsListener.remove();
+            eventsListener = null;
+        }
     }
 
     /**

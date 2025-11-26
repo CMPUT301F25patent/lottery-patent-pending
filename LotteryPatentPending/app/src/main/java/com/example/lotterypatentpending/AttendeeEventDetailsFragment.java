@@ -29,6 +29,7 @@ import com.example.lotterypatentpending.models.FirebaseManager;
 import com.example.lotterypatentpending.models.User;
 import com.example.lotterypatentpending.viewModels.UserEventRepository;
 import com.example.lotterypatentpending.models.WaitingListState;
+import com.google.firebase.firestore.ListenerRegistration;
 
 import java.util.Objects;
 
@@ -52,6 +53,8 @@ public class AttendeeEventDetailsFragment extends Fragment {
     private Button cancelButton;
     private Button leaveButton;
     private ImageView posterImage;
+
+    private ListenerRegistration eventListener;
 
     private final int LOCATION_REQ_CODE = 1001;
 
@@ -166,11 +169,41 @@ public class AttendeeEventDetailsFragment extends Fragment {
         //  Join/Leave button state
         WaitingListState userState = getUserState(currentUser, currentEvent);
         updateButtons(userState);
+
+        // --- Live updates for this event ---
+        String eventId = currentEvent.getId();
+
+        eventListener = fm.getEventLive(eventId,
+                new FirebaseManager.FirebaseCallback<Event>() {
+                    @Override
+                    public void onSuccess(Event updatedEvent) {
+                        if (!isAdded()) return;
+
+                        // Keep repo in sync with latest Event from Firestore
+                        userEventRepo.setEvent(updatedEvent);
+
+                        User user = userEventRepo.getUser().getValue();
+
+                        // Recompute waiting list + buttons from latest data
+                        refreshWaitingListUI(updatedEvent, user);
+                    }
+
+                    @Override
+                    public void onFailure(Exception e) {
+                        // optional: log/toast if you care
+                        // Log.e("AttendeeEventDetails", "getEventLive failed", e);
+                    }
+                });
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+
+        if (eventListener != null) {
+            eventListener.remove();
+            eventListener = null;
+        }
 
         if (userEventRepo.getEvent().getValue() != null) {
             userEventRepo.setEvent(null);
