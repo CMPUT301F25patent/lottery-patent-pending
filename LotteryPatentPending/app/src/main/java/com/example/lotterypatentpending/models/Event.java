@@ -41,6 +41,8 @@ public class Event {
     private boolean active;
     private boolean geolocationRequired;
 
+    private byte[] posterBytes; // compressed JPEG data for the poster
+
     public Event() {
         // Required empty constructor for Firestore deserialization
     }
@@ -71,9 +73,10 @@ public class Event {
         this.active = false;
         this.waitingListCapacity = -1;
         this.geolocationRequired = false;
+        this.posterBytes = null;
     }
 
-    private byte[] posterBytes; // compressed JPEG data for the poster
+
 
     public byte[] getPosterBytes() {
         return posterBytes;

@@ -372,9 +372,11 @@ public class FirebaseManager {
 
         Object posterObj = data.get("posterBlob");
         if (posterObj instanceof Blob) {
+            Log.d("Firebase", "blob");
             Blob blob = (Blob) posterObj;
             event.setPosterBytes(blob.toBytes());
         } else if (posterObj instanceof byte[]) {
+            Log.d("Firebase", "byte[]");
             event.setPosterBytes((byte[]) posterObj);
         }
 
