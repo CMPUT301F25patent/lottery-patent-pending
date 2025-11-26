@@ -109,10 +109,6 @@ public class AttendeeEventDetailsFragment extends Fragment {
         if (posterBytes != null && posterBytes.length > 0) {
             Bitmap bmp = BitmapFactory.decodeByteArray(posterBytes, 0, posterBytes.length);
             posterImage.setImageBitmap(bmp);
-            posterImage.setVisibility(View.VISIBLE);
-        } else {
-            posterImage.setImageDrawable(null);
-            posterImage.setVisibility(View.GONE);
         }
 
         // Location
