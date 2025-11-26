@@ -23,4 +23,5 @@
     <string name="filter">Filter\n</string>
     <string name="search">Search</string>
     <string name="message">Type your message here..</string>
+    <string name="google_maps_key">AIzaSyC43IgNJjJ660W14ZoxLyxtX0mZNA1M06k</string>
 </resources>

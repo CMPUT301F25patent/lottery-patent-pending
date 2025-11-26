@@ -6,6 +6,9 @@
     <uses-permission android:name="android.permission.CAMERA" /> <!-- Say the app can run without a camera -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+
+
     <uses-feature
         android:name="android.hardware.camera.any"
         android:required="false" />
@@ -22,6 +25,11 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.LotteryPatentPending">
+
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="@string/google_maps_key"/>
+
         <activity
             android:name=".AdminActivity"
             android:exported="false" />

@@ -936,7 +936,7 @@ public class FirebaseManager {
                 .addOnFailureListener(e -> Log.e("FIREBASE", "Error", e));
     }
 
-    public ArrayList<UserLocation> getEntrantLocations(String eventId){
+    public void getEntrantLocations(String eventId, FirebaseCallback<ArrayList<UserLocation>> callback){
         ArrayList<UserLocation> locations = new ArrayList<>();
 
         this.getEventWaitingList(eventId, new FirebaseCallback<ArrayList<Pair<User, WaitingListState>>>() {
@@ -948,15 +948,18 @@ public class FirebaseManager {
                 }
 
                 Log.d("Firebase", "Successfully retrieved user locations");
+                callback.onSuccess(locations);
+
             }
 
             @Override
             public void onFailure(Exception e) {
                 Log.e("Firebase", "Failed to get user locations", e);
+                callback.onFailure(e);
             }
         });
 
-        return locations;
+
     }
 
 
