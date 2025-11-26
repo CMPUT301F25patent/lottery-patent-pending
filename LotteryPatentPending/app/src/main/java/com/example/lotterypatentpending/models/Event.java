@@ -4,9 +4,7 @@ package com.example.lotterypatentpending.models;
 import com.google.firebase.Timestamp;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
@@ -39,7 +37,7 @@ public class Event {
     private Timestamp date;
     private Timestamp regStartDate;
     private Timestamp regEndDate;
-    private boolean active;
+    private EventState eventState;
     private boolean geolocationRequired;
     private byte[] posterBytes; // compressed JPEG data for the poster
 
@@ -70,7 +68,7 @@ public class Event {
         this.date = null;
         this.regStartDate = null;
         this.regEndDate = null;
-        this.active = false;
+        this.eventState = EventState.NOT_STARTED;
         this.waitingListCapacity = -1;
         this.geolocationRequired = false;
     }
@@ -224,6 +222,14 @@ public class Event {
         this.geolocationRequired = geolocationRequired;
     }
 
+    public EventState getEventState() {
+        return this.eventState;
+    }
+
+    public void setEventState(EventState eventState) {
+        this.eventState = eventState;
+    }
+
 
     /**
      * Determines if the event is currently active based on registration dates.
@@ -234,7 +240,8 @@ public class Event {
      *
      * @return true if event is active, false otherwise
      */
-    public boolean isActive() {
+    public boolean isOpenForReg() {
+        boolean active;
         if (regStartDate == null && regEndDate == null) {
             active = false;
             return false;
@@ -331,8 +338,45 @@ public class Event {
         return this.waitingList.updateEntrantState(entrant, state);
     }
 
-    public boolean isPastEndDate() {
+    private boolean isBeforeStartDate() {
+        return (new Timestamp(new Date()).compareTo(this.regStartDate) < 0);
+    }
+
+    private boolean isPastEndDate() {
         return (new Timestamp(new Date()).compareTo(this.regEndDate) >= 0);
+    }
+
+    public void updateRegistrationState() {
+        if (this.isBeforeStartDate()) {
+            this.eventState = EventState.NOT_STARTED;
+        }
+        else if (!this.isBeforeStartDate() && !this.isPastEndDate()) {
+            this.eventState = EventState.OPEN_FOR_REG;
+        }
+        else if (this.isPastEndDate()) {
+            this.eventState = EventState.CLOSED_FOR_REG;
+        }
+    }
+
+    public void selectEntrants() {
+        this.waitingList.lotterySelect(this.capacity);
+        this.eventState = EventState.SELECTED_ENTRANTS;
+    }
+
+    public void reselectEntrants() {
+
+    }
+
+    public void confirmEntrants() {
+        this.eventState = EventState.CONFIRMED_ENTRANTS;
+    }
+
+    public void endEvent() {
+        this.eventState = EventState.ENDED;
+    }
+
+    public void cancelEvent() {
+        this.eventState = EventState.CANCELLED;
     }
 
 }
