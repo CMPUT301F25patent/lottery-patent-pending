@@ -143,7 +143,7 @@ public class OrganizerCreateEditEventFragment extends Fragment {
             int wlCap = passed_event.getWaitingListCapacity();
 
             if(wlCap == -1){
-                waitingListCapEt.setText("N/A");
+                waitingListCapEt.setText(null);
             }else{
                 waitingListCapEt.setText(String.valueOf(passed_event.getWaitingListCapacity()));
             }
@@ -289,6 +289,12 @@ public class OrganizerCreateEditEventFragment extends Fragment {
                 !waitingListCapString.isEmpty()) {
             try {
                 waitingListCap = Integer.parseInt(waitingListCapString);
+                if(waitingListCap < capacity){
+                    Toast.makeText(requireContext(),
+                            "Waiting list cap must be greater than or equal to event capacity.",
+                            Toast.LENGTH_SHORT).show();
+                    return false;
+                }
             } catch (NumberFormatException e) {
                 Toast.makeText(requireContext(),
                         "Waiting list cap must be a number or 'N/A'.",
