@@ -729,6 +729,33 @@ public class FirebaseManager {
                 });
     }
 
+    public void addPastEventToEntrant(Event event, String userId) {
+
+        db.collection("users")
+                .document(userId)
+                .update("pastEventIds", FieldValue.arrayUnion(event.getId()))
+                .addOnSuccessListener(aVoid -> {
+                    Log.d("FIREBASE", "Added event to past events for entrant successfully");
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("FIREBASE", "Failed to add event to past events for entrant", e);
+                });
+    }
+
+    public void removePastEventFromEntrant(String eventId, String entrantId) {
+        Log.d("DEBUG", "removeJoinedEventFromEntrant eventId param = " + eventId);
+
+        db.collection("users")
+                .document(entrantId)
+                .update("pastEventIds", FieldValue.arrayRemove(eventId))
+                .addOnSuccessListener(aVoid -> {
+                    Log.d("FIREBASE", "Removed event from past events for entrant successfully");
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("FIREBASE", "Failed to remove event from past events for entrant", e);
+                });
+    }
+
 
     // generic notification add, will updated after looking at notification class
 
