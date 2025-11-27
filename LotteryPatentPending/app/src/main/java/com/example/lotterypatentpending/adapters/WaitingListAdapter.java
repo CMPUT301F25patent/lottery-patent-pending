@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class WaitingListAdapter extends ArrayAdapter<Pair<User, WaitingListState>> {
+    private int selectedPos = -1;
 
     public WaitingListAdapter(@NonNull Context context, @NonNull ArrayList<Pair<User, WaitingListState>> list){
         super(context, 0, list);
@@ -45,6 +46,11 @@ public class WaitingListAdapter extends ArrayAdapter<Pair<User, WaitingListState
         }
 
         return convertView;
+    }
+
+    public void setSelectedPosition(int position) {
+        this.selectedPos = position;
+        notifyDataSetChanged();
     }
 
 }

@@ -210,6 +210,8 @@ public class FirebaseManager {
         data.put("regStartDate",  event.getRegStartDate()); // Timestamp or null
         data.put("regEndDate",    event.getRegEndDate());   // Timestamp or null  : null);
 
+        data.put("eventState", event.getEventState());
+
 
 
         // Organizer is just a User
@@ -371,6 +373,12 @@ public class FirebaseManager {
             event.setPosterBytes((byte[]) posterObj);
         }
 
+        Object eventStateObj = data.get("eventState");
+        if (eventStateObj instanceof EventState) {
+            EventState eventState = (EventState)eventStateObj;
+            event.setEventState(eventState);
+        }
+
         return event;
     }
 
@@ -413,12 +421,14 @@ public class FirebaseManager {
             getUser(uid, new FirebaseCallback<User>() {
                 @Override
                 public void onSuccess(User user) {
+                    Log.i("FirebaseManager", "Successfully retrieved user: " + user.getUserId());
                     out.add(new Pair<>(user, state));
                     if (++loaded[0] == total) callback.onSuccess(out);
                 }
 
                 @Override
                 public void onFailure(Exception ex) {
+                    Log.e("FirebaseManager", "Failed to retrieve user " + uid + ": " + ex.getMessage());
                     if (++loaded[0] == total) callback.onSuccess(out);
                 }
             });
@@ -715,7 +725,6 @@ public class FirebaseManager {
                 });
     }
 
-
     // generic notification add, will updated after looking at notification class
 
     /**
@@ -820,10 +829,11 @@ public class FirebaseManager {
                     Object wlObj = snapshot.get("waitingList");
                     if (wlObj instanceof Map) {
                         Map<String, Object> waitingListMap = (Map<String, Object>) wlObj;
-
+                        Log.i("FirebaseManager", "Waiting List Map: " + waitingListMap);
                         deserializeWaitingList(waitingListMap, new FirebaseCallback<ArrayList<Pair<User, WaitingListState>>>() {
                             @Override
                             public void onSuccess(ArrayList<Pair<User, WaitingListState>> result) {
+                                Log.i("FirebaseManager", "Waiting list: " + result);
                                 callback.onSuccess(result); // fully populated waiting list
                             }
 
