@@ -106,9 +106,7 @@ public class MainActivity extends AppCompatActivity implements MainRegisterNewUs
                     UserEventRepository.getInstance().setUser(user);
                     if (mainLayout != null) mainLayout.setVisibility(View.VISIBLE);
 
-                    // This is the critical check
                     if (user.isAdmin()) {
-                        System.out.println("User is admin: " + user.toString());
                         adminBtn.setVisibility(View.VISIBLE);
                     } else {
                         adminBtn.setVisibility(View.GONE);
