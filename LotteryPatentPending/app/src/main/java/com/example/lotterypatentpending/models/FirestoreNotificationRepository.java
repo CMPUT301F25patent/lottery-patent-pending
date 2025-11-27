@@ -1,6 +1,8 @@
 package com.example.lotterypatentpending.models;
 
 import com.google.firebase.firestore.*;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -94,6 +96,33 @@ public class FirestoreNotificationRepository implements NotificationRepository {
                 .addSnapshotListener((snap, err) -> {
                     if (err!=null){ onError.accept(err); return; }
                     onCount.accept(snap==null?0:snap.size());
+                });
+    }
+
+    @Override
+    public ListenerRegistration listenUserNotifications(String userId,
+                                                        NotificationsListener listener) {
+        return db.collection("users")
+                .document(userId)
+                .collection("notifications")
+                .orderBy("createdAt", Query.Direction.DESCENDING)
+                .addSnapshotListener((snap, err) -> {
+                    if (err != null) {
+                        listener.onError(err);
+                        return;
+                    }
+                    List<Notification> out = new ArrayList<>();
+                    if (snap != null) {
+                        for (DocumentSnapshot d : snap.getDocuments()) {
+                            Notification n = d.toObject(Notification.class);
+                            if (n != null) {
+                                n.setId(d.getId());
+                                n.setUserId(userId);
+                                out.add(n);
+                            }
+                        }
+                    }
+                    listener.onChanged(out);
                 });
     }
 

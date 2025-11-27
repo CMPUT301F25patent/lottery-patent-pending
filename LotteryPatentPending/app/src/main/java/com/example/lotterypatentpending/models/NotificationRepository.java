@@ -39,4 +39,17 @@ public interface NotificationRepository {
     ListenerRegistration listenUnreadCount(String userId,
                                            java.util.function.Consumer<Integer> onCount,
                                            java.util.function.Consumer<Exception> onError);
+    interface NotificationsListener {
+        void onChanged(List<Notification> notifications);
+        void onError(Exception e);
+    }
+    ListenerRegistration listenUserNotifications(String userId,
+                                                 NotificationsListener listener);
+    interface UnreadCountListener {
+        void onChanged(long count);
+    }
+
+    interface ErrorListener {
+        void onError(Exception e);
+    }
 }
