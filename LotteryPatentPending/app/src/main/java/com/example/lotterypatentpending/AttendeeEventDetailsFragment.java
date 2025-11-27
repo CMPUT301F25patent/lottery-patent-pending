@@ -1,6 +1,7 @@
 package com.example.lotterypatentpending;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -171,8 +172,7 @@ public class AttendeeEventDetailsFragment extends Fragment {
 
                     @Override
                     public void onFailure(Exception e) {
-                        // optional: log/toast if you care
-                        // Log.e("AttendeeEventDetails", "getEventLive failed", e);
+                         Log.e("AttendeeEventDetails", "getEventLive failed", e);
                     }
                 });
     }

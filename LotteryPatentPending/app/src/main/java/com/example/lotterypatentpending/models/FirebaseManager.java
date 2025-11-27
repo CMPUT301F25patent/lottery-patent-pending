@@ -523,6 +523,11 @@ public class FirebaseManager {
                 });
     }
 
+    /**
+     *
+     * @param callback
+     * @return ListenerRegistration, destroy this by ListenerRegistation.remove()
+     */
     public ListenerRegistration getAllEventsLive(FirebaseCallback<ArrayList<Event>> callback) {
         return db.collection("events")
                 .addSnapshotListener((snapshot, e) -> {
