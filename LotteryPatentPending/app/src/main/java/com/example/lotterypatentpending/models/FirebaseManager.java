@@ -715,7 +715,6 @@ public class FirebaseManager {
                 });
     }
 
-
     // generic notification add, will updated after looking at notification class
 
     /**
