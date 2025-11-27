@@ -210,6 +210,8 @@ public class FirebaseManager {
         data.put("regStartDate",  event.getRegStartDate()); // Timestamp or null
         data.put("regEndDate",    event.getRegEndDate());   // Timestamp or null  : null);
 
+        data.put("eventState", event.getEventState());
+
 
 
         // Organizer is just a User
@@ -371,6 +373,12 @@ public class FirebaseManager {
             event.setPosterBytes((byte[]) posterObj);
         }
 
+        Object eventStateObj = data.get("eventState");
+        if (eventStateObj instanceof EventState) {
+            EventState eventState = (EventState)eventStateObj;
+            event.setEventState(eventState);
+        }
+
         return event;
     }
 
@@ -413,12 +421,14 @@ public class FirebaseManager {
             getUser(uid, new FirebaseCallback<User>() {
                 @Override
                 public void onSuccess(User user) {
+                    Log.i("FirebaseManager", "Successfully retrieved user: " + user.getUserId());
                     out.add(new Pair<>(user, state));
                     if (++loaded[0] == total) callback.onSuccess(out);
                 }
 
                 @Override
                 public void onFailure(Exception ex) {
+                    Log.e("FirebaseManager", "Failed to retrieve user " + uid + ": " + ex.getMessage());
                     if (++loaded[0] == total) callback.onSuccess(out);
                 }
             });
@@ -693,6 +703,32 @@ public class FirebaseManager {
                 });
     }
 
+    public void addPastEventToEntrant(Event event, String userId) {
+
+        db.collection("users")
+                .document(userId)
+                .update("pastEventIds", FieldValue.arrayUnion(event.getId()))
+                .addOnSuccessListener(aVoid -> {
+                    Log.d("FIREBASE", "Added event to past events for entrant successfully");
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("FIREBASE", "Failed to add event to past events for entrant", e);
+                });
+    }
+
+    public void removePastEventFromEntrant(String eventId, String entrantId) {
+        Log.d("DEBUG", "removeJoinedEventFromEntrant eventId param = " + eventId);
+
+        db.collection("users")
+                .document(entrantId)
+                .update("pastEventIds", FieldValue.arrayRemove(eventId))
+                .addOnSuccessListener(aVoid -> {
+                    Log.d("FIREBASE", "Removed event from past events for entrant successfully");
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("FIREBASE", "Failed to remove event from past events for entrant", e);
+                });
+    }
 
     // generic notification add, will updated after looking at notification class
 
@@ -798,10 +834,11 @@ public class FirebaseManager {
                     Object wlObj = snapshot.get("waitingList");
                     if (wlObj instanceof Map) {
                         Map<String, Object> waitingListMap = (Map<String, Object>) wlObj;
-
+                        Log.i("FirebaseManager", "Waiting List Map: " + waitingListMap);
                         deserializeWaitingList(waitingListMap, new FirebaseCallback<ArrayList<Pair<User, WaitingListState>>>() {
                             @Override
                             public void onSuccess(ArrayList<Pair<User, WaitingListState>> result) {
+                                Log.i("FirebaseManager", "Waiting list: " + result);
                                 callback.onSuccess(result); // fully populated waiting list
                             }
 

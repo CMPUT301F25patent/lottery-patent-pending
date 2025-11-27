@@ -18,6 +18,7 @@ import androidx.fragment.app.Fragment;
 
 import com.example.lotterypatentpending.helpers.DateTimeFormatHelper;
 import com.example.lotterypatentpending.models.Event;
+import com.example.lotterypatentpending.models.EventState;
 import com.example.lotterypatentpending.models.FirebaseManager;
 import com.example.lotterypatentpending.models.User;
 import com.example.lotterypatentpending.viewModels.UserEventRepository;
@@ -225,11 +226,13 @@ public class AttendeeEventDetailsFragment extends Fragment {
 
         // 3) Firestore writes
         fm.addJoinedEventToEntrant(currentEvent, currentUser.getUserId());
+        fm.addPastEventToEntrant(currentEvent, currentUser.getUserId());
         fm.addEntrantToWaitingList(currentUser, WaitingListState.ENTERED, currentEvent.getId());
 
         //  4) Local model updates
         currentEvent.addToWaitingList(currentUser);
         currentUser.addJoinedEvent(currentEvent.getId());
+        currentUser.addPastEvent(currentEvent.getId());
 
         userEventRepo.setEvent(currentEvent);
 
@@ -302,6 +305,34 @@ public class AttendeeEventDetailsFragment extends Fragment {
         return false;
     }
 
+    private boolean declineEventHelper() {
+        User currentUser  = userEventRepo.getUser().getValue();
+        Event currentEvent = userEventRepo.getEvent().getValue();
+
+        if (currentUser != null && currentEvent != null) {
+            // local
+            currentEvent.updateEntrantState(currentUser, WaitingListState.DECLINED);
+            currentUser.removeJoinedEvent(currentEvent.getId());
+            currentUser.addDeclinedEvent(currentEvent.getId());
+
+            // firestore
+            fm.updateEntrantState(currentEvent.getId(), currentUser.getUserId(), WaitingListState.DECLINED);
+            fm.addOrUpdateUser(currentUser);
+
+            userEventRepo.setUser(currentUser);
+            userEventRepo.setEvent(currentEvent);
+
+            refreshWaitingListUI(currentEvent, currentUser);
+
+            Toast.makeText(getContext(),
+                    "Declined event!",
+                    Toast.LENGTH_SHORT).show();
+
+            return true;
+        }
+        return false;
+    }
+
     /**
      * Uses User.joinedEventIds to decide if this user is already joined to this event.
      */
@@ -366,10 +397,12 @@ public class AttendeeEventDetailsFragment extends Fragment {
                     acceptEventHelper();
                 });
                 declineButton.setOnClickListener(v -> {
-
+                    declineEventHelper();
                 });
                 break;
             case NOT_SELECTED:
+                rejoinButton.setVisibility(View.VISIBLE);
+                leaveButton.setVisibility(View.VISIBLE);
                 break;
             case ACCEPTED:
                 cancelButton.setVisibility(View.VISIBLE);
@@ -398,6 +431,7 @@ public class AttendeeEventDetailsFragment extends Fragment {
     private void refreshWaitingListUI(@NonNull Event event, @Nullable User user) {
         User currentUser  = userEventRepo.getUser().getValue();
         Event currentEvent = userEventRepo.getEvent().getValue();
+        EventState currentEventState = currentEvent.getEventState();
         // 1) Compute sizes
         int wlCap = event.getWaitingListCapacity();
         int currentSize = getCurrentWaitingListSize(event);
@@ -411,7 +445,10 @@ public class AttendeeEventDetailsFragment extends Fragment {
         }
         waitListCap.setText(waitListValue);
 
-        // 3) Show correct button (Join vs Leave)
+        // 3) Check event state
+        // TODO: need to do stuff like block event stuff if past reg date and not in
+
+        // 4) Show correct buttons
         WaitingListState userState = getUserState(currentUser, currentEvent);
         updateButtons(userState);
     }

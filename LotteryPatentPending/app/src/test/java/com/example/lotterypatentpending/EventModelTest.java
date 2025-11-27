@@ -3,14 +3,10 @@ package com.example.lotterypatentpending;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.example.lotterypatentpending.models.Event;
-import com.example.lotterypatentpending.models.WaitingList;
 import com.example.lotterypatentpending.models.User;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.time.LocalDateTime;
-import java.util.List;
 
 /**
  * Unit tests for the Event class.
@@ -122,7 +118,7 @@ public class EventModelTest {
         event.setRegStartDate(null);
         event.setRegEndDate(null);
 
-        assertFalse(event.isActive());
+        assertFalse(event.isOpenForReg());
     }
 
 //    @Test
