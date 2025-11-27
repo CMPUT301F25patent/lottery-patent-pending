@@ -241,24 +241,7 @@ public class Event {
      * @return true if event is active, false otherwise
      */
     public boolean isOpenForReg() {
-        boolean active;
-        if (regStartDate == null && regEndDate == null) {
-            active = false;
-            return false;
-        }
-
-        Timestamp now = Timestamp.now();
-
-        boolean afterStart = (regStartDate != null) && now.compareTo(regStartDate) >= 0;
-        boolean beforeEnd  = (regEndDate != null) && now.compareTo(regEndDate) <= 0;
-
-        if (regStartDate != null && regEndDate != null) {
-            active = afterStart && beforeEnd;
-        } else {
-            active = afterStart || beforeEnd;
-        }
-
-        return active;
+        return !this.isBeforeStartDate() && !this.isPastEndDate();
     }
 
     /**
@@ -350,7 +333,7 @@ public class Event {
         if (this.isBeforeStartDate()) {
             this.eventState = EventState.NOT_STARTED;
         }
-        else if (!this.isBeforeStartDate() && !this.isPastEndDate()) {
+        else if (isOpenForReg()) {
             this.eventState = EventState.OPEN_FOR_REG;
         }
         else if (this.isPastEndDate()) {

@@ -2,6 +2,7 @@ package com.example.lotterypatentpending;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
@@ -22,7 +23,6 @@ import com.example.lotterypatentpending.helpers.LoadingOverlay;
 import com.example.lotterypatentpending.models.FirebaseManager;
 import com.example.lotterypatentpending.models.User;
 import com.example.lotterypatentpending.viewModels.UserEventRepository;
-import com.example.lotterypatentpending.NotificationWatcher;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -44,7 +44,6 @@ public class MainActivity extends AppCompatActivity implements MainRegisterNewUs
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
-        ensureNotificationPermission();
 
         FirebaseApp.initializeApp(this);
         fm = FirebaseManager.getInstance();
@@ -126,11 +125,6 @@ public class MainActivity extends AppCompatActivity implements MainRegisterNewUs
                     UserEventRepository.getInstance().setUser(user);
                     //if not new user show main_layout
                     if (mainLayout != null) mainLayout.setVisibility(View.VISIBLE);
-                    NotificationWatcher.getInstance()
-                            .startPopupStream(
-                                    getApplicationContext(),   // use app context
-                                    user.getUserId()           // Firestore user doc id
-                            );
                 }
             }
             @Override
@@ -178,26 +172,4 @@ public class MainActivity extends AppCompatActivity implements MainRegisterNewUs
             checkUserDoc(firebaseUser.getUid());
         }
     }
-    private static final int REQ_NOTIF = 101;
-
-    /**
-     * Requests POST_NOTIFICATIONS on Android 13+ if not already granted.
-     */
-    private void ensureNotificationPermission() {
-        if (Build.VERSION.SDK_INT < 33) {
-            return; // no runtime permission needed on older versions
-        }
-        if (ContextCompat.checkSelfPermission(
-                this,
-                android.Manifest.permission.POST_NOTIFICATIONS
-        ) != PackageManager.PERMISSION_GRANTED) {
-
-            ActivityCompat.requestPermissions(
-                    this,
-                    new String[]{android.Manifest.permission.POST_NOTIFICATIONS},
-                    REQ_NOTIF
-            );
-        }
-    }
-
 }
