@@ -1,5 +1,8 @@
 package com.example.lotterypatentpending;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -8,11 +11,15 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresPermission;
+import androidx.core.content.ContextCompat;
 import androidx.core.util.Pair;
 import androidx.fragment.app.Fragment;
 
@@ -26,6 +33,9 @@ import com.example.lotterypatentpending.models.WaitingListState;
 import com.google.firebase.firestore.ListenerRegistration;
 
 import java.util.Objects;
+
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 
 /**
  * Fragment that displays details for a selected event from the attendee view.
@@ -43,10 +53,23 @@ public class AttendeeEventDetailsFragment extends Fragment {
     private Button rejoinButton;
     private Button cancelButton;
     private Button leaveButton;
-
     private ImageView posterImage;
 
     private ListenerRegistration eventListener;
+
+    private final int LOCATION_REQ_CODE = 1001;
+
+    @SuppressLint("MissingPermission")
+    private final ActivityResultLauncher<String> locationPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+                if (isGranted) {
+                    getUserLocation();
+                } else {
+                    onLocationPermissionDenied();
+                }
+            });
+
+
 
     public AttendeeEventDetailsFragment() {
         super(R.layout.attendee_fragment_event_details);
@@ -91,10 +114,6 @@ public class AttendeeEventDetailsFragment extends Fragment {
         if (posterBytes != null && posterBytes.length > 0) {
             Bitmap bmp = BitmapFactory.decodeByteArray(posterBytes, 0, posterBytes.length);
             posterImage.setImageBitmap(bmp);
-            posterImage.setVisibility(View.VISIBLE);
-        } else {
-            posterImage.setImageDrawable(null);
-            posterImage.setVisibility(View.GONE);
         }
 
         // Location
@@ -375,10 +394,20 @@ public class AttendeeEventDetailsFragment extends Fragment {
         cancelButton.setVisibility(View.GONE);
         leaveButton.setVisibility(View.GONE);
 
+        if(!currentEvent.isOpenForReg()){
+            joinButton.setVisibility(View.VISIBLE);
+            joinButton.setText("Registration Period has ended");
+            return;
+        }
+
         if (!currentEvent.containsUser(currentUser)) {
             joinButton.setVisibility(View.VISIBLE);
             joinButton.setOnClickListener(v -> {
-                joinEventHelper();
+                if(currentEvent.isGeolocationRequired()){
+                    requestLocationPermission();
+                }else{
+                    joinEventHelper();
+                }
             });
             return;
         }
@@ -451,5 +480,54 @@ public class AttendeeEventDetailsFragment extends Fragment {
         // 4) Show correct buttons
         WaitingListState userState = getUserState(currentUser, currentEvent);
         updateButtons(userState);
+    }
+
+    private void requestLocationPermission() {
+        if (ContextCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED) {
+
+            getUserLocation();
+
+        } else {
+            locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
+        }
+    }
+
+    private void onLocationPermissionDenied() {
+        boolean shouldShowRationale =
+                shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION);
+
+        if (shouldShowRationale) {
+            // User tapped "Deny" (NOT "Never ask again")
+            Toast.makeText(requireContext(),
+                    "Location is required to join this event. Please allow it if you wish to join.",
+                    Toast.LENGTH_LONG).show();
+        } else {
+            // User tapped "Never Ask Again"
+            // OR permanently denied in settings
+            Toast.makeText(requireContext(),
+                    "Location permanently denied. Enable it in settings to join this event.",
+                    Toast.LENGTH_LONG).show();
+        }
+    }
+
+
+    @RequiresPermission(allOf = {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION})
+    private void getUserLocation() {
+        User currentUser  = userEventRepo.getUser().getValue();
+
+        FusedLocationProviderClient client =
+                LocationServices.getFusedLocationProviderClient(requireContext());
+
+        client.getLastLocation()
+                .addOnSuccessListener(location -> {
+                    if (location != null) {
+                        fm.saveLocationToFirestore(currentUser.getUserId(), location.getLatitude(), location.getLongitude());
+                    }
+                });
+
+        joinEventHelper();
     }
 }
