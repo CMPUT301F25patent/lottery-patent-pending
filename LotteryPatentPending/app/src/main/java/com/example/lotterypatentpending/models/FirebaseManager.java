@@ -210,6 +210,8 @@ public class FirebaseManager {
         data.put("regStartDate",  event.getRegStartDate()); // Timestamp or null
         data.put("regEndDate",    event.getRegEndDate());   // Timestamp or null  : null);
 
+        data.put("eventState", event.getEventState());
+
 
 
         // Organizer is just a User
@@ -281,6 +283,7 @@ public class FirebaseManager {
         String tag = (String) data.get("tag");
         String description = (String) data.get("description");
         String location = (String) data.get("location");
+        boolean geolocationRequired = (boolean) data.get("geolocationRequired");
 
         // Capacity handling
         int capacity = 0;
@@ -319,6 +322,7 @@ public class FirebaseManager {
         event.setLocation(location);
         event.setTag(tag);
         event.setWaitingListCapacity(waitingListCapacity);
+        event.setGeolocationRequired(geolocationRequired);
 
         if (data.get("id") != null)
             event.setId((String) data.get("id"));
@@ -371,6 +375,12 @@ public class FirebaseManager {
             event.setPosterBytes((byte[]) posterObj);
         }
 
+        Object eventStateObj = data.get("eventState");
+        if (eventStateObj instanceof EventState) {
+            EventState eventState = (EventState)eventStateObj;
+            event.setEventState(eventState);
+        }
+
         return event;
     }
 
@@ -413,12 +423,14 @@ public class FirebaseManager {
             getUser(uid, new FirebaseCallback<User>() {
                 @Override
                 public void onSuccess(User user) {
+                    Log.i("FirebaseManager", "Successfully retrieved user: " + user.getUserId());
                     out.add(new Pair<>(user, state));
                     if (++loaded[0] == total) callback.onSuccess(out);
                 }
 
                 @Override
                 public void onFailure(Exception ex) {
+                    Log.e("FirebaseManager", "Failed to retrieve user " + uid + ": " + ex.getMessage());
                     if (++loaded[0] == total) callback.onSuccess(out);
                 }
             });
@@ -513,6 +525,11 @@ public class FirebaseManager {
                 });
     }
 
+    /**
+     *
+     * @param callback
+     * @return ListenerRegistration, destroy this by ListenerRegistation.remove()
+     */
     public ListenerRegistration getAllEventsLive(FirebaseCallback<ArrayList<Event>> callback) {
         return db.collection("events")
                 .addSnapshotListener((snapshot, e) -> {
@@ -715,7 +732,6 @@ public class FirebaseManager {
                 });
     }
 
-
     // generic notification add, will updated after looking at notification class
 
     /**
@@ -820,10 +836,11 @@ public class FirebaseManager {
                     Object wlObj = snapshot.get("waitingList");
                     if (wlObj instanceof Map) {
                         Map<String, Object> waitingListMap = (Map<String, Object>) wlObj;
-
+                        Log.i("FirebaseManager", "Waiting List Map: " + waitingListMap);
                         deserializeWaitingList(waitingListMap, new FirebaseCallback<ArrayList<Pair<User, WaitingListState>>>() {
                             @Override
                             public void onSuccess(ArrayList<Pair<User, WaitingListState>> result) {
+                                Log.i("FirebaseManager", "Waiting list: " + result);
                                 callback.onSuccess(result); // fully populated waiting list
                             }
 
@@ -950,6 +967,48 @@ public class FirebaseManager {
                     Log.e("FirebaseManager", "Error fetching past events: " + e.getMessage());
                     callback.onFailure(e);
                 });
+    }
+
+    public void saveLocationToFirestore(String userId, double lat, double lng) {
+
+        Map<String, Object> locationMap = new HashMap<>();
+        locationMap.put("lat", lat);
+        locationMap.put("lng", lng);
+
+        Map<String, Object> update = new HashMap<>();
+        update.put("location", locationMap);
+
+        db.collection("users")
+                .document(userId)
+                .set(update, SetOptions.merge())   // ⬅ merge so you don’t overwrite other fields
+                .addOnSuccessListener(a -> Log.d("FIREBASE", "Location saved"))
+                .addOnFailureListener(e -> Log.e("FIREBASE", "Error", e));
+    }
+
+    public void getEntrantLocations(String eventId, FirebaseCallback<ArrayList<UserLocation>> callback){
+        ArrayList<UserLocation> locations = new ArrayList<>();
+
+        this.getEventWaitingList(eventId, new FirebaseCallback<ArrayList<Pair<User, WaitingListState>>>() {
+            @Override
+            public void onSuccess(ArrayList<Pair<User, WaitingListState>> result) {
+                for (Pair<User, WaitingListState> pair : result) {
+                    User user = pair.first;
+                    locations.add(user.getLocation());
+                }
+
+                Log.d("Firebase", "Successfully retrieved user locations");
+                callback.onSuccess(locations);
+
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Log.e("Firebase", "Failed to get user locations", e);
+                callback.onFailure(e);
+            }
+        });
+
+
     }
 
 

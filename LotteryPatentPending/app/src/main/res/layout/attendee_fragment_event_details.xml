@@ -258,36 +258,37 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent" />
 
-            <!-- Divider -->
-            <View
-                android:id="@+id/divider1"
-                android:layout_width="0dp"
-                android:layout_height="1dp"
-                android:background="#777777"
-                android:layout_marginTop="16dp"
-                app:layout_constraintTop_toBottomOf="@id/tag"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent" />
+<!--            &lt;!&ndash; Divider &ndash;&gt;-->
+<!--            <View-->
+<!--                android:id="@+id/divider1"-->
+<!--                android:layout_width="0dp"-->
+<!--                android:layout_height="1dp"-->
+<!--                android:background="#777777"-->
+<!--                android:layout_marginTop="16dp"-->
+<!--                app:layout_constraintTop_toBottomOf="@id/tag"-->
+<!--                app:layout_constraintStart_toStartOf="parent"-->
+<!--                app:layout_constraintEnd_toEndOf="parent" />-->
 
-            <!-- Event Settings Header -->
-            <TextView
-                android:id="@+id/eventSettingsHeader"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="Event Settings"
-                android:textColor="#7FC9FF"
-                app:layout_constraintTop_toBottomOf="@id/divider1"
-                app:layout_constraintStart_toStartOf="parent" />
+<!--            &lt;!&ndash; Event Settings Header &ndash;&gt;-->
+<!--            <TextView-->
+<!--                android:id="@+id/eventSettingsHeader"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_marginTop="16dp"-->
+<!--                android:text="Event Settings"-->
+<!--                android:textColor="#7FC9FF"-->
+<!--                app:layout_constraintTop_toBottomOf="@id/divider1"-->
+<!--                app:layout_constraintStart_toStartOf="parent" />-->
 
             <LinearLayout
                 android:id="@+id/attendee_event_details_linear_layout_button_bar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/eventSettingsHeader"
+                app:layout_constraintTop_toBottomOf="@id/tag"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
+                android:layout_marginTop="20dp"
                 >
 
                 <com.google.android.material.button.MaterialButton
@@ -310,7 +311,7 @@
                     android:text="Accept"
                     android:textColor="@color/black"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/eventSettingsHeader"
+                    app:layout_constraintTop_toBottomOf="@id/tag"
                     android:visibility="gone"
                     android:layout_weight="1"
                     android:layout_marginStart="4dp"
@@ -324,7 +325,7 @@
                     android:text="Decline"
                     android:textColor="@color/black"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/eventSettingsHeader"
+                    app:layout_constraintTop_toBottomOf="@id/tag"
                     android:visibility="gone"
                     android:layout_weight="1"
                     android:layout_marginStart="4dp"
@@ -338,7 +339,7 @@
                     android:text="Rejoin"
                     android:textColor="@color/black"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/eventSettingsHeader"
+                    app:layout_constraintTop_toBottomOf="@id/tag"
                     android:visibility="gone"
                     android:layout_weight="1"
                     android:layout_marginStart="4dp"
@@ -352,7 +353,7 @@
                     android:text="Cancel"
                     android:textColor="@color/black"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/eventSettingsHeader"
+                    app:layout_constraintTop_toBottomOf="@id/tag"
                     android:visibility="gone"
                     android:layout_weight="1"
                     android:layout_marginStart="4dp"
@@ -366,7 +367,7 @@
                     android:text="Leave"
                     android:textColor="@color/black"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/eventSettingsHeader"
+                    app:layout_constraintTop_toBottomOf="@id/tag"
                     android:visibility="gone"
                     android:layout_weight="1"
                     android:layout_marginStart="4dp"

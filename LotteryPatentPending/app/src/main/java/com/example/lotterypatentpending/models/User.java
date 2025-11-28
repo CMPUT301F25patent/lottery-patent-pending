@@ -18,6 +18,7 @@ public class User {
     private String email;
     private String contactInfo;
     private boolean isAdmin;
+    private UserLocation location = null;
 
     private List<String> joinedEventIds = new ArrayList<>();
     private List<String> acceptedEventIds = new ArrayList<>();
@@ -174,6 +175,18 @@ public class User {
         if (pastEventIds != null) {
             pastEventIds.remove(eventId);
         }
+    }
+
+    public UserLocation getLocation() {
+        return location;
+    }
+
+    public void setLocation(UserLocation location) {
+        this.location = location;
+    }
+
+    public void addLocation(double lat, double lng){
+        this.location = new UserLocation(lat, lng);
     }
 
     /**

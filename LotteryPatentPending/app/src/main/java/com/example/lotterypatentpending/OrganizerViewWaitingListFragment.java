@@ -7,7 +7,9 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -25,20 +27,26 @@ import com.example.lotterypatentpending.models.LotterySystem;
 import com.example.lotterypatentpending.models.User;
 import com.example.lotterypatentpending.models.WaitingListState;
 import com.example.lotterypatentpending.viewModels.EventViewModel;
+import com.example.lotterypatentpending.viewModels.UserEventRepository;
 import com.google.android.material.button.MaterialButton;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import kotlinx.serialization.internal.ArrayClassDesc;
 
 public class OrganizerViewWaitingListFragment extends Fragment {
     private MaterialButton sampleBtn;
-    private ListView waitinglistView;
+    private Button cancelEntrantBtn;
+    private EventViewModel evm;
     private FirebaseManager fm;
     private LoadingOverlay loading;
+    private ArrayList<Pair<User, WaitingListState>> waitingList;
+    private ListView waitinglistView;
     private WaitingListAdapter wLAdapter;
-    private final ArrayList<Pair<User, WaitingListState>> waitingList = new ArrayList<>();
-    private EventViewModel eventViewModel;
+    private int selectedPosition = -1;
+    private Pair<User, WaitingListState> selectedEntrant = null;
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -53,6 +61,7 @@ public class OrganizerViewWaitingListFragment extends Fragment {
 
         waitinglistView = v.findViewById(R.id.waitingList);
         sampleBtn = v.findViewById(R.id.btn_lottery_sample);
+        cancelEntrantBtn = v.findViewById(R.id.organizer_event_waiting_list_button_cancel);
         fm = FirebaseManager.getInstance();
 
         // Attach loading screen
@@ -67,12 +76,39 @@ public class OrganizerViewWaitingListFragment extends Fragment {
 
         // Adds loading screen controller
         loading = new LoadingOverlay(overlayView, null);
-        eventViewModel = new ViewModelProvider(requireActivity()).get(EventViewModel.class);
-        String viewed_event_id = eventViewModel.getEvent().getValue().getId();
+        evm = new ViewModelProvider(requireActivity()).get(EventViewModel.class);
+        String viewed_event_id = evm.getEvent().getValue().getId();
 
+        waitingList = evm.getEvent().getValue().getWaitingList().getList();
         wLAdapter = new WaitingListAdapter(requireContext(), waitingList);
         waitinglistView.setAdapter(wLAdapter);
 
+        // listeners
+        waitinglistView.setOnItemClickListener((parent, view, position, id) -> {
+            if (selectedPosition == position) {
+                // deselect
+                selectedPosition = -1;
+                selectedEntrant = null;
+            }
+            else {
+                // select
+                selectedPosition = position;
+                selectedEntrant = waitingList.get(position);
+            }
+            wLAdapter.setSelectedPosition(selectedPosition);
+            cancelEntrantBtn.setEnabled(selectedEntrant != null);
+        });
+        cancelEntrantBtn.setOnClickListener(v1 -> {
+            if (selectedEntrant != null) {
+                cancelEntrantHelper(selectedEntrant);
+            } else {
+                Toast.makeText(requireContext(), "Please select an entrant to cancel.", Toast.LENGTH_SHORT).show();
+            }
+        });
+        // init the button as disabled
+        cancelEntrantBtn.setEnabled(false);
+
+        // show spinner while loading waitingList data
         // this runs whenever the event object in the viewmodel changes
         eventViewModel.getEvent().observe(getViewLifecycleOwner(), event -> {
 
@@ -132,6 +168,43 @@ public class OrganizerViewWaitingListFragment extends Fragment {
         event.selectEntrants();
 
         fm.addOrUpdateEvent(event.getId(), event);
+    }
+
+    /**
+     * Handles the logic for cancelling a selected entrant.
+     * @param entrant The User/WaitingListState pair to cancel.
+     */
+    private void cancelEntrantHelper(Pair<User, WaitingListState> entrant) {
+        if (entrant == null) return;
+
+        loading.show();
+
+        User userToCancel = entrant.first;
+        String eventId = evm.getEvent().getValue().getId();
+
+        int index = waitingList.indexOf(entrant);
+
+        if (index != -1) {
+            Pair<User, WaitingListState> updatedEntrant = new Pair<>(userToCancel, WaitingListState.CANCELED);
+            waitingList.set(index, updatedEntrant);
+
+            selectedPosition = -1;
+            selectedEntrant = null;
+            cancelEntrantBtn.setEnabled(false);
+            wLAdapter.setSelectedPosition(selectedPosition);
+
+            Event currentEvent = evm.getEvent().getValue();
+            currentEvent.getWaitingList().setList(this.waitingList);
+            evm.setEvent(currentEvent);
+
+            fm.updateEntrantState(eventId, userToCancel.getUserId(), WaitingListState.CANCELED);
+        }
+        else {
+            Toast.makeText(requireContext(), "Entrant not found in list.", Toast.LENGTH_SHORT).show();
+            if (loading != null) loading.hide();
+        }
+
+
     }
 
 }
