@@ -19,7 +19,9 @@ import androidx.lifecycle.ViewModelProvider;
 import com.example.lotterypatentpending.adapters.WaitingListAdapter;
 import com.example.lotterypatentpending.helpers.LoadingOverlay;
 import com.example.lotterypatentpending.models.Event;
+import com.example.lotterypatentpending.models.EventState;
 import com.example.lotterypatentpending.models.FirebaseManager;
+import com.example.lotterypatentpending.models.LotterySystem;
 import com.example.lotterypatentpending.models.User;
 import com.example.lotterypatentpending.models.WaitingListState;
 import com.example.lotterypatentpending.viewModels.EventViewModel;
@@ -36,6 +38,7 @@ public class OrganizerViewWaitingListFragment extends Fragment {
     private LoadingOverlay loading;
     private WaitingListAdapter wLAdapter;
     private final ArrayList<Pair<User, WaitingListState>> waitingList = new ArrayList<>();
+    private EventViewModel eventViewModel;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -64,15 +67,26 @@ public class OrganizerViewWaitingListFragment extends Fragment {
 
         // Adds loading screen controller
         loading = new LoadingOverlay(overlayView, null);
-        EventViewModel eventViewModel = new ViewModelProvider(requireActivity()).get(EventViewModel.class);
+        eventViewModel = new ViewModelProvider(requireActivity()).get(EventViewModel.class);
         String viewed_event_id = eventViewModel.getEvent().getValue().getId();
 
         wLAdapter = new WaitingListAdapter(requireContext(), waitingList);
         waitinglistView.setAdapter(wLAdapter);
 
-        // show spinner while loading waitingList data
+        // this runs whenever the event object in the viewmodel changes
+        eventViewModel.getEvent().observe(getViewLifecycleOwner(), event -> {
+
+            if (event != null) {
+                updateButtons(event);
+                fetchWaitingList(event.getId());
+            }
+        });
+
+    }
+
+    private void fetchWaitingList(String eventId) {
         loading.show();
-        fm.getEventWaitingList(viewed_event_id, new FirebaseManager.FirebaseCallback<ArrayList<Pair<User, WaitingListState>>>() {
+        fm.getEventWaitingList(eventId, new FirebaseManager.FirebaseCallback<ArrayList<Pair<User, WaitingListState>>>() {
             @Override
             public void onSuccess(ArrayList<Pair<User, WaitingListState>> result) {
                 waitingList.clear();
@@ -92,11 +106,32 @@ public class OrganizerViewWaitingListFragment extends Fragment {
             }
 
         });
-
     }
 
     private void refreshListFromVisible(){
         wLAdapter.notifyDataSetChanged();
+    }
+
+    private void updateButtons(Event currentEvent) {
+        sampleBtn.setVisibility(View.GONE);
+        Log.i("OrganizerViewWaitingListFragment", "Event state: " + currentEvent.getEventState());
+
+        switch (currentEvent.getEventState()) {
+            case OPEN_FOR_REG:
+                sampleBtn.setVisibility(View.VISIBLE);
+                sampleBtn.setOnClickListener(v -> {
+                    sampleBtnHelper(currentEvent);
+                });
+                break;
+        }
+    }
+
+    private void sampleBtnHelper(Event event) {
+        loading.show();
+
+        event.selectEntrants();
+
+        fm.addOrUpdateEvent(event.getId(), event);
     }
 
 }
