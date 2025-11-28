@@ -394,7 +394,7 @@ public class AttendeeEventDetailsFragment extends Fragment {
         cancelButton.setVisibility(View.GONE);
         leaveButton.setVisibility(View.GONE);
 
-        if(!currentEvent.isOpenForReg()){
+        if(!currentEvent.containsUser(currentUser) && !currentEvent.isOpenForReg()){
             joinButton.setVisibility(View.VISIBLE);
             joinButton.setText("Registration Period has ended");
             return;

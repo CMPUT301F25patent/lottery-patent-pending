@@ -21,7 +21,9 @@ import androidx.lifecycle.ViewModelProvider;
 import com.example.lotterypatentpending.adapters.WaitingListAdapter;
 import com.example.lotterypatentpending.helpers.LoadingOverlay;
 import com.example.lotterypatentpending.models.Event;
+import com.example.lotterypatentpending.models.EventState;
 import com.example.lotterypatentpending.models.FirebaseManager;
+import com.example.lotterypatentpending.models.LotterySystem;
 import com.example.lotterypatentpending.models.User;
 import com.example.lotterypatentpending.models.WaitingListState;
 import com.example.lotterypatentpending.viewModels.EventViewModel;
@@ -106,9 +108,20 @@ public class OrganizerViewWaitingListFragment extends Fragment {
         // init the button as disabled
         cancelEntrantBtn.setEnabled(false);
 
-        // show spinner while loading waitingList data
+        // this runs whenever the event object in the viewmodel changes
+        evm.getEvent().observe(getViewLifecycleOwner(), event -> {
+
+            if (event != null) {
+                updateButtons(event);
+                fetchWaitingList(event.getId());
+            }
+        });
+
+    }
+
+    private void fetchWaitingList(String eventId) {
         loading.show();
-        fm.getEventWaitingList(viewed_event_id, new FirebaseManager.FirebaseCallback<ArrayList<Pair<User, WaitingListState>>>() {
+        fm.getEventWaitingList(eventId, new FirebaseManager.FirebaseCallback<ArrayList<Pair<User, WaitingListState>>>() {
             @Override
             public void onSuccess(ArrayList<Pair<User, WaitingListState>> result) {
                 waitingList.clear();
@@ -128,11 +141,34 @@ public class OrganizerViewWaitingListFragment extends Fragment {
             }
 
         });
-
     }
 
     private void refreshListFromVisible(){
         wLAdapter.notifyDataSetChanged();
+    }
+
+    private void updateButtons(Event currentEvent) {
+        sampleBtn.setVisibility(View.GONE);
+        Log.i("OrganizerViewWaitingListFragment", "Event state: " + currentEvent.getEventState());
+
+        switch (currentEvent.getEventState()) {
+            case OPEN_FOR_REG:
+                sampleBtn.setVisibility(View.VISIBLE);
+                sampleBtn.setOnClickListener(v -> {
+                    sampleBtnHelper(currentEvent);
+                });
+                break;
+        }
+    }
+
+    private void sampleBtnHelper(Event event) {
+        loading.show();
+
+        event.selectEntrants();
+
+        fm.addOrUpdateEvent(event.getId(), event);
+
+        loading.hide();
     }
 
     /**

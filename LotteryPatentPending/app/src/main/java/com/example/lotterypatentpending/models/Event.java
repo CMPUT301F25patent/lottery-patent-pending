@@ -223,6 +223,21 @@ public class Event {
     }
 
     public EventState getEventState() {
+        switch (this.eventState) {
+            case NOT_STARTED:
+                this.updateRegistrationState();
+                break;
+            case OPEN_FOR_REG:
+                this.updateRegistrationState();
+                break;
+            case CLOSED_FOR_REG:
+                this.updateRegistrationState();
+                break;
+            default:
+                // do nothing for fixed states like SELECTED_ENTRANTS, ENDED, CANCELLED.
+                break;
+        }
+
         return this.eventState;
     }
 
