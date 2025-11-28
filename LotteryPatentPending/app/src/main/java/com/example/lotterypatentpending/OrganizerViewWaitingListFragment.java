@@ -108,9 +108,8 @@ public class OrganizerViewWaitingListFragment extends Fragment {
         // init the button as disabled
         cancelEntrantBtn.setEnabled(false);
 
-        // show spinner while loading waitingList data
         // this runs whenever the event object in the viewmodel changes
-        eventViewModel.getEvent().observe(getViewLifecycleOwner(), event -> {
+        evm.getEvent().observe(getViewLifecycleOwner(), event -> {
 
             if (event != null) {
                 updateButtons(event);
@@ -168,6 +167,8 @@ public class OrganizerViewWaitingListFragment extends Fragment {
         event.selectEntrants();
 
         fm.addOrUpdateEvent(event.getId(), event);
+
+        loading.hide();
     }
 
     /**
