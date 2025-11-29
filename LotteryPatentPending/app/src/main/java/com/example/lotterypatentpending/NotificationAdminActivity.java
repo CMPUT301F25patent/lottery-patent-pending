@@ -44,9 +44,14 @@ public class NotificationAdminActivity extends AppCompatActivity {
     private CircularProgressIndicator progress;
 
     private final FirestoreAdminLogRepository repo = new FirestoreAdminLogRepository();
-    private AdminLogAdapter adapter;
+    private AdminNotifAdapter adapter;
     private ListenerRegistration logsReg;
-
+    /**
+     * Initializes the admin notification log screen, sets up UI components,
+     * configures pull-to-refresh behavior, and performs the initial data load.
+     *
+     * @param savedInstanceState Previously saved state (unused).
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

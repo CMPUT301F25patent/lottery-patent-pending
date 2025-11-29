@@ -78,7 +78,14 @@ public class AttendeeEventsFragment extends Fragment {
     public AttendeeEventsFragment() {
         super(R.layout.attendee_fragment_events);
     }
-
+    /**
+     * Initializes UI controls, sets up adapters and listeners, attaches the loading
+     * overlay, subscribes to live event updates, and configures search/history mode
+     * behavior for the attendee event list screen.
+     *
+     * @param view The fragment root view.
+     * @param savedInstanceState Saved state (unused).
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -102,8 +109,6 @@ public class AttendeeEventsFragment extends Fragment {
         Button searchBtn = view.findViewById(R.id.btn_search);
         Button browseEventsBtn = view.findViewById(R.id.attendee_events_button_browse_events);
         Button historyBtn = view.findViewById(R.id.attendee_events_button_event_history);
-
-
 
         // Attach loading screen
         ViewGroup root = view.findViewById(R.id.attendee_events_root);
@@ -204,7 +209,10 @@ public class AttendeeEventsFragment extends Fragment {
         historyMode = false;
         updateModeButtons(browseEventsBtn, historyBtn);
     }
-
+    /**
+     * Cleans up the Firestore event listener to prevent memory leaks when the view
+     * is destroyed.
+     */
     @Override
     public void onDestroyView() {
         super.onDestroyView();
@@ -214,20 +222,36 @@ public class AttendeeEventsFragment extends Fragment {
             eventsListener = null;
         }
     }
+    /**
+     * Updates the enabled/disabled visual state of the Browse and History mode buttons.
+     *
+     * @param browseBtn  The "Browse Events button.
+     * @param historyBtn The "Event History" button.
+     */
 
     private void updateModeButtons(Button browseBtn, Button historyBtn) {
         // simple “selected = disabled” look
         browseBtn.setEnabled(historyMode);     // if showing history, enable Browse
         historyBtn.setEnabled(!historyMode);   // if showing browse, enable History
     }
-
+    /**
+     * Safely extracts the search query string from a TextInputEditText.
+     *
+     * @param et The input field, may be null.
+     * @return The query string, or an empty string if unavailable.
+     */
     private String getQuery(@Nullable TextInputEditText et) {
         if (et == null || et.getText() == null) return "";
         return et.getText().toString();
     }
 
-    /** Filter current base (browse/history) by query (case-insensitive). */
-    /** Filter current base (browse/history) by query (case-insensitive). */
+    /**
+     * Applies all active filters—search text, date range, and tag—to either the
+     * browse list or history list depending on the current mode, then refreshes
+     * the adapter.
+     *
+     * @param query The raw text query from the search bar.
+     */
     private void applyFilter(String query) {
         String q = (query == null) ? "" : query.toLowerCase().trim();
         List<Event> base = historyMode ? historyEventsList : allEventsList;
@@ -278,8 +302,14 @@ public class AttendeeEventsFragment extends Fragment {
 
         eventsListAdapter.notifyDataSetChanged();
     }
-
-
+    /**
+     * Determines whether an event's date falls within the given start/end timestamps.
+     *
+     * @param date  The event date (may be null).
+     * @param start The start of the filter range (nullable).
+     * @param end   The end of the filter range (nullable).
+     * @return true if the event should be shown under the current date filter.
+     */
     private static boolean overlaps(@Nullable Timestamp date, @Nullable Timestamp start, @Nullable Timestamp end) {
         //cannot filter empty event show all events.
         if (date == null) return true;
@@ -289,7 +319,13 @@ public class AttendeeEventsFragment extends Fragment {
 
         return true;
     }
-
+    /**
+     * Case-insensitive check to determine whether the event title contains the query text.
+     *
+     * @param title The event title.
+     * @param query The lowercase search query.
+     * @return true if the event matches the text filter.
+     */
     private static boolean matchesText(@Nullable String title, String query) {
 
         if (query == null || query.isEmpty()) return true;
@@ -442,7 +478,12 @@ public class AttendeeEventsFragment extends Fragment {
         // anchor under icon
         filterPopup.showAsDropDown(anchor, 0, 0);
     }
-
+    /**
+     * Retrieves the list of events previously attended by the current user,
+     * updates the history list, and applies the active text/date/tag filters.
+     *
+     * @param searchInput The current search query used for filtering.
+     */
     private void getPastEvents(String searchInput) {
         User user = userEventRepo.getUser().getValue();
         assert user != null;

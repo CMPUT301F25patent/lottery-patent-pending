@@ -54,20 +54,33 @@ public class AdminImagesAdapter extends RecyclerView.Adapter<AdminImagesAdapter.
         this.eventList = eventList;
         this.listener = listener;
     }
-
+    /**
+     * Inflates the layout for an individual image item and creates its ViewHolder.
+     *
+     * @param parent  The parent ViewGroup into which the new view will be added.
+     * @param viewType Ignored; only one view type is used.
+     * @return A new ImageViewHolder for the inflated view.
+     */
     @NonNull
     @Override
     public ImageViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.admin_image_item, parent, false);
         return new ImageViewHolder(view);
     }
-
+    /**
+     * Binds event data to the ViewHolder at the given position.
+     *
+     * @param holder   The ViewHolder to bind data to.
+     * @param position The position of the event in the list.
+     */
     @Override
     public void onBindViewHolder(@NonNull ImageViewHolder holder, int position) {
         Event event = eventList.get(position);
         holder.bind(event, listener);
     }
-
+    /**
+     * @return The total number of events in the adapter.
+     */
     @Override
     public int getItemCount() {
         return eventList.size();
@@ -80,7 +93,11 @@ public class AdminImagesAdapter extends RecyclerView.Adapter<AdminImagesAdapter.
     static class ImageViewHolder extends RecyclerView.ViewHolder {
         ImageView imageView;
         TextView eventNameTextView;
-
+        /**
+         * Creates a ViewHolder that holds references to the image and event name views.
+         *
+         * @param itemView The root view of the RecyclerView item layout.
+         */
         public ImageViewHolder(@NonNull View itemView) {
             super(itemView);
             imageView = itemView.findViewById(R.id.imageView);

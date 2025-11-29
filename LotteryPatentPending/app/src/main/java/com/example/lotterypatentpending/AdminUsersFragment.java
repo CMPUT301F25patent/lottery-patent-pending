@@ -57,7 +57,15 @@ public class AdminUsersFragment extends Fragment {
     public AdminUsersFragment() {
         // Required empty constructor
     }
-
+    /**
+     * Inflates the fragment layout containing the user list and root container
+     * used for attaching the loading overlay.
+     *
+     * @param inflater  LayoutInflater used to inflate the view.
+     * @param container Parent container the fragment UI will attach to.
+     * @param savedInstanceState Previous state (unused).
+     * @return The inflated root view for this fragment.
+     */
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container,
@@ -67,7 +75,13 @@ public class AdminUsersFragment extends Fragment {
         //  - ListView: @id/userListView
         return inflater.inflate(R.layout.admin_fragment_users, container, false);
     }
-
+    /**
+     * Initializes UI components, attaches the loading overlay, sets up the list adapter,
+     * loads users from Firestore, and configures long-press deletion behavior.
+     *
+     * @param v The root view returned by onCreateView().
+     * @param savedInstanceState Previous state (unused).
+     */
     @Override
     public void onViewCreated(@NonNull View v,
                               @Nullable Bundle savedInstanceState) {
@@ -147,7 +161,12 @@ public class AdminUsersFragment extends Fragment {
 
                 Log.d("AdminUsersFragment", "Loaded " + userList.size() + " users.");
             }
-
+            /**
+             * Called when retrieving users fails. Hides the loading overlay,
+             * logs the error, and shows a Toast message.
+             *
+             * @param e The exception thrown during the Firestore request.
+             */
             @Override
             public void onFailure(Exception e) {
                 if (!isAdded()) return;

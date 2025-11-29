@@ -28,12 +28,4 @@ public class LotterySystem {
             list.set(i, new Pair<>(pair.first, newState));
         }
     }
-
-
-
-    /*
-    public static void lotteryReselect(List<Pair<User, WaitingListState>> list, Integer num){
-
-    }
-    */
 }

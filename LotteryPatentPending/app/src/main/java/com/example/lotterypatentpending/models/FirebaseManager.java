@@ -274,7 +274,11 @@ public class FirebaseManager {
     }
 
 
-    //Converts Firestore data back into an Event object
+    /**
+     * Converts a Firestore document map into an Event object.
+     * Handles mixed numeric types, nested organizer references,
+     * waiting list structures, and optional poster blobs.
+     */
     public Event mapToEvent(Map<String, Object> data) {
         if (data == null) return null;
 
@@ -393,7 +397,10 @@ public class FirebaseManager {
         return event;
     }
 
-
+    /**
+     * Converts a waiting list of (User, State) pairs into a Firestore-
+     * compatible map keyed by userId.
+     */
     public Map<String, Object> serializeWaitingList(ArrayList<Pair<User, WaitingListState>> list) {
         Map<String, Object> map = new HashMap<>();
 
@@ -407,7 +414,10 @@ public class FirebaseManager {
     }
 
 
-    //new deserialize for storing it as map keyed by user id (more efficient on lookup, update and delete
+    /**
+     * Reconstructs waiting list entries from Firestore and asynchronously
+     * loads corresponding User objects. Returns a fully populated list.
+     */
     public void deserializeWaitingList(
             Map<String, Object> raw_map,
             FirebaseCallback<ArrayList<Pair<User, WaitingListState>>> callback
@@ -446,7 +456,10 @@ public class FirebaseManager {
         }
     }
 
-
+    /**
+     * Saves an event using the provided ID or the event's own ID.
+     * Overwrites existing fields unless merged externally.
+     */
     public void addOrUpdateEvent(String eventId, Event event) {
         if (eventId == null || eventId.isEmpty()) {
             eventId = event.getId(); // fallback to event’s own ID
