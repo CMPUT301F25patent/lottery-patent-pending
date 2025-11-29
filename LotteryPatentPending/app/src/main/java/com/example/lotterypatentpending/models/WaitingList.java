@@ -186,4 +186,45 @@ public class WaitingList {
 
         return selectedUsers;
     }
+
+    public String exportAcceptedEntrantsToCsv(boolean withLocation) {
+        StringBuilder csvData = new StringBuilder();
+
+        if (withLocation) {
+            csvData.append("Name,Email,Phone,Location\n");
+            for (Pair<User, WaitingListState> pair : this.list) {
+                if (pair.second == WaitingListState.ACCEPTED) {
+                    User user = pair.first;
+                    String name = (user.getName() != null) ? user.getName() : "";
+                    String email = (user.getEmail() != null) ? user.getEmail() : "";
+                    String phone = (user.getContactInfo() != null) ? user.getContactInfo() : "";
+                    String loc = (user.getLocation() != null) ? user.getLocation().toString() : "";
+
+                    csvData.append(name).append(",");
+                    csvData.append(email).append(",");
+                    csvData.append(phone).append(",");
+                    csvData.append(loc).append(",");
+                    csvData.append("\n");
+                }
+            }
+        }
+        else {
+            csvData.append("Name,Email,Phone\n");
+            for (Pair<User, WaitingListState> pair : this.list) {
+                if (pair.second == WaitingListState.ACCEPTED) {
+                    User user = pair.first;
+                    String name = (user.getName() != null) ? user.getName() : "";
+                    String email = (user.getEmail() != null) ? user.getEmail() : "";
+                    String phone = (user.getContactInfo() != null) ? user.getContactInfo() : "";
+
+                    csvData.append(name).append(",");
+                    csvData.append(email).append(",");
+                    csvData.append(phone).append(",");
+                    csvData.append("\n");
+                }
+            }
+        }
+
+        return csvData.toString();
+    }
 }
