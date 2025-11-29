@@ -9,12 +9,11 @@ import android.widget.TextView;
 
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.core.util.Pair;
 
 import com.example.lotterypatentpending.R;
-import com.example.lotterypatentpending.models.Event;
 import com.example.lotterypatentpending.models.User;
-import com.example.lotterypatentpending.models.WaitingList;
 import com.example.lotterypatentpending.models.WaitingListState;
 
 import java.util.ArrayList;
@@ -63,12 +62,19 @@ public class WaitingListAdapter extends ArrayAdapter<Pair<User, WaitingListState
         TextView userName = convertView.findViewById(R.id.userName);
         TextView waitingState = convertView.findViewById(R.id.waitingState);
 
-        if(user_state != null){
+        if (user_state != null) {
             User user = user_state.first;
             WaitingListState state = user_state.second;
-            userName.setText(user.getName());
-            waitingState.setText(state.name());
+            if (user != null) {
+                userName.setText(user.getName());
+            }
+            if (state != null) {
+                waitingState.setText(state.name());
+            }
         }
+
+        //highlights selected row
+        convertView.setActivated(position == selectedPos);
 
         return convertView;
     }

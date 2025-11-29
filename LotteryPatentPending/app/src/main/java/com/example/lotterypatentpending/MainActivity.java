@@ -1,11 +1,18 @@
 package com.example.lotterypatentpending;
 
+import android.Manifest;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.Toast;
+import android.os.Build;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import android.content.pm.PackageManager;
+
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -94,8 +101,32 @@ public class MainActivity extends AppCompatActivity implements MainRegisterNewUs
                         registerNewUserOverlay();
                     });
         }
+        // Ask OS for notification permission (Android 13+)
+        ensureNotificationPermission();
+
 
     }
+    private static final int REQ_POST_NOTIFICATIONS = 1001;
+
+    /**
+     * Ensure we have POST_NOTIFICATIONS permission on Android 13+.
+     */
+    private void ensureNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.POST_NOTIFICATIONS
+            ) != PackageManager.PERMISSION_GRANTED) {
+
+                ActivityCompat.requestPermissions(
+                        this,
+                        new String[]{ Manifest.permission.POST_NOTIFICATIONS },
+                        REQ_POST_NOTIFICATIONS
+                );
+            }
+        }
+    }
+
     /**
      * Checks if the current user is an admin before launching the AdminActivity.
      */
@@ -133,6 +164,12 @@ public class MainActivity extends AppCompatActivity implements MainRegisterNewUs
                     UserEventRepository.getInstance().setUser(user);
                     //if not new user show main_layout
                     if (mainLayout != null) mainLayout.setVisibility(View.VISIBLE);
+                    // Start real-time popup listener for this user
+                    NotificationWatcher.getInstance().startPopupStream(
+                            getApplicationContext(),
+                            user.getUserId()
+                    );
+
                 }
             }
             @Override

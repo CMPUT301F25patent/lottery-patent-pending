@@ -380,10 +380,19 @@ public class FirebaseManager {
         }
 
         Object eventStateObj = data.get("eventState");
-        if (eventStateObj instanceof EventState) {
-            EventState eventState = (EventState)eventStateObj;
-            event.setEventState(eventState);
+        if (eventStateObj instanceof String) {
+            String stateName = (String) eventStateObj;
+            try {
+                EventState eventState = EventState.valueOf(stateName);
+                event.setEventState(eventState);
+                Log.i("FirebaseManager", "Event state: " + eventState);
+            } catch (IllegalArgumentException e) {
+                Log.e("FirebaseManager", "Invalid EventState string in Firestore: " + stateName);
+            }
+        } else {
+            Log.w("FirebaseManager", "Event state field is missing or not a string.");
         }
+
 
         return event;
     }

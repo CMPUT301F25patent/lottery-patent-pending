@@ -5,7 +5,7 @@
     android:orientation="horizontal"
     android:padding="16dp"
     android:gravity="center_vertical"
-    android:background="@drawable/bg_event_item">
+    android:background="@drawable/bg_waiting_item_selector">
 
     <TextView
         android:id="@+id/userName"

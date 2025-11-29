@@ -59,7 +59,7 @@ public class OrganizerEventViewFragment extends Fragment {
     private ImageView posterImage;
 
     private String eventId;
-    private Button viewWLBtn, viewMapBtn, viewAttendantsBtn, generateQRCode;
+    private Button viewWLBtn, viewMapBtn, generateQRCode;
     private CheckBox geoLocationReq;
     private ImageButton notiButton;
     private OrganizerNotifier organizerNotifier;
@@ -115,7 +115,6 @@ public class OrganizerEventViewFragment extends Fragment {
         notiButton = v.findViewById(R.id.notiBtn);
         viewWLBtn = v.findViewById(R.id.viewWLBtn);
         viewMapBtn = v.findViewById(R.id.viewMapBtn);
-        viewAttendantsBtn = v.findViewById(R.id.viewAttendantsBtn);
         posterImage = v.findViewById(R.id.eventImage);
 
 
@@ -217,10 +216,6 @@ public class OrganizerEventViewFragment extends Fragment {
                         "Enable geo-location to view entrant locations.",
                         Toast.LENGTH_LONG).show();
             }
-        });
-
-        viewAttendantsBtn.setOnClickListener(view -> {
-
         });
 
     }

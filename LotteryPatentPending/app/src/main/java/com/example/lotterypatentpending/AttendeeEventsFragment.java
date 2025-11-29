@@ -6,9 +6,9 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
+import androidx.core.util.Pair;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -29,7 +29,9 @@ import com.example.lotterypatentpending.helpers.TagDropdownHelper;
 import com.example.lotterypatentpending.models.Event;
 import com.example.lotterypatentpending.models.FirebaseManager;
 import com.example.lotterypatentpending.models.User;
+import com.example.lotterypatentpending.models.WaitingListState;
 import com.example.lotterypatentpending.viewModels.UserEventRepository;
+import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.Timestamp;
@@ -58,6 +60,12 @@ public class AttendeeEventsFragment extends Fragment {
 
     private String filterTag = null;
 
+    // State of the three switches (popup)
+    private boolean filterAll = true;          // default ON
+    private boolean filterWaitlisted = false;  // default OFF
+    private boolean filterAccepted = false;    // default OFF
+    private String currentUserId = null;
+
     // Master lists
     private final ArrayList<Event> allEventsList = new ArrayList<>();
     private final ArrayList<Event> historyEventsList = new ArrayList<>();
@@ -84,6 +92,12 @@ public class AttendeeEventsFragment extends Fragment {
 
         userEventRepo = UserEventRepository.getInstance();
         fm = FirebaseManager.getInstance();
+
+        // Get current user ID for waiting list filters
+        User currentUser = userEventRepo.getUser().getValue();
+        if (currentUser != null) {
+            currentUserId = currentUser.getUserId();
+        }
 
         //Search bar
         TextInputLayout til = view.findViewById(R.id.attendee_events_search_layout);
@@ -145,7 +159,7 @@ public class AttendeeEventsFragment extends Fragment {
         // Click handler for the end icon
         //Search filter attach listener
         til.setEndIconOnClickListener(v -> {
-            dateFilterPopup(v);
+            filterWindowPopup(v);
         });
 
         // Click -> open details
@@ -244,6 +258,10 @@ public class AttendeeEventsFragment extends Fragment {
 
         shownEventsList.clear();
 
+        // If All is ON, or no specific state filter is ON,
+        // we DO NOT apply any waiting-list filtering.
+        boolean useStateFilter = !filterAll && (filterWaitlisted || filterAccepted);
+
         for (Event e : base) {
             // 1) Search bar: ONLY title
             if (!matchesText(e.getTitle(), q)) continue;
@@ -259,6 +277,25 @@ public class AttendeeEventsFragment extends Fragment {
                     continue;
                 }
             }
+
+            // 4) Waiting list state filter (All / Waitlisted / Entered)
+            if (useStateFilter) {
+                WaitingListState state = getUserWaitingListState(e);
+                boolean include = false;
+
+                // Waitlisted -> any state EXCEPT NOT_IN
+                if (filterWaitlisted && state != WaitingListState.NOT_IN) {
+                    include = true;
+                }
+
+                // Entered/Accepted -> ACCEPTED
+                if (filterAccepted && state == WaitingListState.ACCEPTED) {
+                    include = true;
+                }
+
+                if (!include) continue;
+            }
+            // If !useStateFilter, behave like "All" (no state filter)
 
             shownEventsList.add(e);
         }
@@ -304,7 +341,8 @@ public class AttendeeEventsFragment extends Fragment {
      * @param anchor will be anchored to view
      * this is the pop-up for the filter being clicked
      */
-    private void dateFilterPopup(View anchor) {
+    private void filterWindowPopup(View anchor) {
+
 
         if (filterPopup != null && filterPopup.isShowing()){
             filterPopup.dismiss();
@@ -329,6 +367,17 @@ public class AttendeeEventsFragment extends Fragment {
         TextView endDate = content.findViewById(R.id.endDate);
         TextView clear = content.findViewById(R.id.clearSearch);
         AutoCompleteTextView tagFilterDropdown = content.findViewById(R.id.tagFilterDropdown);
+        SwitchMaterial swAll = content.findViewById(R.id.browseAllEvents);
+        SwitchMaterial swWaitlisted = content.findViewById(R.id.browseWaitListEvents);
+        SwitchMaterial swAccepted = content.findViewById(R.id.browseEnteredEvents);
+
+
+
+        // Restore current toggle state when opening popup
+        swAll.setChecked(filterAll);
+        swWaitlisted.setChecked(filterWaitlisted);
+        swAccepted.setChecked(filterAccepted);
+
 
         //Set dropdown
         TagDropdownHelper.setupTagDropdown(requireContext(), tagFilterDropdown, fm);
@@ -349,24 +398,57 @@ public class AttendeeEventsFragment extends Fragment {
         DateTimePickerHelper.attachDateTimePicker(startDate, requireContext());
         DateTimePickerHelper.attachDateTimePicker(endDate, requireContext());
 
+        // All: when turned ON, turn others OFF
+        swAll.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            filterAll = isChecked;
+            if (isChecked) {
+                // turn off the other filters
+                filterWaitlisted = false;
+                filterAccepted = false;
+                swWaitlisted.setChecked(false);
+                swAccepted.setChecked(false);
+            }
+            // if user turns All OFF manually, we just leave it off;
+            // applyFilter will decide what that means based on other toggles
+        });
 
+        // Waitlisted: when turned ON, turn All OFF
+        swWaitlisted.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            filterWaitlisted = isChecked;
+            if (isChecked) {
+                filterAll = false;
+                swAll.setChecked(false);
+            }
+        });
+
+        // Accepted: when turned ON, turn All OFF
+        swAccepted.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            filterAccepted = isChecked;
+            if (isChecked) {
+                filterAll = false;
+                swAll.setChecked(false);
+            }
+        });
+
+        // When popup closes, save state + reapply filter
         filterPopup.setOnDismissListener(() -> {
-
             filterStartTime = DateTimeFormatHelper.parseTimestamp(startDate.getText().toString());
             filterEndTime = DateTimeFormatHelper.parseTimestamp(endDate.getText().toString());
 
-            // Save selected tag filter
             String chosenTag = tagFilterDropdown.getText().toString().trim();
             filterTag = chosenTag.isEmpty() ? null : chosenTag;
 
-            //save current filter
+            // In case user changed switches right before dismiss
+            filterAll = swAll.isChecked();
+            filterWaitlisted = swWaitlisted.isChecked();
+            filterAccepted = swAccepted.isChecked();
+
             TextInputEditText searchText = requireView().findViewById(R.id.searchInput);
             applyFilter(getQuery(searchText));
-
         });
 
         clear.setOnClickListener(v -> {
-            // clear stand and end dates
+            // clear dates
             startDate.setText("");
             endDate.setText("");
 
@@ -377,12 +459,19 @@ public class AttendeeEventsFragment extends Fragment {
             tagFilterDropdown.setText("");
             filterTag = null;
 
+            // Reset switches: only All = true
+            filterAll = true;
+            filterWaitlisted = false;
+            filterAccepted = false;
+            swAll.setChecked(true);
+            swWaitlisted.setChecked(false);
+            swAccepted.setChecked(false);
+
             // clear search
             TextInputEditText searchText = requireView().findViewById(R.id.searchInput);
             searchText.setText("");
             applyFilter(getQuery(searchText));
 
-            // close popup
             if (filterPopup != null) filterPopup.dismiss();
         });
 
@@ -422,5 +511,25 @@ public class AttendeeEventsFragment extends Fragment {
             }
         });
     }
+
+    private WaitingListState getUserWaitingListState(@NonNull Event event) {
+        if (currentUserId == null ||
+                event.getWaitingList() == null ||
+                event.getWaitingList().getList() == null) {
+            return WaitingListState.NOT_IN;
+        }
+
+        for (Pair<User, WaitingListState> entry : event.getWaitingList().getList()) {
+            User u = entry.first;
+            WaitingListState state = entry.second;
+
+            if (u != null && currentUserId.equals(u.getUserId())) {
+                return (state != null) ? state : WaitingListState.NOT_IN;
+            }
+        }
+
+        return WaitingListState.NOT_IN;
+    }
+
 
 }
