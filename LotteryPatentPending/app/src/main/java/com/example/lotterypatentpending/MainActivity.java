@@ -1,5 +1,6 @@
 package com.example.lotterypatentpending;
 
+import android.Manifest;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -7,6 +8,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.Toast;
+import android.os.Build;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import android.content.pm.PackageManager;
+
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -47,7 +53,6 @@ public class MainActivity extends AppCompatActivity implements MainRegisterNewUs
         organizerBtn = findViewById(R.id.main_button_organizer);
         adminBtn = findViewById(R.id.main_button_admin);
         mainLayout = findViewById(R.id.main_layout);
-        adminBtn.setVisibility(View.GONE);
 
         // Inflate loading layout programmatically
         ViewGroup root = findViewById(R.id.main); // FrameLayout root
@@ -67,7 +72,7 @@ public class MainActivity extends AppCompatActivity implements MainRegisterNewUs
                 startActivity(new Intent(this, AttendeeActivity.class)));
         organizerBtn.setOnClickListener(v ->
                 startActivity(new Intent(this, OrganizerActivity.class)));
-        adminBtn.setOnClickListener(v -> startActivity(new Intent(this, AdminActivity.class)));
+        adminBtn.setOnClickListener(v -> handleAdminButtonClick());
 
         //Get firebase auth
         FirebaseAuth auth = FirebaseAuth.getInstance();
@@ -88,7 +93,46 @@ public class MainActivity extends AppCompatActivity implements MainRegisterNewUs
                         registerNewUserOverlay();
                     });
         }
+        // Ask OS for notification permission (Android 13+)
+        ensureNotificationPermission();
 
+
+    }
+    private static final int REQ_POST_NOTIFICATIONS = 1001;
+
+    /**
+     * Ensure we have POST_NOTIFICATIONS permission on Android 13+.
+     */
+    private void ensureNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.POST_NOTIFICATIONS
+            ) != PackageManager.PERMISSION_GRANTED) {
+
+                ActivityCompat.requestPermissions(
+                        this,
+                        new String[]{ Manifest.permission.POST_NOTIFICATIONS },
+                        REQ_POST_NOTIFICATIONS
+                );
+            }
+        }
+    }
+
+    /**
+     * Checks if the current user is an admin before launching the AdminActivity.
+     */
+    private void handleAdminButtonClick() {
+        User currentUser = UserEventRepository.getInstance().getUser().getValue();
+
+        // Check if user data is loaded and if the user is an admin
+        if (currentUser != null && currentUser.isAdmin()) {
+            // User is an admin, grant access
+            startActivity(new Intent(this, AdminActivity.class));
+        } else {
+            // User is not an admin or user data isn't loaded yet, deny access
+            Toast.makeText(this, "Access Denied: Admin privileges required.", Toast.LENGTH_LONG).show();
+        }
     }
 
 
@@ -100,17 +144,18 @@ public class MainActivity extends AppCompatActivity implements MainRegisterNewUs
                 loading.hide();
                 if (user == null) {
                     if (mainLayout != null) mainLayout.setVisibility(View.GONE);
-                    adminBtn.setVisibility(View.GONE);
                     registerNewUserOverlay();
-                } else {
+                }
+                else {
                     UserEventRepository.getInstance().setUser(user);
+                    //if not new user show main_layout
                     if (mainLayout != null) mainLayout.setVisibility(View.VISIBLE);
+                    // Start real-time popup listener for this user
+                    NotificationWatcher.getInstance().startPopupStream(
+                            getApplicationContext(),
+                            user.getUserId()
+                    );
 
-                    if (user.isAdmin()) {
-                        adminBtn.setVisibility(View.VISIBLE);
-                    } else {
-                        adminBtn.setVisibility(View.GONE);
-                    }
                 }
             }
             @Override
@@ -118,7 +163,6 @@ public class MainActivity extends AppCompatActivity implements MainRegisterNewUs
                 loading.hide();
                 // if something goes wrong, just onboard
                 if (mainLayout != null) mainLayout.setVisibility(View.GONE);
-                adminBtn.setVisibility(View.GONE);
                 registerNewUserOverlay();
             }
         });
