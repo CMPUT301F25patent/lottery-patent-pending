@@ -104,8 +104,16 @@ public class AttendeeEventDetailsFragment extends Fragment {
         posterImage = view.findViewById(R.id.eventImage);
 
         // Get current event + user from repo
-        Event currentEvent = Objects.requireNonNull(userEventRepo.getEvent().getValue());
+        Event currentEvent = userEventRepo.getEvent().getValue();
         User currentUser   = userEventRepo.getUser().getValue();
+
+        if (currentEvent == null) {
+            Toast.makeText(requireContext(),
+                    "No event loaded.",
+                    Toast.LENGTH_SHORT).show();
+            // You can pop back or just return and not bind anything
+            return;
+        }
 
         title.setText(currentEvent.getTitle());
         description.setText(currentEvent.getDescription());
@@ -396,7 +404,7 @@ public class AttendeeEventDetailsFragment extends Fragment {
 
         if(!currentEvent.containsUser(currentUser) && !currentEvent.isOpenForReg()){
             joinButton.setVisibility(View.VISIBLE);
-            joinButton.setText("Registration Period has ended");
+            joinButton.setText("Registration ended");
             return;
         }
 
