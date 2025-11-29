@@ -24,7 +24,7 @@
         <TextView
             android:id="@+id/startDate"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="40dp"
             android:text="None"
             android:textColor="@color/black"
             android:clickable="true"
@@ -50,7 +50,7 @@
         <TextView
             android:id="@+id/endDate"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="40dp"
             android:text="None"
             android:textColor="@color/black"
             android:clickable="true"
@@ -68,7 +68,7 @@
         android:textStyle="bold"
         android:text="Filter by Tag"
         android:textColor="@android:color/white"
-        android:layout_marginTop="12dp" />
+        android:layout_marginTop="5dp" />
 
         <!-- Tag Filter Dropdown -->
     <com.google.android.material.textfield.TextInputLayout
@@ -91,7 +91,56 @@
             android:textColorHint="@color/black"
             android:textColor="@android:color/black"
             android:background="@drawable/bg_white_rounded" />
+
     </com.google.android.material.textfield.TextInputLayout>
+
+
+    <LinearLayout
+        android:id="@+id/eventStateLabel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="10dp"
+        android:layout_marginTop="15dp"
+        android:background="@drawable/bg_white_rounded">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Browse Events"
+            android:textColor="@color/black"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:textSize="16sp"
+            android:paddingBottom="5dp"
+            android:paddingTop="5dp"
+            android:textStyle="bold"/>
+
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/browseAllEvents"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="All"
+            android:textColor="@color/black"
+            android:padding="5dp"
+            android:checked="true"/>
+
+            <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/browseWaitListEvents"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Waitlisted"
+            android:textColor="@color/black"
+            android:padding="5dp" />
+
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/browseEnteredEvents"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Entered"
+            android:textColor="@color/black"
+            android:padding="5dp" />
+    </LinearLayout>
 
 
     <View
@@ -105,7 +154,7 @@
     <TextView
         android:id="@+id/clearSearch"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="40dp"
         android:text="Clear Search"
         android:textColor="@color/black"
         android:clickable="true"
@@ -113,4 +162,5 @@
         android:background="@drawable/bg_white_rounded"
         android:padding="5dp"
         android:gravity="center"/>
+
 </LinearLayout>

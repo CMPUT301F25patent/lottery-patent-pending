@@ -70,10 +70,12 @@ public class EventListAdapter extends ArrayAdapter<Event> {
             name.setText(event.getTitle());
             tag.setText(event.getTag());
 
-            //use helper to convert Timestamp of UTC time to local time(string)
+            //Location
             String locationText = event.getLocation() != null && !event.getLocation().isEmpty() ?
                     event.getLocation() : "Not set";
             location.setText(locationText);
+
+            //use helper to convert Timestamp of UTC time to local time(string)
             String formattedTime = DateTimeFormatHelper.formatTimestamp(event.getDate());
             eventTime.setText(formattedTime);
             regTime.setText(event.getFormattedRegWindow());
