@@ -189,16 +189,18 @@ public class OrganizerViewWaitingListFragment extends Fragment {
 
             fm.updateEntrantState(eventId, userToCancel.getUserId(), WaitingListState.CANCELED);
 
-            // recalc visible list based on current filters
+            // Rebuild visible list based on current filters
             applyUserFilter();
-        }
-        else {
+
+            // hide loading after we're done updating UI
+            if (loading != null) loading.hide();
+
+        } else {
             Toast.makeText(requireContext(), "Entrant not found in list.", Toast.LENGTH_SHORT).show();
             if (loading != null) loading.hide();
         }
-
-
     }
+
 
     private void applyUserFilter() {
         visibleWaitingList.clear();
