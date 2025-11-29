@@ -2,7 +2,10 @@
     android:layout_width="wrap_content"
     android:layout_height="match_parent"
     android:paddingStart="20dp"
-    android:paddingEnd="20dp">
+    android:paddingEnd="20dp"
+    android:foreground="?attr/selectableItemBackgroundBorderless"
+    android:clickable="true"
+    android:focusable="true">
 
     <ImageView
         android:id="@+id/inboxIcon"
@@ -13,13 +16,12 @@
         android:src="@drawable/ic_notification_white_24dp"/>
 
     <TextView
-        android:id="@+id/badgeText"
-        android:layout_width="18dp"
-        android:layout_height="18dp"
-        android:layout_gravity="end|top"
-        android:gravity="center"
-        android:textSize="12sp"
-        android:textColor="@android:color/white"
+        android:id="@+id/badgeDot"
+        android:layout_width="10dp"
+        android:layout_height="10dp"
+        android:layout_gravity="top|end"
+        android:translationX="-1dp"
+        android:translationY="8dp"
         android:background="@drawable/bg_badge_circle"
         android:visibility="gone"/>
 </FrameLayout>

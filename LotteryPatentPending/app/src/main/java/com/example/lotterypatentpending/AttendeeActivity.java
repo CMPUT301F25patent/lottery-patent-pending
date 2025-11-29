@@ -56,8 +56,6 @@ public class AttendeeActivity extends AppCompatActivity {
     /** Fragment handling QR code scanning for check-in. */
     private Fragment scanFragment;
 
-    private TextView inboxBadge;
-    private String inboxUserId;
 
 
 
@@ -166,10 +164,14 @@ public class AttendeeActivity extends AppCompatActivity {
         View actionView = inboxItem.getActionView();
 
         ImageView icon = actionView.findViewById(R.id.inboxIcon);
-        TextView badge  = actionView.findViewById(R.id.badgeText);
+        View badge  = actionView.findViewById(R.id.badgeDot);
 
         // open inbox on tap
-        actionView.setOnClickListener(v -> onOptionsItemSelected(inboxItem));
+        actionView.setOnClickListener(v -> {
+            // user opened inbox → hide dot immediately
+            badge.setVisibility(View.GONE);
+            onOptionsItemSelected(inboxItem);
+        });
 
         // get current user (already loaded into UserEventRepository in MainActivity)
         User user = UserEventRepository.getInstance().getUser().getValue();
@@ -186,8 +188,8 @@ public class AttendeeActivity extends AppCompatActivity {
                 count -> {
                     int c = (count == null) ? 0 : count;
                     runOnUiThread(() -> {
-                        badge.setVisibility(c <= 0 ? View.GONE : View.VISIBLE);
-                        if (c > 0) badge.setText(String.valueOf(c));
+                        boolean hasUnread = c > 0;
+                        badge.setVisibility(hasUnread ? View.VISIBLE : View.GONE);
                     });
                 },
                 err -> android.util.Log.e("Inbox", "listenUnreadCount", err)
@@ -196,28 +198,6 @@ public class AttendeeActivity extends AppCompatActivity {
         return true;
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-        if (inboxBadge == null || inboxUserId == null) {
-            return;
-        }
-
-        NotificationWatcher.getInstance().startUnreadBadge(
-                inboxUserId,
-                count -> {
-                    int c = (count == null) ? 0 : count;
-                    runOnUiThread(() -> {
-                        inboxBadge.setVisibility(c <= 0 ? View.GONE : View.VISIBLE);
-                        if (c > 0) {
-                            inboxBadge.setText(String.valueOf(c));
-                        }
-                    });
-                },
-                err -> android.util.Log.e("Inbox", "listenUnreadCount", err)
-        );
-    }
 
     @Override
     protected void onPause() {
