@@ -44,7 +44,12 @@ public class NotificationAdminActivity extends AppCompatActivity {
 
     private final FirestoreAdminLogRepository repo = new FirestoreAdminLogRepository();
     private AdminNotifAdapter adapter;
-
+    /**
+     * Initializes the admin notification log screen, sets up UI components,
+     * configures pull-to-refresh behavior, and performs the initial data load.
+     *
+     * @param savedInstanceState Previously saved state (unused).
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -68,7 +73,10 @@ public class NotificationAdminActivity extends AppCompatActivity {
         firstLoad();
     }
 
-    /** First load shows a spinner, then swaps to list/empty state. */
+    /**
+     * Performs the initial one-shot load of notification logs.
+     * Shows a spinner while loading, then displays the list or empty state.
+     */
     private void firstLoad() {
         showLoading(true);
         repo.getAllLogs()
@@ -97,7 +105,12 @@ public class NotificationAdminActivity extends AppCompatActivity {
                     return null;
                 });
     }
-
+    /**
+     * Updates the RecyclerView with the provided list of logs and
+     * toggles visibility between the list and the empty state view.
+     *
+     * @param items The list of NotificationLog entries to display.
+     */
     private void applyList(List<NotificationLog> items) {
         if (items == null) items = new ArrayList<>();
         adapter.submit(items);
@@ -105,7 +118,12 @@ public class NotificationAdminActivity extends AppCompatActivity {
         recycler.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
         emptyState.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
     }
-
+    /**
+     * Controls the visibility of the loading spinner and temporarily hides
+     * list/empty views while data is being fetched.
+     *
+     * @param show If true, display the loading spinner; otherwise show content.
+     */
     private void showLoading(boolean show) {
         progress.setVisibility(show ? View.VISIBLE : View.GONE);
         recycler.setVisibility(show ? View.GONE : View.VISIBLE);
@@ -125,7 +143,11 @@ public class NotificationAdminActivity extends AppCompatActivity {
                 meta  = v.findViewById(R.id.meta);
             }
         }
-
+        /**
+         * Replaces the adapter’s dataset with new items and refreshes the UI.
+         *
+         * @param items The new list of NotificationLog entries.
+         */
         void submit(@NonNull List<NotificationLog> items) {
             data.clear();
             data.addAll(items);

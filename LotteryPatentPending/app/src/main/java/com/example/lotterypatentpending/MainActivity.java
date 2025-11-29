@@ -33,6 +33,14 @@ public class MainActivity extends AppCompatActivity implements MainRegisterNewUs
     private LoadingOverlay loading;
     private View mainLayout;
 
+
+    /**
+     * Initializes the main entry screen, sets up Firebase authentication,
+     * prepares the loading overlay, wires button navigation, and determines
+     * whether the current user must complete onboarding.
+     *
+     * @param savedInstanceState Previous saved state (unused).
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -104,7 +112,13 @@ public class MainActivity extends AppCompatActivity implements MainRegisterNewUs
         }
     }
 
-
+    /**
+     * Retrieves the Firestore user document for the given UID.
+     * If the user exists, it loads the profile into the shared repository.
+     * If not, it triggers the new-user onboarding overlay.
+     *
+     * @param uid The Firebase Authentication user ID.
+     */
     private void checkUserDoc(String uid) {
         loading.show();
         fm.getUser(uid, new FirebaseManager.FirebaseCallback<User>() {
@@ -130,7 +144,11 @@ public class MainActivity extends AppCompatActivity implements MainRegisterNewUs
             }
         });
     }
-
+    /**
+     * Displays the overlay fragment used to collect profile information
+     * for users who do not yet have a Firestore User document.
+     * Ensures the fragment is only attached once.
+     */
     private void registerNewUserOverlay() {
         int containerId = R.id.createUserOverlay; // make sure this exists in activity_main.xml
         View container = findViewById(containerId);
@@ -145,7 +163,11 @@ public class MainActivity extends AppCompatActivity implements MainRegisterNewUs
                     .commit();
         }
     }
-
+    /**
+     * Called when the new-user registration fragment reports that the profile
+     * has been successfully saved. Removes the overlay and reloads the
+     * user's document from Firestore.
+     */
     @Override
     public void onProfileSaved() {
         int containerId = R.id.createUserOverlay;

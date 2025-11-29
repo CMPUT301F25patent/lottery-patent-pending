@@ -221,7 +221,10 @@ public class OrganizerViewEventsListFragment extends Fragment {
             organizedEventsListener = null;
         }
     }
-
+    /**
+     * Notifies the adapter that the visibleEvents list has changed,
+     * causing the ListView to redraw with the updated filtered results.
+     */
     private void refreshListFromVisible(){
         eventListAdapter.notifyDataSetChanged();
     }
@@ -261,7 +264,12 @@ public class OrganizerViewEventsListFragment extends Fragment {
         visibleEvents.addAll(matches);
         refreshListFromVisible();
     }
-
+    /**
+     * Deletes the given event from Firestore and removes it from the
+     * visible event list displayed in the UI.
+     *
+     * @param event The event to delete.
+     */
     public void deleteEvent(Event event){
         visibleEvents.remove(event);
         fm.deleteEvent(event.getId());

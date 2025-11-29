@@ -32,7 +32,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import kotlinx.serialization.internal.ArrayClassDesc;
-
+/**
+ * Fragment that displays the waiting list for the currently selected event.
+ * Allows the organizer to view entrants, select an entrant, and cancel their
+ * participation. The list is sourced from Firestore and kept in sync with the
+ * shared EventViewModel.
+ */
 public class OrganizerViewWaitingListFragment extends Fragment {
     private MaterialButton sampleBtn;
     private Button cancelEntrantBtn;
@@ -45,14 +50,24 @@ public class OrganizerViewWaitingListFragment extends Fragment {
     private int selectedPosition = -1;
     private Pair<User, WaitingListState> selectedEntrant = null;
 
-
+    /**
+     * Inflates the waiting list layout for the organizer.
+     *
+     * @return The root view for this fragment.
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         return inflater.inflate(R.layout.organizer_fragment_view_event_waiting_list, container, false);
 
     }
-
+    /**
+     * Initializes UI components, sets up the adapter, selection handling,
+     * and loads the waiting list from Firestore.
+     *
+     * @param v The fragment root view.
+     * @param savedInstanceState Previously saved state, if any.
+     */
     @Override
     public void onViewCreated(@NonNull View v, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(v, savedInstanceState);
@@ -130,7 +145,9 @@ public class OrganizerViewWaitingListFragment extends Fragment {
         });
 
     }
-
+    /**
+     * Refreshes the ListView by notifying the adapter of data changes.
+     */
     private void refreshListFromVisible(){
         wLAdapter.notifyDataSetChanged();
     }
