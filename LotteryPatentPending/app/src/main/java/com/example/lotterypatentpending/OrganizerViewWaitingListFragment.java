@@ -75,7 +75,7 @@ public class OrganizerViewWaitingListFragment extends Fragment {
     // Popup + filter state
     private PopupWindow userFilterPopup;
     private boolean filterAllUsers = true;
-    private boolean filterEnteredUsers = false;
+    private boolean filterEnrolledUsers = false;
     private boolean filterSelectedUsers = false;
     private boolean filterCanceledUsers = false;
 
@@ -365,7 +365,7 @@ public class OrganizerViewWaitingListFragment extends Fragment {
         visibleWaitingList.clear();
 
         boolean useStateFilter = !filterAllUsers &&
-                (filterEnteredUsers || filterSelectedUsers || filterCanceledUsers);
+                (filterEnrolledUsers || filterSelectedUsers || filterCanceledUsers);
 
         for (Pair<User, WaitingListState> entry : waitingList) {
             if (!useStateFilter) {
@@ -376,7 +376,7 @@ public class OrganizerViewWaitingListFragment extends Fragment {
             WaitingListState state = entry.second;
             boolean include = false;
 
-            if (filterEnteredUsers && state == WaitingListState.ENTERED)  include = true;
+            if (filterEnrolledUsers && state == WaitingListState.ACCEPTED)  include = true;
             if (filterSelectedUsers && state == WaitingListState.SELECTED) include = true;
             if (filterCanceledUsers && state == WaitingListState.CANCELED) include = true;
 
@@ -412,13 +412,13 @@ public class OrganizerViewWaitingListFragment extends Fragment {
         userFilterPopup.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
         SwitchMaterial swAll = content.findViewById(R.id.browseAllUsers);
-        SwitchMaterial swEntered = content.findViewById(R.id.browseEnteredUsers);
+        SwitchMaterial swEnrolled = content.findViewById(R.id.browseEnrolledUsers);
         SwitchMaterial swSelected = content.findViewById(R.id.browseSelectedUsers);
         SwitchMaterial swCanceled = content.findViewById(R.id.browseCanceledUsers);
 
         // restore current state
         swAll.setChecked(filterAllUsers);
-        swEntered.setChecked(filterEnteredUsers);
+        swEnrolled.setChecked(filterEnrolledUsers);
         swSelected.setChecked(filterSelectedUsers);
         swCanceled.setChecked(filterCanceledUsers);
 
@@ -428,7 +428,7 @@ public class OrganizerViewWaitingListFragment extends Fragment {
         // helper to enforce "at least one is ON"
         Runnable ensureAtLeastOneOn = () -> {
             if (!swAll.isChecked()
-                    && !swEntered.isChecked()
+                    && !swEnrolled.isChecked()
                     && !swSelected.isChecked()
                     && !swCanceled.isChecked()) {
                 // nothing is on → force All back on
@@ -444,11 +444,11 @@ public class OrganizerViewWaitingListFragment extends Fragment {
             filterAllUsers = isChecked;
 
             if (isChecked) {
-                filterEnteredUsers = false;
+                filterEnrolledUsers = false;
                 filterSelectedUsers = false;
                 filterCanceledUsers = false;
 
-                swEntered.setChecked(false);
+                swEnrolled.setChecked(false);
                 swSelected.setChecked(false);
                 swCanceled.setChecked(false);
             } else {
@@ -459,12 +459,12 @@ public class OrganizerViewWaitingListFragment extends Fragment {
             updating[0] = false;
         });
 
-        // Enrolled = ENTERED
-        swEntered.setOnCheckedChangeListener((buttonView, isChecked) -> {
+        // Enrolled = ACCEPTED
+        swEnrolled.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (updating[0]) return;
             updating[0] = true;
 
-            filterEnteredUsers = isChecked;
+            filterEnrolledUsers = isChecked;
             if (isChecked) {
                 filterAllUsers = false;
                 swAll.setChecked(false);
@@ -510,13 +510,13 @@ public class OrganizerViewWaitingListFragment extends Fragment {
         userFilterPopup.setOnDismissListener(() -> {
             // sync final state into fragment fields
             filterAllUsers      = swAll.isChecked();
-            filterEnteredUsers  = swEntered.isChecked();
+            filterEnrolledUsers  = swEnrolled.isChecked();
             filterSelectedUsers = swSelected.isChecked();
             filterCanceledUsers = swCanceled.isChecked();
 
             // just in case, enforce the rule again
             if (!filterAllUsers
-                    && !filterEnteredUsers
+                    && !filterEnrolledUsers
                     && !filterSelectedUsers
                     && !filterCanceledUsers) {
                 filterAllUsers = true;
