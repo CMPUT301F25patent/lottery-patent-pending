@@ -44,7 +44,7 @@ public class NotificationAdminActivity extends AppCompatActivity {
     private CircularProgressIndicator progress;
 
     private final FirestoreAdminLogRepository repo = new FirestoreAdminLogRepository();
-    private AdminNotifAdapter adapter;
+    private AdminLogAdapter adapter;
     private ListenerRegistration logsReg;
     /**
      * Initializes the admin notification log screen, sets up UI components,
