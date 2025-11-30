@@ -142,13 +142,13 @@ public class WaitingList {
     }
 
     /**
-     * Runs the lottery selection algorithm on the current waiting list.
-     * Delegates to {@link LotterySystem#lotterySelect(List, Integer)}.
+     * Runs the unified lottery draw on this waiting list.
+     * Only entrants whose state is ENTERED or NOT_SELECTED are in the pool.
      *
-     * @param numSelect number of entrants to select
+     * @param numSelect maximum number of new winners to select
      */
-    public void lotterySelect(Integer numSelect) {
-        LotterySystem.lotterySelect(this.list, numSelect);
+    public void lotterySelect(int numSelect) {
+        LotterySystem.lotteryDraw(this.list, numSelect);
     }
 
     /**

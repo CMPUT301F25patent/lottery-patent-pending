@@ -260,7 +260,7 @@ public class AttendeeEventsFragment extends Fragment {
 
         // If All is ON, or no specific state filter is ON,
         // we DO NOT apply any waiting-list filtering.
-        boolean useStateFilter = !filterAll && (filterWaitlisted || filterAccepted);
+        boolean useStateFilter = filterWaitlisted || filterAccepted;
 
         for (Event e : base) {
             // 1) Search bar: ONLY title
@@ -398,35 +398,55 @@ public class AttendeeEventsFragment extends Fragment {
         DateTimePickerHelper.attachDateTimePicker(startDate, requireContext());
         DateTimePickerHelper.attachDateTimePicker(endDate, requireContext());
 
-        // All: when turned ON, turn others OFF
+// All: when turned ON, turn others OFF
         swAll.setOnCheckedChangeListener((buttonView, isChecked) -> {
             filterAll = isChecked;
             if (isChecked) {
                 // turn off the other filters
                 filterWaitlisted = false;
                 filterAccepted = false;
-                swWaitlisted.setChecked(false);
-                swAccepted.setChecked(false);
+                if (swWaitlisted.isChecked()) swWaitlisted.setChecked(false);
+                if (swAccepted.isChecked())   swAccepted.setChecked(false);
+            } else {
+                // If user turns All OFF and no other filter is ON,
+                // force All back ON (All must always be active if alone).
+                if (!swWaitlisted.isChecked() && !swAccepted.isChecked()) {
+                    filterAll = true;
+                    swAll.setChecked(true);
+                }
             }
-            // if user turns All OFF manually, we just leave it off;
-            // applyFilter will decide what that means based on other toggles
         });
 
-        // Waitlisted: when turned ON, turn All OFF
+        // Waitlisted: when turned ON, turn All OFF; when turned OFF and Accepted also OFF, turn All ON
         swWaitlisted.setOnCheckedChangeListener((buttonView, isChecked) -> {
             filterWaitlisted = isChecked;
+
             if (isChecked) {
+                // some specific filter is on => All off
                 filterAll = false;
-                swAll.setChecked(false);
+                if (swAll.isChecked()) swAll.setChecked(false);
+            } else {
+                // if both specific filters are now off => All back on
+                if (!swAccepted.isChecked()) {
+                    filterAll = true;
+                    if (!swAll.isChecked()) swAll.setChecked(true);
+                }
             }
         });
 
-        // Accepted: when turned ON, turn All OFF
+        // Accepted: when turned ON, turn All OFF; when OFF and Waitlisted OFF, turn All ON
         swAccepted.setOnCheckedChangeListener((buttonView, isChecked) -> {
             filterAccepted = isChecked;
+
             if (isChecked) {
                 filterAll = false;
-                swAll.setChecked(false);
+                if (swAll.isChecked()) swAll.setChecked(false);
+            } else {
+                // if both specific filters are now off => All back on
+                if (!swWaitlisted.isChecked()) {
+                    filterAll = true;
+                    if (!swAll.isChecked()) swAll.setChecked(true);
+                }
             }
         });
 
@@ -442,6 +462,11 @@ public class AttendeeEventsFragment extends Fragment {
             filterAll = swAll.isChecked();
             filterWaitlisted = swWaitlisted.isChecked();
             filterAccepted = swAccepted.isChecked();
+
+            // If no specific filter is active, make sure All is logically active
+            if (!filterWaitlisted && !filterAccepted) {
+                filterAll = true;
+            }
 
             TextInputEditText searchText = requireView().findViewById(R.id.searchInput);
             applyFilter(getQuery(searchText));
