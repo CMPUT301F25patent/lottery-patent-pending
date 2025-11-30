@@ -492,9 +492,13 @@ public class AttendeeEventDetailsFragment extends Fragment {
             case CANCELED:
                 userStateView.setText("You have canceled the event, you no longer can rejoin the event");
 
-                leaveButton.setVisibility(View.VISIBLE);
-                leaveButton.setOnClickListener(v -> {
-                    leaveEventHelper();
+                rejoinButton.setVisibility(View.VISIBLE);
+                rejoinButton.setOnClickListener(v -> {
+                    rejoinEventHelper();
+                });
+                cancelButton.setVisibility(View.VISIBLE);
+                cancelButton.setOnClickListener(v -> {
+                    cancelEventHelper();
                 });
                 break;
 
