@@ -11,19 +11,20 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
 import androidx.annotation.RequiresPermission;
 import androidx.core.content.ContextCompat;
+import androidx.core.util.Pair;
 import androidx.fragment.app.Fragment;
 
 import com.example.lotterypatentpending.helpers.DateTimeFormatHelper;
 import com.example.lotterypatentpending.models.Event;
+import com.example.lotterypatentpending.models.EventState;
 import com.example.lotterypatentpending.models.FirebaseManager;
 import com.example.lotterypatentpending.models.User;
 import com.example.lotterypatentpending.viewModels.UserEventRepository;
@@ -50,19 +51,11 @@ public class AttendeeEventDetailsFragment extends Fragment {
     private Button cancelButton;
     private Button leaveButton;
     private ImageView posterImage;
+
     private TextView userStateView;
 
     private ListenerRegistration eventListener;
 
-    @SuppressLint("MissingPermission")
-    private final ActivityResultLauncher<String> locationPermissionLauncher =
-            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
-                if (isGranted) {
-                    getUserLocation();
-                } else {
-                    onLocationPermissionDenied();
-                }
-            });
 
 
     public AttendeeEventDetailsFragment() {

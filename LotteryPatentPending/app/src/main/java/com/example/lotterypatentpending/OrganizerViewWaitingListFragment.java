@@ -1,8 +1,14 @@
 package com.example.lotterypatentpending;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.net.Uri;
 import android.os.Bundle;
+
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.core.util.Pair;
 
 import android.util.Log;
@@ -26,24 +32,29 @@ import com.example.lotterypatentpending.models.Event;
 import com.example.lotterypatentpending.models.EventState;
 import com.example.lotterypatentpending.models.FirebaseManager;
 import com.example.lotterypatentpending.models.User;
+import com.example.lotterypatentpending.models.WaitingList;
 import com.example.lotterypatentpending.models.WaitingListState;
 import com.example.lotterypatentpending.viewModels.EventViewModel;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.switchmaterial.SwitchMaterial;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+
+import kotlinx.serialization.internal.ArrayClassDesc;
 /**
  * Fragment that displays the waiting list for the currently selected event.
  * Allows the organizer to view entrants, select an entrant, and cancel their
  * participation. The list is sourced from Firestore and kept in sync with the
  * shared EventViewModel.
- *
- * @author Ebuka
- * @contributor Ebuka, Michael, Erik
  */
 public class OrganizerViewWaitingListFragment extends Fragment {
     private MaterialButton sampleBtn;
     private Button cancelEntrantBtn;
+    private Button exportBtn;
     private EventViewModel evm;
     private FirebaseManager fm;
     private LoadingOverlay loading;
@@ -56,6 +67,8 @@ public class OrganizerViewWaitingListFragment extends Fragment {
     private int selectedPosition = -1;
     private Pair<User, WaitingListState> selectedEntrant = null;
 
+    private String csvContent;
+
 
     // Popup + filter state
     private PopupWindow userFilterPopup;
@@ -63,6 +76,17 @@ public class OrganizerViewWaitingListFragment extends Fragment {
     private boolean filterEnteredUsers = false;
     private boolean filterSelectedUsers = false;
     private boolean filterCanceledUsers = false;
+
+    private final ActivityResultLauncher<Intent> createCsvFileLauncher =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+
+                if (result.getResultCode() == Activity.RESULT_OK) {
+                    if (result.getData() != null) {
+                        Uri uri = result.getData().getData();
+                        writeToFile(uri, csvContent);
+                    }
+                }
+            });
 
     /**
      * Inflates the waiting list layout for the organizer.
@@ -88,6 +112,7 @@ public class OrganizerViewWaitingListFragment extends Fragment {
 
         waitinglistView = v.findViewById(R.id.waitingList);
         sampleBtn = v.findViewById(R.id.btn_lottery_sample);
+        exportBtn = v.findViewById(R.id.organizer_event_waiting_list_button_export);
         cancelEntrantBtn = v.findViewById(R.id.organizer_event_waiting_list_button_cancel);
         fm = FirebaseManager.getInstance();
 
@@ -153,8 +178,15 @@ public class OrganizerViewWaitingListFragment extends Fragment {
                 Toast.makeText(requireContext(), "Please select an entrant to cancel.", Toast.LENGTH_SHORT).show();
             }
         });
+
+        exportBtn.setOnClickListener(v2 -> {
+            exportAcceptedToCSV();
+        });
         // init the button as disabled
         cancelEntrantBtn.setEnabled(false);
+//        exportBtn.setEnabled(false);
+
+
 
         // this runs whenever the event object in the viewmodel changes
         evm.getEvent().observe(getViewLifecycleOwner(), event -> {
@@ -166,6 +198,40 @@ public class OrganizerViewWaitingListFragment extends Fragment {
         });
 
     }
+
+    private void exportAcceptedToCSV(){
+        WaitingList wl = evm.getEvent().getValue().getWaitingList();
+
+        String csv_string = wl.exportAcceptedEntrantsToCsv();
+        saveCsv(csv_string, "accepted_attendees.csv");
+    }
+
+    private void saveCsv(String csvContent, String title) {
+        this.csvContent = csvContent;
+
+        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+        intent.setType("text/csv");
+        intent.putExtra(Intent.EXTRA_TITLE, title);
+        createCsvFileLauncher.launch(intent);
+
+    }
+
+    private void writeToFile(Uri uri, String csv) {
+        try (OutputStream os = requireContext()
+                .getContentResolver()
+                .openOutputStream(uri)) {
+
+            os.write(csv.getBytes(StandardCharsets.UTF_8));
+            os.flush();
+            Log.d("Export To CSV", "Successfully exported attendants to csv");
+            Toast.makeText(requireContext(), "CSV exported!", Toast.LENGTH_SHORT).show();
+
+        } catch (Exception e) {
+            Log.e("Export To CSV", "Failed to export attendants to csv", e);
+            Toast.makeText(requireContext(), "Error exporting CSV", Toast.LENGTH_SHORT).show();
+        }
+    }
+
 
     private void fetchWaitingList(String eventId) {
         loading.show();
@@ -202,6 +268,7 @@ public class OrganizerViewWaitingListFragment extends Fragment {
 
     private void updateButtons(Event currentEvent) {
         sampleBtn.setVisibility(View.GONE);
+        exportBtn.setVisibility(View.GONE);
         Log.i("OrganizerViewWaitingListFragment", "Event state: " + currentEvent.getEventState());
 
         EventState state = currentEvent.getEventState();
@@ -220,6 +287,27 @@ public class OrganizerViewWaitingListFragment extends Fragment {
             }
 
             sampleBtn.setOnClickListener(v -> sampleBtnHelper(currentEvent));
+        }
+
+        // did a switch for all event states in case we wanted to add stuff here later as well
+        switch (state) {
+            case NOT_STARTED:
+                break;
+
+            case OPEN_FOR_REG:
+                // nothing special for now, but kept in case we add logic later
+                break;
+
+            case SELECTED_ENTRANTS:
+            case CONFIRMED_ENTRANTS:
+            case CANCELLED:
+            case CLOSED_FOR_REG:
+            case ENDED:
+                exportBtn.setVisibility(View.VISIBLE);
+                exportBtn.setOnClickListener(v2 -> {
+                    exportAcceptedToCSV();
+                });
+                break;
         }
     }
 
