@@ -119,17 +119,31 @@ public class OrganizerViewWaitingListFragment extends Fragment {
         // listeners
         waitinglistView.setOnItemClickListener((parent, view, position, id) -> {
             if (selectedPosition == position) {
-                // deselect
+                // Deselect
                 selectedPosition = -1;
                 selectedEntrant = null;
-            }
-            else {
-                // select
+                cancelEntrantBtn.setEnabled(false);
+            } else {
+                // Select new entrant
                 selectedPosition = position;
                 selectedEntrant = visibleWaitingList.get(position);
+
+                WaitingListState state = selectedEntrant.second;
+
+                if (state == WaitingListState.SELECTED) {
+                    // Only SELECTED (not yet accepted) can be cancelled
+                    cancelEntrantBtn.setEnabled(true);
+                } else {
+                    cancelEntrantBtn.setEnabled(false);
+                    Toast.makeText(
+                            requireContext(),
+                            "You can only cancel entrants who are SELECTED and have not accepted yet.",
+                            Toast.LENGTH_SHORT
+                    ).show();
+                }
             }
+
             wLAdapter.setSelectedPosition(selectedPosition);
-            cancelEntrantBtn.setEnabled(selectedEntrant != null);
         });
 
         cancelEntrantBtn.setOnClickListener(v1 -> {
