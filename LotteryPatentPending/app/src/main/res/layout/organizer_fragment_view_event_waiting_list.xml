@@ -9,51 +9,79 @@
     tools:context=".OrganizerViewEventsListFragment"
     android:id="@+id/organizer_events_root">
 
-    <!-- Lottery Sample button at bottom -->
+    <!-- Top actions container -->
     <LinearLayout
         android:id="@+id/lottery_sample_container"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="8dp"
+        android:orientation="vertical"
+        android:padding="12dp"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-
-        <ImageView
-            android:src="@drawable/filter_solid_full"
-            android:id="@+id/filterDropDown"
-            android:layout_width="0dp"
+        <!-- Row 1: centered Filter icon (and label if you want it) -->
+        <LinearLayout
+            android:id="@+id/row_filter"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_gravity="center"/>
+            android:orientation="horizontal"
+            android:paddingVertical="4dp">
 
+            <ImageView
+                android:id="@+id/filterDropDown"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:src="@drawable/filter_solid_full"
+                android:tint="@color/white"
+                android:padding="6dp"
+                android:layout_gravity="center_horizontal" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_lottery_sample"
-            android:layout_width="0dp"
+            <!-- optional label, still centered with the icon -->
+            <TextView
+                android:id="@+id/row_filter_description"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginStart="8dp"
+                android:text="Filter events"
+                android:textColor="@color/white"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- Row 2: both buttons on the same row -->
+        <LinearLayout
+            android:id="@+id/row_actions"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Sample Attendants"
-            android:textSize="12sp"
-            android:minWidth="0dp"
-            android:backgroundTint="@color/light_blue_dark"
-            android:textColor="@color/white"
-            android:layout_margin="5dp"/>
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingVertical="4dp">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/organizer_event_waiting_list_button_cancel"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Cancel Entrants"
-            android:textSize="12sp"
-            android:minWidth="0dp"
-            android:backgroundTint="@color/light_blue_dark"
-            android:textColor="@color/white"
-            android:layout_margin="5dp"/>
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_lottery_sample"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:minWidth="0dp"
+                android:text="Draw Attendants"
+                android:textSize="12sp"
+                android:backgroundTint="@color/light_blue_dark"
+                android:textColor="@color/white"
+                android:layout_marginEnd="8dp"/>
 
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/organizer_event_waiting_list_button_cancel"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:minWidth="0dp"
+                android:text="Cancel Entrants"
+                android:textSize="12sp"
+                android:backgroundTint="@color/light_blue_dark"
+                android:textColor="@color/white"
+                android:layout_marginStart="8dp"/>
+        </LinearLayout>
 
     </LinearLayout>
 
@@ -62,24 +90,19 @@
         android:id="@+id/waitingList"
         android:layout_width="0dp"
         android:layout_height="0dp"
-
         android:background="@drawable/bg_list_rounded"
         android:layout_margin="10dp"
         android:padding="20dp"
         android:clipToPadding="false"
-
         android:divider="@android:color/transparent"
         android:dividerHeight="12dp"
-
         android:scrollbarThumbVertical="@drawable/scrollbar_thumb_vertical"
         android:scrollbarTrackVertical="@android:color/transparent"
         android:scrollbars="vertical"
         android:scrollbarStyle="outsideOverlay"
-
         app:layout_constraintTop_toBottomOf="@id/lottery_sample_container"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -9,8 +9,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
+
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.PopupWindow;
@@ -26,23 +25,21 @@ import com.example.lotterypatentpending.helpers.LoadingOverlay;
 import com.example.lotterypatentpending.models.Event;
 import com.example.lotterypatentpending.models.EventState;
 import com.example.lotterypatentpending.models.FirebaseManager;
-import com.example.lotterypatentpending.models.LotterySystem;
 import com.example.lotterypatentpending.models.User;
 import com.example.lotterypatentpending.models.WaitingListState;
 import com.example.lotterypatentpending.viewModels.EventViewModel;
-import com.example.lotterypatentpending.viewModels.UserEventRepository;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 
 import java.util.ArrayList;
-import java.util.List;
-
-import kotlinx.serialization.internal.ArrayClassDesc;
 /**
  * Fragment that displays the waiting list for the currently selected event.
  * Allows the organizer to view entrants, select an entrant, and cancel their
  * participation. The list is sourced from Firestore and kept in sync with the
  * shared EventViewModel.
+ *
+ * @author Ebuka
+ * @contributor Ebuka, Michael, Erik
  */
 public class OrganizerViewWaitingListFragment extends Fragment {
     private MaterialButton sampleBtn;
@@ -193,24 +190,41 @@ public class OrganizerViewWaitingListFragment extends Fragment {
         sampleBtn.setVisibility(View.GONE);
         Log.i("OrganizerViewWaitingListFragment", "Event state: " + currentEvent.getEventState());
 
-        switch (currentEvent.getEventState()) {
-            case OPEN_FOR_REG:
-                sampleBtn.setVisibility(View.VISIBLE);
-                sampleBtn.setOnClickListener(v -> {
-                    sampleBtnHelper(currentEvent);
-                });
-                break;
+        EventState state = currentEvent.getEventState();
+
+        // rule:
+        // - CLOSED_FOR_REG  → you can draw winners
+        // - SELECTED_ENTRANTS → you can re-draw (e.g., after declines)
+        if (state == EventState.CLOSED_FOR_REG || state == EventState.SELECTED_ENTRANTS) {
+            sampleBtn.setVisibility(View.VISIBLE);
+
+            // Optional: change label depending on state
+            if (state == EventState.CLOSED_FOR_REG) {
+                sampleBtn.setText("Draw Attendants");
+            } else {
+                sampleBtn.setText("Redraw Attendants");
+            }
+
+            sampleBtn.setOnClickListener(v -> sampleBtnHelper(currentEvent));
         }
     }
 
     private void sampleBtnHelper(Event event) {
         loading.show();
 
-        event.selectEntrants();
+        // Unified lottery logic in Event
+        event.runLottery();
 
+        // Update ViewModel so the rest of the UI sees the new state
+        evm.setEvent(event);
+
+        // Push updated event (state + waiting list) to Firestore
         fm.addOrUpdateEvent(event.getId(), event);
 
-        loading.hide();
+        // Reload the waiting list so the adapter sees updated states
+        fetchWaitingList(event.getId());
+
+        if (loading != null) loading.hide();
     }
 
     /**

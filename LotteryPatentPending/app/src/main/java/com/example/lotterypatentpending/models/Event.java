@@ -370,15 +370,30 @@ public class Event {
         }
     }
 
-    public void selectEntrants() {
-        this.waitingList.lotterySelect(this.capacity);
+    public void runLottery() {
+        if (waitingList == null || waitingList.getList() == null) {
+            return;
+        }
+
+        // Count how many spots are already taken
+        int alreadyIn = 0;
+        for (Pair<User, WaitingListState> entry : waitingList.getList()) {
+            WaitingListState s = entry.second;
+            if (s == WaitingListState.SELECTED || s == WaitingListState.ACCEPTED) {
+                alreadyIn++;
+            }
+        }
+
+        int remainingSpots = capacity - alreadyIn;
+        if (remainingSpots <= 0) {
+            return;
+        }
+
+        // Unified lottery: draws from ENTERED + NOT_SELECTED
+        LotterySystem.lotteryDraw(waitingList.getList(), remainingSpots);
+
         this.eventState = EventState.SELECTED_ENTRANTS;
     }
-
-    public void reselectEntrants() {
-
-    }
-
 
     @NonNull
     public WaitingListState getWaitingListStateForUser(@Nullable User user) {
@@ -405,6 +420,8 @@ public class Event {
 
         return WaitingListState.NOT_IN;
     }
+
+
 
     public void confirmEntrants() {
         this.eventState = EventState.CONFIRMED_ENTRANTS;

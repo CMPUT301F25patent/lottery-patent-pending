@@ -2,7 +2,6 @@ package com.example.lotterypatentpending.models;
 
 import androidx.core.util.Pair;
 
-import com.google.android.gms.tasks.Task;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -14,51 +13,47 @@ import java.util.List;
  * @author Michael Gao
  * @maintainer Michael Gao, Erik Bacsa
  */
+
 public class LotterySystem {
+
     /**
-     * Selects random entrants by shuffling the list and picking the first n entrants, then sorting the list
-     * @param list list of entrants
-     * @param num number of entrants to select
+     * Unified lottery:
+     * - Picks winners from users whose state is ENTERED or NOT_SELECTED
+     * - Sets winners to SELECTED
+     * - Sets everyone else in that group to NOT_SELECTED
+     *
+     * Other states (ACCEPTED, DECLINED, CANCELED, etc.) are NOT touched.
      */
-    public static void lotterySelect(List<Pair<User, WaitingListState>> list, Integer num) {
-        Collections.shuffle(list);
-        for (int i = 0; i < list.size(); i++) {
-            Pair<User, WaitingListState> pair = list.get(i);
-            WaitingListState newState = (i < num) ? WaitingListState.SELECTED : WaitingListState.NOT_SELECTED;
-            list.set(i, new Pair<>(pair.first, newState));
-        }
-    }
-
-
-
-
-    public static void lotteryReselect(List<Pair<User, WaitingListState>> list, Integer num) {
-        if (list == null || num == null || num <= 0) {
-            return; // nothing to do
+    public static void lotteryDraw(List<Pair<User, WaitingListState>> list, int numSlots) {
+        if (list == null || numSlots <= 0) {
+            return;
         }
 
-        // Collect indices of all NOT_SELECTED entrants
-        List<Integer> notSelectedIndices = new ArrayList<>();
+        // Indices of candidates: either ENTERED or NOT_SELECTED
+        List<Integer> candidateIndices = new ArrayList<>();
         for (int i = 0; i < list.size(); i++) {
             Pair<User, WaitingListState> entry = list.get(i);
-            if (entry.second == WaitingListState.NOT_SELECTED) {
-                notSelectedIndices.add(i);
+            WaitingListState state = entry.second;
+
+            if (state == WaitingListState.ENTERED ||
+                    state == WaitingListState.NOT_SELECTED) {
+                candidateIndices.add(i);
             }
         }
 
-        if (notSelectedIndices.isEmpty()) {
-            return; // nobody to re-draw from
+        if (candidateIndices.isEmpty()) {
+            return; // nobody eligible
         }
 
-        // Shuffle only the NOT_SELECTED candidates
-        Collections.shuffle(notSelectedIndices);
+        // Shuffle candidates
+        Collections.shuffle(candidateIndices);
 
-        // We can't select more than we have
-        int toSelect = Math.min(num, notSelectedIndices.size());
+        // Can't select more winners than candidates
+        int toSelect = Math.min(numSlots, candidateIndices.size());
 
-        // First "winners": SELECTED, rest stay NOT_SELECTED
-        for (int k = 0; k < notSelectedIndices.size(); k++) {
-            int idx = notSelectedIndices.get(k);
+        // First 'toSelect' become SELECTED, rest become NOT_SELECTED
+        for (int k = 0; k < candidateIndices.size(); k++) {
+            int idx = candidateIndices.get(k);
             Pair<User, WaitingListState> oldPair = list.get(idx);
 
             WaitingListState newState =
@@ -67,5 +62,4 @@ public class LotterySystem {
             list.set(idx, new Pair<>(oldPair.first, newState));
         }
     }
-
 }

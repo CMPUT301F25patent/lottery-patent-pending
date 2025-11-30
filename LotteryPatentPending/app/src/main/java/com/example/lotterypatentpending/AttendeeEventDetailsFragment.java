@@ -20,12 +20,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresPermission;
 import androidx.core.content.ContextCompat;
-import androidx.core.util.Pair;
 import androidx.fragment.app.Fragment;
 
 import com.example.lotterypatentpending.helpers.DateTimeFormatHelper;
 import com.example.lotterypatentpending.models.Event;
-import com.example.lotterypatentpending.models.EventState;
 import com.example.lotterypatentpending.models.FirebaseManager;
 import com.example.lotterypatentpending.models.User;
 import com.example.lotterypatentpending.viewModels.UserEventRepository;
@@ -86,15 +84,16 @@ public class AttendeeEventDetailsFragment extends Fragment {
         userEventRepo = UserEventRepository.getInstance();
         fm = FirebaseManager.getInstance();
 
-        TextView title       = view.findViewById(R.id.eventTitle);
+        TextView title = view.findViewById(R.id.eventTitle);
         TextView description = view.findViewById(R.id.eventLongDescription);
-        TextView location    = view.findViewById(R.id.location);
-        TextView date        = view.findViewById(R.id.eventDate);
-        TextView regStart    = view.findViewById(R.id.regStart);
-        TextView regEnd      = view.findViewById(R.id.regEnd);
-        TextView capacity    = view.findViewById(R.id.maxEntrants);
+        TextView location = view.findViewById(R.id.location);
+        TextView date = view.findViewById(R.id.eventDate);
+        TextView regStart = view.findViewById(R.id.regStart);
+        TextView regEnd = view.findViewById(R.id.regEnd);
+        TextView capacity = view.findViewById(R.id.maxEntrants);
         waitListCap = view.findViewById(R.id.waitingListCap);
-        TextView tag         = view.findViewById(R.id.tag);
+        TextView tag = view.findViewById(R.id.tag);
+        userStateView = view.findViewById(R.id.userState);
 
         joinButton  = view.findViewById(R.id.attendee_event_details_button_join);
         leaveButton = view.findViewById(R.id.attendee_event_details_button_leave);
@@ -176,6 +175,8 @@ public class AttendeeEventDetailsFragment extends Fragment {
         capacity.setText(capacityValue);
 
         tag.setText(tagValue);
+
+        refreshWaitingListUI(currentEvent, currentUser);
 
         // --- Live updates for this event ---
         String eventId = currentEvent.getId();
@@ -263,9 +264,6 @@ public class AttendeeEventDetailsFragment extends Fragment {
         currentUser.addPastEvent(currentEvent.getId());
 
         userEventRepo.setEvent(currentEvent);
-
-        // Waiting list: -1 means N/A
-        refreshWaitingListUI(currentEvent, currentUser);
 
         Toast.makeText(getContext(),
                 "Joined event waiting list.",
