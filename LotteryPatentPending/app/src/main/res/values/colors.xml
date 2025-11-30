@@ -12,6 +12,5 @@
     <color name="light_red">#FFCDD2</color>
     <color name="medium_grey">#A29D9D</color>
     <color name="list_grey">#C7716D6D</color>
-    <color name="waiting_item_normal_bg">#00000000</color>   <!-- transparent -->
     <color name="waiting_item_selected_bg">#3357CFFF</color> <!-- light blue w/ alpha -->
 </resources>

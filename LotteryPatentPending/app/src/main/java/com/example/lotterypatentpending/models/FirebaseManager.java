@@ -686,11 +686,6 @@ public class FirebaseManager {
      * @param entrantId user ID of the entrant to remove.
      */
     public void removeEntrantFromWaitingList(String eventId, String entrantId) {
-//        db.collection("events")
-//                .document(eventId)
-//                .collection("waitingList")
-//                .document(entrantId)
-//                .delete()
         db.collection("events")
                 .document(eventId)
                 .update("waitingList." + entrantId, FieldValue.delete())
