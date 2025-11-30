@@ -22,13 +22,12 @@
 
 
         <ImageView
-            android:src="@drawable/filter_solid_full"
             android:id="@+id/filterDropDown"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_gravity="center"
             android:layout_weight="1"
-            android:layout_gravity="center"/>
-
+            android:src="@drawable/filter_solid_full" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_lottery_sample"
@@ -47,12 +46,25 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Cancel Entrants"
+            android:text="Cancel Entrant"
             android:textSize="12sp"
             android:minWidth="0dp"
             android:backgroundTint="@color/light_blue_dark"
             android:textColor="@color/white"
             android:layout_margin="5dp"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/organizer_event_waiting_list_button_export"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Export Enrolled CSV"
+            android:textSize="12sp"
+            android:minWidth="0dp"
+            android:backgroundTint="@color/light_blue_dark"
+            android:textColor="@color/white"
+            android:layout_margin="5dp"
+            android:visibility="gone"/>
 
 
     </LinearLayout>
