@@ -37,14 +37,12 @@ import com.example.lotterypatentpending.models.WaitingListState;
 import com.example.lotterypatentpending.viewModels.EventViewModel;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.switchmaterial.SwitchMaterial;
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
-import kotlinx.serialization.internal.ArrayClassDesc;
+
 /**
  * Fragment that displays the waiting list for the currently selected event.
  * Allows the organizer to view entrants, select an entrant, and cancel their

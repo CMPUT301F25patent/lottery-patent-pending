@@ -48,18 +48,6 @@
                 android:textColor="@color/white"
                 android:textStyle="bold" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/organizer_event_waiting_list_button_export"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Export Enrolled CSV"
-                android:textSize="12sp"
-                android:minWidth="0dp"
-                android:backgroundTint="@color/light_blue_dark"
-                android:textColor="@color/white"
-                android:layout_margin="5dp"
-                android:visibility="gone"/>
 
         </LinearLayout>
 
@@ -95,6 +83,19 @@
                 android:backgroundTint="@color/light_blue_dark"
                 android:textColor="@color/white"
                 android:layout_marginStart="8dp"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/organizer_event_waiting_list_button_export"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Export Enrolled CSV"
+                android:textSize="12sp"
+                android:minWidth="0dp"
+                android:backgroundTint="@color/light_blue_dark"
+                android:textColor="@color/white"
+                android:layout_margin="5dp"
+                android:visibility="gone"/>
         </LinearLayout>
 
     </LinearLayout>

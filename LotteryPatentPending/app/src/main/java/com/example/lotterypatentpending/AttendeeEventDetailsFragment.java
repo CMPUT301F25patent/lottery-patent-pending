@@ -433,11 +433,7 @@ public class AttendeeEventDetailsFragment extends Fragment {
         if (!currentEvent.containsUser(currentUser)) {
             joinButton.setVisibility(View.VISIBLE);
             joinButton.setOnClickListener(v -> {
-                if (currentEvent.isGeolocationRequired()) {
-                    requestLocationPermission();
-                } else {
-                    joinEventHelper();
-                }
+                joinEventHelper();
             });
             return;
         }
@@ -544,67 +540,6 @@ public class AttendeeEventDetailsFragment extends Fragment {
         WaitingListState state = event.getWaitingListStateForUser(user);
         updateButtons(state);
     }
-    /**
-     * Requests fine-location permission if not already granted.
-     * If permission is already available, proceeds to obtain location immediately.
-     */
-    private void requestLocationPermission() {
-        if (ContextCompat.checkSelfPermission(
-                requireContext(),
-                Manifest.permission.ACCESS_FINE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED) {
-
-            getUserLocation();
-
-        } else {
-            locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
-        }
-    }
-    /**
-     * Handles the UI/Toast messaging for when the user denies
-     * the required location permission.
-     */
-    private void onLocationPermissionDenied() {
-        boolean shouldShowRationale =
-                shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION);
-
-        if (shouldShowRationale) {
-            // User tapped "Deny" (NOT "Never ask again")
-            Toast.makeText(requireContext(),
-                    "Location is required to join this event. Please allow it if you wish to join.",
-                    Toast.LENGTH_LONG).show();
-        } else {
-            // User tapped "Never Ask Again"
-            // OR permanently denied in settings
-            Toast.makeText(requireContext(),
-                    "Location permanently denied. Enable it in settings to join this event.",
-                    Toast.LENGTH_LONG).show();
-        }
-    }
-
-    /**
-     * Retrieves the user's last known location (requires fine/coarse
-     * location permissions) and saves it to Firestore, then attempts
-     * to join the event.
-     */
-
-    @RequiresPermission(allOf = {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION})
-    private void getUserLocation() {
-        User currentUser = userEventRepo.getUser().getValue();
-
-        FusedLocationProviderClient client =
-                LocationServices.getFusedLocationProviderClient(requireContext());
-
-        client.getLastLocation()
-                .addOnSuccessListener(location -> {
-                    if (location != null) {
-                        fm.saveLocationToFirestore(currentUser.getUserId(), location.getLatitude(), location.getLongitude());
-                    }
-                });
-
-        joinEventHelper();
-    }
-
     private void navigateBack() {
         if (!isAdded()) return;
         getParentFragmentManager().popBackStack();
