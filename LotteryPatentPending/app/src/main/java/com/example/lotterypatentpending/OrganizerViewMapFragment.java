@@ -122,7 +122,10 @@ public class OrganizerViewMapFragment extends Fragment implements OnMapReadyCall
         LatLngBounds.Builder bounds = new LatLngBounds.Builder();
 
         for(UserLocation location: userLocations){
-            if(location == null){continue;}
+            // check to ensure the location object itself isn't null in the list
+            if (location == null) {
+                continue;
+            }
             Double lat = location.getLat();
             Double lng = location.getLng();
 
@@ -145,7 +148,9 @@ public class OrganizerViewMapFragment extends Fragment implements OnMapReadyCall
             mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds.build(), 100));
         }
         else{
+            // Handle case where list was not empty but contained no valid locations
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(defaultLocation, 10f));
+            Toast.makeText(requireContext(), "No valid locations found for entrants.", Toast.LENGTH_SHORT).show();
         }
 
 
