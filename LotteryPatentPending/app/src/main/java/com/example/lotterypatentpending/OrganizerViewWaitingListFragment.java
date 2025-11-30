@@ -133,9 +133,8 @@ public class OrganizerViewWaitingListFragment extends Fragment {
         // Adds loading screen controller
         loading = new LoadingOverlay(overlayView, null);
         evm = new ViewModelProvider(requireActivity()).get(EventViewModel.class);
-        String viewed_event_id = evm.getEvent().getValue().getId();
-
         waitingList = evm.getEvent().getValue().getWaitingList().getList();
+
         wLAdapter = new WaitingListAdapter(requireContext(), visibleWaitingList);
         waitinglistView.setAdapter(wLAdapter);
 
