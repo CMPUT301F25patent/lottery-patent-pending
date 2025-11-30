@@ -20,19 +20,15 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresPermission;
 import androidx.core.content.ContextCompat;
-import androidx.core.util.Pair;
 import androidx.fragment.app.Fragment;
 
 import com.example.lotterypatentpending.helpers.DateTimeFormatHelper;
 import com.example.lotterypatentpending.models.Event;
-import com.example.lotterypatentpending.models.EventState;
 import com.example.lotterypatentpending.models.FirebaseManager;
 import com.example.lotterypatentpending.models.User;
 import com.example.lotterypatentpending.viewModels.UserEventRepository;
 import com.example.lotterypatentpending.models.WaitingListState;
 import com.google.firebase.firestore.ListenerRegistration;
-
-import java.util.Objects;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -55,11 +51,8 @@ public class AttendeeEventDetailsFragment extends Fragment {
     private Button leaveButton;
     private ImageView posterImage;
     private TextView userStateView;
-    private WaitingListState userState;
 
     private ListenerRegistration eventListener;
-
-    private final int LOCATION_REQ_CODE = 1001;
 
     @SuppressLint("MissingPermission")
     private final ActivityResultLauncher<String> locationPermissionLauncher =
@@ -70,7 +63,6 @@ public class AttendeeEventDetailsFragment extends Fragment {
                     onLocationPermissionDenied();
                 }
             });
-
 
 
     public AttendeeEventDetailsFragment() {
@@ -96,7 +88,7 @@ public class AttendeeEventDetailsFragment extends Fragment {
         TextView tag = view.findViewById(R.id.tag);
         userStateView = view.findViewById(R.id.userState);
 
-        joinButton  = view.findViewById(R.id.attendee_event_details_button_join);
+        joinButton = view.findViewById(R.id.attendee_event_details_button_join);
         leaveButton = view.findViewById(R.id.attendee_event_details_button_leave);
         acceptButton = view.findViewById(R.id.attendee_event_details_button_accept);
         declineButton = view.findViewById(R.id.attendee_event_details_button_decline);
@@ -108,7 +100,7 @@ public class AttendeeEventDetailsFragment extends Fragment {
 
         // Get current event + user from repo
         Event currentEvent = userEventRepo.getEvent().getValue();
-        User currentUser   = userEventRepo.getUser().getValue();
+        User currentUser = userEventRepo.getUser().getValue();
 
         if (currentEvent == null) {
             Toast.makeText(requireContext(),
@@ -162,7 +154,6 @@ public class AttendeeEventDetailsFragment extends Fragment {
         String capacityValue = String.valueOf(currentEvent.getCapacity());
 
 
-
         // Tag: just the tag value
         String tagValue = currentEvent.getTag() == null
                 ? "General"
@@ -174,13 +165,8 @@ public class AttendeeEventDetailsFragment extends Fragment {
         regStart.setText(regStartValue);
         regEnd.setText(regEndValue);
         capacity.setText(capacityValue);
-        // Waiting list: -1 means N/A
-        refreshWaitingListUI(currentEvent, currentUser);
-        tag.setText(tagValue);
 
-        //  Join/Leave button state
-        userState = getUserState(currentUser, currentEvent);
-        updateButtons(userState);
+        tag.setText(tagValue);
 
         // --- Live updates for this event ---
         String eventId = currentEvent.getId();
@@ -202,7 +188,7 @@ public class AttendeeEventDetailsFragment extends Fragment {
 
                     @Override
                     public void onFailure(Exception e) {
-                         Log.e("AttendeeEventDetails", "getEventLive failed", e);
+                        Log.e("AttendeeEventDetails", "getEventLive failed", e);
                     }
                 });
     }
@@ -226,7 +212,7 @@ public class AttendeeEventDetailsFragment extends Fragment {
      * and updates local + Firestore state.
      */
     private boolean joinEventHelper() {
-        User currentUser  = userEventRepo.getUser().getValue();
+        User currentUser = userEventRepo.getUser().getValue();
         Event currentEvent = userEventRepo.getEvent().getValue();
 
         if (currentUser == null || currentEvent == null || getContext() == null) {
@@ -273,6 +259,7 @@ public class AttendeeEventDetailsFragment extends Fragment {
                 "Joined event waiting list.",
                 Toast.LENGTH_SHORT).show();
 
+        navigateBack();
         return true;
     }
 
@@ -281,7 +268,7 @@ public class AttendeeEventDetailsFragment extends Fragment {
      * and updates local + Firestore state.
      */
     private boolean leaveEventHelper() {
-        User currentUser  = userEventRepo.getUser().getValue();
+        User currentUser = userEventRepo.getUser().getValue();
         Event currentEvent = userEventRepo.getEvent().getValue();
 
         if (currentUser != null && currentEvent != null) {
@@ -294,8 +281,6 @@ public class AttendeeEventDetailsFragment extends Fragment {
             currentEvent.removeFromWaitingList(currentUser);
             currentUser.removeJoinedEvent(currentEvent.getId());
 
-            refreshWaitingListUI(currentEvent, currentUser);
-
             userEventRepo.setUser(currentUser);
             userEventRepo.setEvent(currentEvent);
 
@@ -303,62 +288,55 @@ public class AttendeeEventDetailsFragment extends Fragment {
                     "Left event waiting list.",
                     Toast.LENGTH_SHORT).show();
 
+            navigateBack();
             return true;
         }
         return false;
     }
 
     private boolean acceptEventHelper() {
-        User currentUser  = userEventRepo.getUser().getValue();
+        User currentUser = userEventRepo.getUser().getValue();
         Event currentEvent = userEventRepo.getEvent().getValue();
 
         if (currentUser != null && currentEvent != null) {
             // local
             currentEvent.updateEntrantState(currentUser, WaitingListState.ACCEPTED);
-            currentUser.removeJoinedEvent(currentEvent.getId());
-            currentUser.addAcceptedEvent(currentEvent.getId());
 
             // firestore
             fm.updateEntrantState(currentEvent.getId(), currentUser.getUserId(), WaitingListState.ACCEPTED);
-            fm.addOrUpdateUser(currentUser);
 
             userEventRepo.setUser(currentUser);
             userEventRepo.setEvent(currentEvent);
-
-            refreshWaitingListUI(currentEvent, currentUser);
 
             Toast.makeText(getContext(),
                     "Accepted event!",
                     Toast.LENGTH_SHORT).show();
 
+            navigateBack();
             return true;
         }
         return false;
     }
 
     private boolean declineEventHelper() {
-        User currentUser  = userEventRepo.getUser().getValue();
+        User currentUser = userEventRepo.getUser().getValue();
         Event currentEvent = userEventRepo.getEvent().getValue();
 
         if (currentUser != null && currentEvent != null) {
             // local
             currentEvent.updateEntrantState(currentUser, WaitingListState.DECLINED);
-            currentUser.removeJoinedEvent(currentEvent.getId());
-            currentUser.addDeclinedEvent(currentEvent.getId());
 
             // firestore
             fm.updateEntrantState(currentEvent.getId(), currentUser.getUserId(), WaitingListState.DECLINED);
-            fm.addOrUpdateUser(currentUser);
 
             userEventRepo.setUser(currentUser);
             userEventRepo.setEvent(currentEvent);
-
-            refreshWaitingListUI(currentEvent, currentUser);
 
             Toast.makeText(getContext(),
                     "Declined event!",
                     Toast.LENGTH_SHORT).show();
 
+            navigateBack();
             return true;
         }
         return false;
@@ -369,75 +347,62 @@ public class AttendeeEventDetailsFragment extends Fragment {
         Event currentEvent = userEventRepo.getEvent().getValue();
 
         if (currentUser != null && currentEvent != null) {
-            // local
+            // local update to waitlistState
             currentEvent.updateEntrantState(currentUser, WaitingListState.CANCELED);
-            currentUser.removeJoinedEvent(currentEvent.getId());
-            currentUser.addDeclinedEvent(currentEvent.getId());
+
+            fm.updateEntrantState(currentEvent.getId(), currentUser.getUserId(), WaitingListState.CANCELED);
+
+            userEventRepo.setUser(currentUser);
+            userEventRepo.setEvent(currentEvent);
+
+            Toast.makeText(getContext(),
+                    "Canceled event!",
+                    Toast.LENGTH_SHORT).show();
+
+            navigateBack();
+            return true;
         }
-
-
         return false;
     }
 
-    private boolean rejoinEventHelper(){
+    private boolean rejoinEventHelper() {
         User currentUser = userEventRepo.getUser().getValue();
         Event currentEvent = userEventRepo.getEvent().getValue();
 
         if (currentUser != null && currentEvent != null) {
             // local
             currentEvent.updateEntrantState(currentUser, WaitingListState.NOT_SELECTED);
-            currentUser.removeJoinedEvent(currentEvent.getId());
-            currentUser.addDeclinedEvent(currentEvent.getId());
 
             fm.updateEntrantState(currentEvent.getId(), currentUser.getUserId(), WaitingListState.NOT_SELECTED);
-            fm.addOrUpdateUser(currentUser);
 
             userEventRepo.setUser(currentUser);
             userEventRepo.setEvent(currentEvent);
 
-            refreshWaitingListUI(currentEvent, currentUser);
-
             Toast.makeText(getContext(),
-                    "Declined event!",
+                    "You have rejoined the event!",
                     Toast.LENGTH_SHORT).show();
 
+            navigateBack();
             return true;
         }
+
+        return false;
     }
 
     /**
-     * Uses User.joinedEventIds to decide if this user is already joined to this event.
+     * Returns true if the event's waiting list already contains this user
+     * in any state (ENTERED, SELECTED, ACCEPTED, etc.).
      */
     private boolean isUserJoined(@Nullable User user, @Nullable Event event) {
-        if (user == null || event == null) {
-            return false;
-        }
-        if (user.getJoinedEventIds() == null) {
-            return false;
-        }
-        return user.getJoinedEventIds().contains(event.getId());
-    }
-
-    private WaitingListState getUserState(@Nullable User user, @Nullable Event event) {
-        if (user == null || event == null) {
-            return WaitingListState.NOT_IN;
-        }
-        if (user.getJoinedEventIds() == null || user.getAcceptedEventIds() == null || user.getDeclinedEventIds() == null) {
-            return WaitingListState.NOT_IN;
-        }
-        for (Pair<User, WaitingListState> u: event.getWaitingList().getList()) {
-            if (user.getUserId().equals(u.first.getUserId())) {
-                return u.second;
-            }
-        }
-        return WaitingListState.NOT_IN;
+        if (user == null || event == null) return false;
+        return event.getWaitingListStateForUser(user) != WaitingListState.NOT_IN;
     }
 
     /**
      * Only show one of the buttons at a time.
      */
     private void updateButtons(WaitingListState state) {
-        User currentUser  = userEventRepo.getUser().getValue();
+        User currentUser = userEventRepo.getUser().getValue();
         Event currentEvent = userEventRepo.getEvent().getValue();
 
         joinButton.setVisibility(View.GONE);
@@ -447,7 +412,7 @@ public class AttendeeEventDetailsFragment extends Fragment {
         cancelButton.setVisibility(View.GONE);
         leaveButton.setVisibility(View.GONE);
 
-        if(!currentEvent.isOpenForReg()){
+        if (!currentEvent.isOpenForReg()) {
             userStateView.setText("Registration is not open/closed");
             return;
         }
@@ -455,9 +420,9 @@ public class AttendeeEventDetailsFragment extends Fragment {
         if (!currentEvent.containsUser(currentUser)) {
             joinButton.setVisibility(View.VISIBLE);
             joinButton.setOnClickListener(v -> {
-                if(currentEvent.isGeolocationRequired()){
+                if (currentEvent.isGeolocationRequired()) {
                     requestLocationPermission();
-                }else{
+                } else {
                     joinEventHelper();
                 }
             });
@@ -466,7 +431,7 @@ public class AttendeeEventDetailsFragment extends Fragment {
 
         switch (state) {
             case ENTERED:
-                userStateView.setText("You have entered the event");
+                userStateView.setText("You have entered the event, you will be entered into a raffle for the event");
                 leaveButton.setVisibility(View.VISIBLE);
                 leaveButton.setOnClickListener(v -> {
                     leaveEventHelper();
@@ -502,21 +467,26 @@ public class AttendeeEventDetailsFragment extends Fragment {
                 break;
 
             case DECLINED:
-                userStateView.setText("You have declinded the event");
-                leaveButton.setVisibility(View.VISIBLE);
-                leaveButton.setOnClickListener(v ->{
-                    leaveEventHelper();
-                });
+                userStateView.setText("You have declinded the event invitation, you can leave the event or rejoin");
+
                 rejoinButton.setVisibility(View.VISIBLE);
                 rejoinButton.setOnClickListener(v -> {
                     rejoinEventHelper();
                 });
+                leaveButton.setVisibility(View.VISIBLE);
+                leaveButton.setOnClickListener(v -> {
+                    leaveEventHelper();
+                });
+
                 break;
 
             case CANCELED:
-                userStateView.setText("You have canceled the event");
-                rejoinButton.setVisibility(View.VISIBLE);
+                userStateView.setText("You have canceled the event, you no longer can rejoin the event");
+
                 leaveButton.setVisibility(View.VISIBLE);
+                leaveButton.setOnClickListener(v -> {
+                    leaveEventHelper();
+                });
                 break;
 
             case NOT_IN:
@@ -533,10 +503,6 @@ public class AttendeeEventDetailsFragment extends Fragment {
     }
 
     private void refreshWaitingListUI(@NonNull Event event, @Nullable User user) {
-        User currentUser  = userEventRepo.getUser().getValue();
-        Event currentEvent = userEventRepo.getEvent().getValue();
-        EventState currentEventState = currentEvent.getEventState();
-
         // 1) Compute sizes
         int wlCap = event.getWaitingListCapacity();
         int currentSize = getCurrentWaitingListSize(event);
@@ -551,8 +517,8 @@ public class AttendeeEventDetailsFragment extends Fragment {
         waitListCap.setText(waitListValue);
 
         // 3) Show correct buttons
-        WaitingListState userState = getUserState(currentUser, currentEvent);
-        updateButtons(userState);
+        WaitingListState state = event.getWaitingListStateForUser(user);
+        updateButtons(state);
     }
 
     private void requestLocationPermission() {
@@ -589,7 +555,7 @@ public class AttendeeEventDetailsFragment extends Fragment {
 
     @RequiresPermission(allOf = {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION})
     private void getUserLocation() {
-        User currentUser  = userEventRepo.getUser().getValue();
+        User currentUser = userEventRepo.getUser().getValue();
 
         FusedLocationProviderClient client =
                 LocationServices.getFusedLocationProviderClient(requireContext());
@@ -603,4 +569,10 @@ public class AttendeeEventDetailsFragment extends Fragment {
 
         joinEventHelper();
     }
+
+    private void navigateBack() {
+        if (!isAdded()) return;
+        getParentFragmentManager().popBackStack();
+    }
 }
+

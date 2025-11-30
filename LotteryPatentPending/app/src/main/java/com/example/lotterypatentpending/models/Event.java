@@ -1,6 +1,10 @@
 package com.example.lotterypatentpending.models;
 
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.util.Pair;
+
 import com.google.firebase.Timestamp;
 
 import java.text.SimpleDateFormat;
@@ -348,6 +352,33 @@ public class Event {
 
     public void reselectEntrants() {
 
+    }
+
+
+    @NonNull
+    public WaitingListState getWaitingListStateForUser(@Nullable User user) {
+        if (user == null) {
+            return WaitingListState.NOT_IN;
+        }
+        return getWaitingListStateForUserId(user.getUserId());
+    }
+
+    @NonNull
+    public WaitingListState getWaitingListStateForUserId(@Nullable String userId) {
+        if (userId == null ||
+                waitingList == null ||
+                waitingList.getList() == null) {
+            return WaitingListState.NOT_IN;
+        }
+
+        for (Pair<User, WaitingListState> entry : waitingList.getList()) {
+            User u = entry.first;
+            if (u != null && userId.equals(u.getUserId())) {
+                return entry.second != null ? entry.second : WaitingListState.NOT_IN;
+            }
+        }
+
+        return WaitingListState.NOT_IN;
     }
 
     public void confirmEntrants() {

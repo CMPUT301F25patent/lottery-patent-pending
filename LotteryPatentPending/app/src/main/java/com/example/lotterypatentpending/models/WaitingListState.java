@@ -12,7 +12,7 @@ public enum WaitingListState {
     SELECTED, //User has been selected for event but not accepted
     NOT_SELECTED, //User in waiting list but has not been selected
     ACCEPTED, //User has accepted event
-    DECLINED, //User has not accepted event invitation yet,
+    DECLINED, //User has declined event invitation
     CANCELED, //User has canceled an accepted invite
 
 }

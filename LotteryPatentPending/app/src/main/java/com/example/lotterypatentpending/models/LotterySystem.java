@@ -12,7 +12,7 @@ import java.util.List;
  * LotterySystem is the collection of functions used to randomly select certain entrants from a list of entrants.
  *
  * @author Michael Gao
- * @maintainer Michael Gao
+ * @maintainer Michael Gao, Erik Bacsa
  */
 public class LotterySystem {
     /**
@@ -31,9 +31,41 @@ public class LotterySystem {
 
 
 
-    /*
-    public static void lotteryReselect(List<Pair<User, WaitingListState>> list, Integer num){
 
+    public static void lotteryReselect(List<Pair<User, WaitingListState>> list, Integer num) {
+        if (list == null || num == null || num <= 0) {
+            return; // nothing to do
+        }
+
+        // Collect indices of all NOT_SELECTED entrants
+        List<Integer> notSelectedIndices = new ArrayList<>();
+        for (int i = 0; i < list.size(); i++) {
+            Pair<User, WaitingListState> entry = list.get(i);
+            if (entry.second == WaitingListState.NOT_SELECTED) {
+                notSelectedIndices.add(i);
+            }
+        }
+
+        if (notSelectedIndices.isEmpty()) {
+            return; // nobody to re-draw from
+        }
+
+        // Shuffle only the NOT_SELECTED candidates
+        Collections.shuffle(notSelectedIndices);
+
+        // We can't select more than we have
+        int toSelect = Math.min(num, notSelectedIndices.size());
+
+        // First "winners": SELECTED, rest stay NOT_SELECTED
+        for (int k = 0; k < notSelectedIndices.size(); k++) {
+            int idx = notSelectedIndices.get(k);
+            Pair<User, WaitingListState> oldPair = list.get(idx);
+
+            WaitingListState newState =
+                    (k < toSelect) ? WaitingListState.SELECTED : WaitingListState.NOT_SELECTED;
+
+            list.set(idx, new Pair<>(oldPair.first, newState));
+        }
     }
-    */
+
 }

@@ -284,7 +284,7 @@
                 android:id="@+id/userState"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="State"
+                android:text="Join an event"
                 android:textColor="@color/white"
                 app:layout_constraintTop_toBottomOf="@+id/userStateHeader"
                 app:layout_constraintStart_toStartOf="parent"/>
