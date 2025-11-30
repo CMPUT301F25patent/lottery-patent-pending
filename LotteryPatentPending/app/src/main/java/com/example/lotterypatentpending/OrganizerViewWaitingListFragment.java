@@ -1,16 +1,21 @@
 package com.example.lotterypatentpending;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.net.Uri;
 import android.os.Bundle;
+
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.core.util.Pair;
 
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
+
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.PopupWindow;
@@ -26,18 +31,18 @@ import com.example.lotterypatentpending.helpers.LoadingOverlay;
 import com.example.lotterypatentpending.models.Event;
 import com.example.lotterypatentpending.models.EventState;
 import com.example.lotterypatentpending.models.FirebaseManager;
-import com.example.lotterypatentpending.models.LotterySystem;
 import com.example.lotterypatentpending.models.User;
+import com.example.lotterypatentpending.models.WaitingList;
 import com.example.lotterypatentpending.models.WaitingListState;
 import com.example.lotterypatentpending.viewModels.EventViewModel;
-import com.example.lotterypatentpending.viewModels.UserEventRepository;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.List;
 
-import kotlinx.serialization.internal.ArrayClassDesc;
+
 /**
  * Fragment that displays the waiting list for the currently selected event.
  * Allows the organizer to view entrants, select an entrant, and cancel their
@@ -47,6 +52,7 @@ import kotlinx.serialization.internal.ArrayClassDesc;
 public class OrganizerViewWaitingListFragment extends Fragment {
     private MaterialButton sampleBtn;
     private Button cancelEntrantBtn;
+    private Button exportBtn;
     private EventViewModel evm;
     private FirebaseManager fm;
     private LoadingOverlay loading;
@@ -59,13 +65,26 @@ public class OrganizerViewWaitingListFragment extends Fragment {
     private int selectedPosition = -1;
     private Pair<User, WaitingListState> selectedEntrant = null;
 
+    private String csvContent;
+
 
     // Popup + filter state
     private PopupWindow userFilterPopup;
     private boolean filterAllUsers = true;
-    private boolean filterEnteredUsers = false;
+    private boolean filterEnrolledUsers = false;
     private boolean filterSelectedUsers = false;
     private boolean filterCanceledUsers = false;
+
+    private final ActivityResultLauncher<Intent> createCsvFileLauncher =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+
+                if (result.getResultCode() == Activity.RESULT_OK) {
+                    if (result.getData() != null) {
+                        Uri uri = result.getData().getData();
+                        writeToFile(uri, csvContent);
+                    }
+                }
+            });
 
     /**
      * Inflates the waiting list layout for the organizer.
@@ -91,6 +110,7 @@ public class OrganizerViewWaitingListFragment extends Fragment {
 
         waitinglistView = v.findViewById(R.id.waitingList);
         sampleBtn = v.findViewById(R.id.btn_lottery_sample);
+        exportBtn = v.findViewById(R.id.organizer_event_waiting_list_button_export);
         cancelEntrantBtn = v.findViewById(R.id.organizer_event_waiting_list_button_cancel);
         fm = FirebaseManager.getInstance();
 
@@ -122,17 +142,31 @@ public class OrganizerViewWaitingListFragment extends Fragment {
         // listeners
         waitinglistView.setOnItemClickListener((parent, view, position, id) -> {
             if (selectedPosition == position) {
-                // deselect
+                // Deselect
                 selectedPosition = -1;
                 selectedEntrant = null;
-            }
-            else {
-                // select
+                cancelEntrantBtn.setEnabled(false);
+            } else {
+                // Select new entrant
                 selectedPosition = position;
                 selectedEntrant = visibleWaitingList.get(position);
+
+                WaitingListState state = selectedEntrant.second;
+
+                if (state == WaitingListState.SELECTED) {
+                    // Only SELECTED (not yet accepted) can be cancelled
+                    cancelEntrantBtn.setEnabled(true);
+                } else {
+                    cancelEntrantBtn.setEnabled(false);
+                    Toast.makeText(
+                            requireContext(),
+                            "You can only cancel entrants who are SELECTED and have not accepted yet.",
+                            Toast.LENGTH_SHORT
+                    ).show();
+                }
             }
+
             wLAdapter.setSelectedPosition(selectedPosition);
-            cancelEntrantBtn.setEnabled(selectedEntrant != null);
         });
 
         cancelEntrantBtn.setOnClickListener(v1 -> {
@@ -142,8 +176,15 @@ public class OrganizerViewWaitingListFragment extends Fragment {
                 Toast.makeText(requireContext(), "Please select an entrant to cancel.", Toast.LENGTH_SHORT).show();
             }
         });
+
+        exportBtn.setOnClickListener(v2 -> {
+            exportAcceptedToCSV();
+        });
         // init the button as disabled
         cancelEntrantBtn.setEnabled(false);
+//        exportBtn.setEnabled(false);
+
+
 
         // this runs whenever the event object in the viewmodel changes
         evm.getEvent().observe(getViewLifecycleOwner(), event -> {
@@ -155,6 +196,40 @@ public class OrganizerViewWaitingListFragment extends Fragment {
         });
 
     }
+
+    private void exportAcceptedToCSV(){
+        WaitingList wl = evm.getEvent().getValue().getWaitingList();
+
+        String csv_string = wl.exportAcceptedEntrantsToCsv();
+        saveCsv(csv_string, "accepted_attendees.csv");
+    }
+
+    private void saveCsv(String csvContent, String title) {
+        this.csvContent = csvContent;
+
+        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+        intent.setType("text/csv");
+        intent.putExtra(Intent.EXTRA_TITLE, title);
+        createCsvFileLauncher.launch(intent);
+
+    }
+
+    private void writeToFile(Uri uri, String csv) {
+        try (OutputStream os = requireContext()
+                .getContentResolver()
+                .openOutputStream(uri)) {
+
+            os.write(csv.getBytes(StandardCharsets.UTF_8));
+            os.flush();
+            Log.d("Export To CSV", "Successfully exported attendants to csv");
+            Toast.makeText(requireContext(), "CSV exported!", Toast.LENGTH_SHORT).show();
+
+        } catch (Exception e) {
+            Log.e("Export To CSV", "Failed to export attendants to csv", e);
+            Toast.makeText(requireContext(), "Error exporting CSV", Toast.LENGTH_SHORT).show();
+        }
+    }
+
 
     private void fetchWaitingList(String eventId) {
         loading.show();
@@ -191,13 +266,44 @@ public class OrganizerViewWaitingListFragment extends Fragment {
 
     private void updateButtons(Event currentEvent) {
         sampleBtn.setVisibility(View.GONE);
+        exportBtn.setVisibility(View.GONE);
         Log.i("OrganizerViewWaitingListFragment", "Event state: " + currentEvent.getEventState());
 
-        switch (currentEvent.getEventState()) {
+        EventState state = currentEvent.getEventState();
+
+        // rule:
+        // - CLOSED_FOR_REG  → you can draw winners
+        // - SELECTED_ENTRANTS → you can re-draw (e.g., after declines)
+        if (state == EventState.CLOSED_FOR_REG || state == EventState.SELECTED_ENTRANTS) {
+            sampleBtn.setVisibility(View.VISIBLE);
+
+            // Optional: change label depending on state
+            if (state == EventState.CLOSED_FOR_REG) {
+                sampleBtn.setText("Draw Attendants");
+            } else {
+                sampleBtn.setText("Redraw Attendants");
+            }
+
+            sampleBtn.setOnClickListener(v -> sampleBtnHelper(currentEvent));
+        }
+
+        // did a switch for all event states in case we wanted to add stuff here later as well
+        switch (state) {
+            case NOT_STARTED:
+                break;
+
             case OPEN_FOR_REG:
-                sampleBtn.setVisibility(View.VISIBLE);
-                sampleBtn.setOnClickListener(v -> {
-                    sampleBtnHelper(currentEvent);
+                // nothing special for now, but kept in case we add logic later
+                break;
+
+            case SELECTED_ENTRANTS:
+            case CONFIRMED_ENTRANTS:
+            case CANCELLED:
+            case CLOSED_FOR_REG:
+            case ENDED:
+                exportBtn.setVisibility(View.VISIBLE);
+                exportBtn.setOnClickListener(v2 -> {
+                    exportAcceptedToCSV();
                 });
                 break;
         }
@@ -206,11 +312,19 @@ public class OrganizerViewWaitingListFragment extends Fragment {
     private void sampleBtnHelper(Event event) {
         loading.show();
 
-        event.selectEntrants();
+        // Unified lottery logic in Event
+        event.runLottery();
 
+        // Update ViewModel so the rest of the UI sees the new state
+        evm.setEvent(event);
+
+        // Push updated event (state + waiting list) to Firestore
         fm.addOrUpdateEvent(event.getId(), event);
 
-        loading.hide();
+        // Reload the waiting list so the adapter sees updated states
+        fetchWaitingList(event.getId());
+
+        if (loading != null) loading.hide();
     }
 
     /**
@@ -259,11 +373,10 @@ public class OrganizerViewWaitingListFragment extends Fragment {
     private void applyUserFilter() {
         visibleWaitingList.clear();
 
-        boolean useStateFilter = !filterAllUsers &&
-                (filterEnteredUsers || filterSelectedUsers || filterCanceledUsers);
+        boolean useStateFilter = filterAllUsers;
 
         for (Pair<User, WaitingListState> entry : waitingList) {
-            if (!useStateFilter) {
+            if (useStateFilter) {
                 visibleWaitingList.add(entry);
                 continue;
             }
@@ -271,7 +384,7 @@ public class OrganizerViewWaitingListFragment extends Fragment {
             WaitingListState state = entry.second;
             boolean include = false;
 
-            if (filterEnteredUsers && state == WaitingListState.ENTERED)  include = true;
+            if (filterEnrolledUsers && state == WaitingListState.ACCEPTED)  include = true;
             if (filterSelectedUsers && state == WaitingListState.SELECTED) include = true;
             if (filterCanceledUsers && state == WaitingListState.CANCELED) include = true;
 
@@ -307,13 +420,13 @@ public class OrganizerViewWaitingListFragment extends Fragment {
         userFilterPopup.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
         SwitchMaterial swAll = content.findViewById(R.id.browseAllUsers);
-        SwitchMaterial swEntered = content.findViewById(R.id.browseEnteredUsers);
+        SwitchMaterial swEnrolled = content.findViewById(R.id.browseEnrolledUsers);
         SwitchMaterial swSelected = content.findViewById(R.id.browseSelectedUsers);
         SwitchMaterial swCanceled = content.findViewById(R.id.browseCanceledUsers);
 
         // restore current state
         swAll.setChecked(filterAllUsers);
-        swEntered.setChecked(filterEnteredUsers);
+        swEnrolled.setChecked(filterEnrolledUsers);
         swSelected.setChecked(filterSelectedUsers);
         swCanceled.setChecked(filterCanceledUsers);
 
@@ -323,7 +436,7 @@ public class OrganizerViewWaitingListFragment extends Fragment {
         // helper to enforce "at least one is ON"
         Runnable ensureAtLeastOneOn = () -> {
             if (!swAll.isChecked()
-                    && !swEntered.isChecked()
+                    && !swEnrolled.isChecked()
                     && !swSelected.isChecked()
                     && !swCanceled.isChecked()) {
                 // nothing is on → force All back on
@@ -339,11 +452,11 @@ public class OrganizerViewWaitingListFragment extends Fragment {
             filterAllUsers = isChecked;
 
             if (isChecked) {
-                filterEnteredUsers = false;
+                filterEnrolledUsers = false;
                 filterSelectedUsers = false;
                 filterCanceledUsers = false;
 
-                swEntered.setChecked(false);
+                swEnrolled.setChecked(false);
                 swSelected.setChecked(false);
                 swCanceled.setChecked(false);
             } else {
@@ -354,12 +467,12 @@ public class OrganizerViewWaitingListFragment extends Fragment {
             updating[0] = false;
         });
 
-        // Enrolled = ENTERED
-        swEntered.setOnCheckedChangeListener((buttonView, isChecked) -> {
+        // Enrolled = ACCEPTED
+        swEnrolled.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (updating[0]) return;
             updating[0] = true;
 
-            filterEnteredUsers = isChecked;
+            filterEnrolledUsers = isChecked;
             if (isChecked) {
                 filterAllUsers = false;
                 swAll.setChecked(false);
@@ -405,13 +518,13 @@ public class OrganizerViewWaitingListFragment extends Fragment {
         userFilterPopup.setOnDismissListener(() -> {
             // sync final state into fragment fields
             filterAllUsers      = swAll.isChecked();
-            filterEnteredUsers  = swEntered.isChecked();
+            filterEnrolledUsers  = swEnrolled.isChecked();
             filterSelectedUsers = swSelected.isChecked();
             filterCanceledUsers = swCanceled.isChecked();
 
             // just in case, enforce the rule again
             if (!filterAllUsers
-                    && !filterEnteredUsers
+                    && !filterEnrolledUsers
                     && !filterSelectedUsers
                     && !filterCanceledUsers) {
                 filterAllUsers = true;

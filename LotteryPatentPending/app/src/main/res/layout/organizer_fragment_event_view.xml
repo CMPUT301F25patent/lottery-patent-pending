@@ -245,18 +245,20 @@
                 android:text="Generate QR Code"
                 android:layout_marginTop="20dp"
                 app:layout_constraintTop_toBottomOf="@id/geoToggleRow"
-                app:layout_constraintStart_toStartOf="parent" />
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"/>
 
             <!-- QR Image Placeholder -->
             <ImageView
                 android:id="@+id/qrImage"
-                android:layout_width="100dp"
-                android:layout_height="100dp"
+                android:layout_width="200dp"
+                android:layout_height="200dp"
                 android:layout_marginTop="12dp"
                 android:src="@drawable/ic_launcher_foreground"
                 android:visibility="gone"
                 app:layout_constraintTop_toBottomOf="@id/qrButton"
                 app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintStart_toEndOf="parent"
                 app:layout_constraintEnd_toEndOf="parent" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
