@@ -37,6 +37,8 @@ public class InboxActivity extends AppCompatActivity {
     @Nullable
     private ListenerRegistration unreadReg;
     private NotificationAdapter adapter;
+    private ListenerRegistration notificationsReg;
+    private String currentUserId;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -72,62 +74,66 @@ public class InboxActivity extends AppCompatActivity {
             finish();
             return;
         }
-        String uid = u.getUid();
+        currentUserId = u.getUid();
+    }
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (currentUserId == null) {
+            finish();
+            return;
+        }
 
-        repo.getForUser(uid)
-                .thenAccept(list -> runOnUiThread(() -> {
-                    List<Notification> toShow;
-
-                    if (list == null || list.isEmpty()) {
-                        // DEMO data so the screen isn't blank
-                        toShow = new ArrayList<>();
-                        Notification sample = new Notification();
-                        sample.setId("demo1");
-                        sample.setUserId(uid);
-                        sample.setTitle("Welcome to your inbox");
-                        sample.setBody("This is a demo notification. Once organizers send " +
-                                "real messages, they’ll appear here.");
-                        sample.setCategory(Notification.Category.ORGANIZER_MESSAGE);
-                        sample.setCreatedAt(new Date());
-                        toShow.add(sample);
-                    } else {
-                        // Real data: make sure userId is populated on each notification
-                        toShow = list;
-                        for (Notification n : toShow) {
-                            n.setUserId(uid);
-                        }
+        notificationsReg = repo.listenUserNotifications(
+                currentUserId,
+                new NotificationRepository.NotificationsListener() {
+                    @Override
+                    public void onChanged(List<Notification> notifications) {
+                        runOnUiThread(() -> {
+                            List<Notification> toShow;
+                            if (notifications == null || notifications.isEmpty()) {
+                                // Demo message if inbox is empty
+                                toShow = new ArrayList<>();
+                                Notification demo = new Notification();
+                                demo.setId("demo");
+                                demo.setUserId(currentUserId);
+                                demo.setTitle("Welcome to your inbox");
+                                demo.setBody("This is a demo notification. Once organizers " +
+                                        "send real messages, they’ll appear here.");
+                                demo.setCategory(Notification.Category.ORGANIZER_MESSAGE);
+                                demo.setCreatedAt(new Date());
+                                toShow.add(demo);
+                            } else {
+                                toShow = notifications;
+                            }
+                            adapter.submitList(toShow);
+                        });
                     }
 
-                    adapter.submitList(toShow);
-                }))
-                .exceptionally(e -> {
-                    e.printStackTrace();
-                    // In case of an error
-                    runOnUiThread(() -> {
-                        List<Notification> demo = new ArrayList<>();
-                        Notification sample = new Notification();
-                        sample.setId("error_demo");
-                        sample.setUserId(uid);
-                        sample.setTitle("Inbox unavailable");
-                        sample.setBody("We couldn’t load notifications from the server. " +
-                                "This is a demo message so you can still see the layout.");
-                        sample.setCategory(Notification.Category.ORGANIZER_MESSAGE);
-                        sample.setCreatedAt(new Date());
-                        demo.add(sample);
-                        adapter.submitList(demo);
-                    });
-                    return null;
-                });
+                    @Override
+                    public void onError(Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+        );
 
-        // unread listener
-        unreadReg = repo.listenUnreadCount(uid,
-                count -> {  },
-                err -> android.util.Log.e("Inbox", "listenUnreadCount", err));
+        // REAL-TIME unread count (for the badge – the badge UI)
+        unreadReg = repo.listenUnreadCount(
+                currentUserId,
+                count -> {
+                    android.util.Log.d("Inbox", "Unread count = " + count);
+                },
+                err -> android.util.Log.e("Inbox", "listenUnreadCount", err)
+        );
     }
 
     @Override
     protected void onStop() {
         super.onStop();
+        if (notificationsReg != null) {
+            notificationsReg.remove();
+            notificationsReg = null;
+        }
         if (unreadReg != null) {
             unreadReg.remove();
             unreadReg = null;

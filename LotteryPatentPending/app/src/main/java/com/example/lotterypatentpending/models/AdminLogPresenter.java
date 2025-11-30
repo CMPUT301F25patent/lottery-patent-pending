@@ -11,7 +11,6 @@ import java.util.Locale;
 
 /**
  * Pure helper for formatting/sorting admin logs for display.
- * No Android types here → easy unit tests.
  *
  *
  * @author Moffat
@@ -50,6 +49,9 @@ public class AdminLogPresenter {
      * Example: "Sent at 03:04, org=org1"
      */
     public static String formatMeta(NotificationLog n) {
+        if (n.getCreatedAt() == null) {
+            return "Sent at ?, org=" + n.getOrganizerId();
+        }
         // The test regex expects HH:mm format.
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm", Locale.getDefault());
         String timeString = sdf.format(n.getCreatedAt());

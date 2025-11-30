@@ -18,7 +18,10 @@ import java.util.List;
  */
 public class Notification implements Parcelable {
 
-
+    /**
+     * Categories describing the type of notification delivered to a user.
+     * Used for entrant/organizer flows such as WIN, LOSE, WAITLIST, etc.
+     */
     public enum Category { CHOSEN_SIGNUP, WAITLIST, SELECTED, CANCELLED, WIN, LOSE, ORGANIZER_MESSAGE }
 
     @DocumentId private String id;
@@ -59,12 +62,13 @@ public class Notification implements Parcelable {
     public List<RecipientRef> getRecipients() { return recipients;} public void setRecipients(List<RecipientRef> recipients) { this.recipients = recipients;}
     public Date getCreatedAt(){ return createdAt; } public void setCreatedAt(Date d){ this.createdAt=d; }
 
-    // Parcelable
+    /** Reconstructs a Notification from a Parcel (Parcelable contract). */
     protected Notification(Parcel in){
         id=in.readString(); userId=in.readString(); eventId=in.readString(); senderId =in.readString();
         title=in.readString(); body=in.readString(); category=Category.valueOf(in.readString());
         read=in.readByte()!=0; long ts=in.readLong(); createdAt=(ts==-1)?null:new Date(ts);
     }
+    /** Writes this Notification into a Parcel for inter-component transfer. */
     @Override public void writeToParcel(Parcel dest,int flags){
         dest.writeString(id); dest.writeString(userId); dest.writeString(eventId); dest.writeString(senderId);
         dest.writeString(title); dest.writeString(body); dest.writeString(category.name());

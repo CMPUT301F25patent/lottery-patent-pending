@@ -24,7 +24,9 @@ import androidx.lifecycle.ViewModelProvider;
 import com.example.lotterypatentpending.adapters.WaitingListAdapter;
 import com.example.lotterypatentpending.helpers.LoadingOverlay;
 import com.example.lotterypatentpending.models.Event;
+import com.example.lotterypatentpending.models.EventState;
 import com.example.lotterypatentpending.models.FirebaseManager;
+import com.example.lotterypatentpending.models.LotterySystem;
 import com.example.lotterypatentpending.models.User;
 import com.example.lotterypatentpending.models.WaitingListState;
 import com.example.lotterypatentpending.viewModels.EventViewModel;
@@ -36,7 +38,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import kotlinx.serialization.internal.ArrayClassDesc;
-
+/**
+ * Fragment that displays the waiting list for the currently selected event.
+ * Allows the organizer to view entrants, select an entrant, and cancel their
+ * participation. The list is sourced from Firestore and kept in sync with the
+ * shared EventViewModel.
+ */
 public class OrganizerViewWaitingListFragment extends Fragment {
     private MaterialButton sampleBtn;
     private Button cancelEntrantBtn;
@@ -52,6 +59,7 @@ public class OrganizerViewWaitingListFragment extends Fragment {
     private int selectedPosition = -1;
     private Pair<User, WaitingListState> selectedEntrant = null;
 
+
     // Popup + filter state
     private PopupWindow userFilterPopup;
     private boolean filterAllUsers = true;
@@ -59,14 +67,24 @@ public class OrganizerViewWaitingListFragment extends Fragment {
     private boolean filterSelectedUsers = false;
     private boolean filterCanceledUsers = false;
 
-
+    /**
+     * Inflates the waiting list layout for the organizer.
+     *
+     * @return The root view for this fragment.
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         return inflater.inflate(R.layout.organizer_fragment_view_event_waiting_list, container, false);
 
     }
-
+    /**
+     * Initializes UI components, sets up the adapter, selection handling,
+     * and loads the waiting list from Firestore.
+     *
+     * @param v The fragment root view.
+     * @param savedInstanceState Previously saved state, if any.
+     */
     @Override
     public void onViewCreated(@NonNull View v, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(v, savedInstanceState);
@@ -127,9 +145,20 @@ public class OrganizerViewWaitingListFragment extends Fragment {
         // init the button as disabled
         cancelEntrantBtn.setEnabled(false);
 
-        // show spinner while loading waitingList data
+        // this runs whenever the event object in the viewmodel changes
+        evm.getEvent().observe(getViewLifecycleOwner(), event -> {
+
+            if (event != null) {
+                updateButtons(event);
+                fetchWaitingList(event.getId());
+            }
+        });
+
+    }
+
+    private void fetchWaitingList(String eventId) {
         loading.show();
-        fm.getEventWaitingList(viewed_event_id, new FirebaseManager.FirebaseCallback<ArrayList<Pair<User, WaitingListState>>>() {
+        fm.getEventWaitingList(eventId, new FirebaseManager.FirebaseCallback<ArrayList<Pair<User, WaitingListState>>>() {
             @Override
             public void onSuccess(ArrayList<Pair<User, WaitingListState>> result) {
                 waitingList.clear();
@@ -152,11 +181,36 @@ public class OrganizerViewWaitingListFragment extends Fragment {
                 if (loading != null) loading.hide();
             }
         });
-
     }
-
+    /**
+     * Refreshes the ListView by notifying the adapter of data changes.
+     */
     private void refreshListFromVisible(){
         wLAdapter.notifyDataSetChanged();
+    }
+
+    private void updateButtons(Event currentEvent) {
+        sampleBtn.setVisibility(View.GONE);
+        Log.i("OrganizerViewWaitingListFragment", "Event state: " + currentEvent.getEventState());
+
+        switch (currentEvent.getEventState()) {
+            case OPEN_FOR_REG:
+                sampleBtn.setVisibility(View.VISIBLE);
+                sampleBtn.setOnClickListener(v -> {
+                    sampleBtnHelper(currentEvent);
+                });
+                break;
+        }
+    }
+
+    private void sampleBtnHelper(Event event) {
+        loading.show();
+
+        event.selectEntrants();
+
+        fm.addOrUpdateEvent(event.getId(), event);
+
+        loading.hide();
     }
 
     /**

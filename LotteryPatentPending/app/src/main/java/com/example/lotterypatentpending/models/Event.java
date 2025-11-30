@@ -227,6 +227,21 @@ public class Event {
     }
 
     public EventState getEventState() {
+        switch (this.eventState) {
+            case NOT_STARTED:
+                this.updateRegistrationState();
+                break;
+            case OPEN_FOR_REG:
+                this.updateRegistrationState();
+                break;
+            case CLOSED_FOR_REG:
+                this.updateRegistrationState();
+                break;
+            default:
+                // do nothing for fixed states like SELECTED_ENTRANTS, ENDED, CANCELLED.
+                break;
+        }
+
         return this.eventState;
     }
 
@@ -313,7 +328,7 @@ public class Event {
     public boolean inWaitingList(User entrant) {
         return this.waitingList.checkEntrant(entrant);
     }
-
+    /** Convenience: same as inWaitingList but null-safe. */
     public boolean containsUser(User user) {
         if (user == null) {
             return false;
@@ -321,6 +336,10 @@ public class Event {
         return waitingList.checkEntrant(user);
     }
 
+    /**
+     * Updates a waiting-list entrant's state (e.g., SELECTED, CANCELED).
+     * @return true if updated successfully.
+     */
     public boolean updateEntrantState(User entrant, WaitingListState state) {
         return this.waitingList.updateEntrantState(entrant, state);
     }
@@ -332,7 +351,13 @@ public class Event {
     private boolean isPastEndDate() {
         return (new Timestamp(new Date()).compareTo(this.regEndDate) >= 0);
     }
-
+    /**
+     * Updates the eventState based on the current time relative to the
+     * registration window:
+     * - NOT_STARTED  → before registration start
+     * - OPEN_FOR_REG → within the registration window
+     * - CLOSED_FOR_REG → after registration end
+     */
     public void updateRegistrationState() {
         if (this.isBeforeStartDate()) {
             this.eventState = EventState.NOT_STARTED;

@@ -1,11 +1,18 @@
 package com.example.lotterypatentpending;
 
+import android.Manifest;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.Toast;
+import android.os.Build;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import android.content.pm.PackageManager;
+
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -33,6 +40,14 @@ public class MainActivity extends AppCompatActivity implements MainRegisterNewUs
     private LoadingOverlay loading;
     private View mainLayout;
 
+
+    /**
+     * Initializes the main entry screen, sets up Firebase authentication,
+     * prepares the loading overlay, wires button navigation, and determines
+     * whether the current user must complete onboarding.
+     *
+     * @param savedInstanceState Previous saved state (unused).
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -86,8 +101,32 @@ public class MainActivity extends AppCompatActivity implements MainRegisterNewUs
                         registerNewUserOverlay();
                     });
         }
+        // Ask OS for notification permission (Android 13+)
+        ensureNotificationPermission();
+
 
     }
+    private static final int REQ_POST_NOTIFICATIONS = 1001;
+
+    /**
+     * Ensure we have POST_NOTIFICATIONS permission on Android 13+.
+     */
+    private void ensureNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.POST_NOTIFICATIONS
+            ) != PackageManager.PERMISSION_GRANTED) {
+
+                ActivityCompat.requestPermissions(
+                        this,
+                        new String[]{ Manifest.permission.POST_NOTIFICATIONS },
+                        REQ_POST_NOTIFICATIONS
+                );
+            }
+        }
+    }
+
     /**
      * Checks if the current user is an admin before launching the AdminActivity.
      */
@@ -104,7 +143,13 @@ public class MainActivity extends AppCompatActivity implements MainRegisterNewUs
         }
     }
 
-
+    /**
+     * Retrieves the Firestore user document for the given UID.
+     * If the user exists, it loads the profile into the shared repository.
+     * If not, it triggers the new-user onboarding overlay.
+     *
+     * @param uid The Firebase Authentication user ID.
+     */
     private void checkUserDoc(String uid) {
         loading.show();
         fm.getUser(uid, new FirebaseManager.FirebaseCallback<User>() {
@@ -119,6 +164,12 @@ public class MainActivity extends AppCompatActivity implements MainRegisterNewUs
                     UserEventRepository.getInstance().setUser(user);
                     //if not new user show main_layout
                     if (mainLayout != null) mainLayout.setVisibility(View.VISIBLE);
+                    // Start real-time popup listener for this user
+                    NotificationWatcher.getInstance().startPopupStream(
+                            getApplicationContext(),
+                            user.getUserId()
+                    );
+
                 }
             }
             @Override
@@ -130,7 +181,11 @@ public class MainActivity extends AppCompatActivity implements MainRegisterNewUs
             }
         });
     }
-
+    /**
+     * Displays the overlay fragment used to collect profile information
+     * for users who do not yet have a Firestore User document.
+     * Ensures the fragment is only attached once.
+     */
     private void registerNewUserOverlay() {
         int containerId = R.id.createUserOverlay; // make sure this exists in activity_main.xml
         View container = findViewById(containerId);
@@ -145,7 +200,11 @@ public class MainActivity extends AppCompatActivity implements MainRegisterNewUs
                     .commit();
         }
     }
-
+    /**
+     * Called when the new-user registration fragment reports that the profile
+     * has been successfully saved. Removes the overlay and reloads the
+     * user's document from Firestore.
+     */
     @Override
     public void onProfileSaved() {
         int containerId = R.id.createUserOverlay;

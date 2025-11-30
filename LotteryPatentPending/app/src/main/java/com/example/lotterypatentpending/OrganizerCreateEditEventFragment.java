@@ -84,7 +84,6 @@ public class OrganizerCreateEditEventFragment extends Fragment {
                              Bundle savedInstanceState) {
         return inflater.inflate(R.layout.organizer_fragment_create_edit_event, container, false);
     }
-
     /**
      * Called after the view has been created.
      * Initializes UI elements, sets click listeners for buttons.
@@ -125,7 +124,6 @@ public class OrganizerCreateEditEventFragment extends Fragment {
             // open gallery for an image
             pickImageLauncher.launch("image/*");
         });
-
 
         if(passed_event != null){
             (requireActivity()).setTitle("Edit Event");
@@ -233,8 +231,13 @@ public class OrganizerCreateEditEventFragment extends Fragment {
     }
 
     /**
-     * Collects input from EditText/TextViews fields, creates a new Event object,
-     * saves it to Firestore, and updates the EventViewModel.
+     * Collects all form inputs, validates required fields, parses dates/capacity,
+     * applies waiting-list rules, and either creates a new Event or updates an
+     * existing one. Writes changes to Firestore and updates the shared EventViewModel.
+     *
+     * @param action       "create" or "edit" indicating which operation to perform.
+     * @param passed_event The existing Event being edited, or null when creating.
+     * @return true if creation/editing succeeded and navigation may proceed; false on validation errors.
      */
     public boolean createEditEvent(String action, Event passed_event) {
         String title = titleEt.getText().toString().trim();
@@ -420,7 +423,10 @@ public class OrganizerCreateEditEventFragment extends Fragment {
     }
 
     /**
-     * Loads bitmap from selectedPosterUri, then calls FirebaseManager.uploadEventPosterInline.
+     * Attempts to decode the selected poster image and upload it for the given event.
+     * Only runs if a poster URI has been selected. Displays a toast on failure.
+     *
+     * @param eventId Firestore ID of the event whose poster is being uploaded.
      */
     private void uploadPosterInline(String eventId) {
         if (selectedPosterUri == null) return;
@@ -440,7 +446,12 @@ public class OrganizerCreateEditEventFragment extends Fragment {
     }
 
     /**
-     * Helper for decoding a Bitmap from a Uri, handling pre/post API 28.
+     * Decodes a Bitmap from a content Uri, using ImageDecoder on API 28+ and
+     * MediaStore on older devices.
+     *
+     * @param uri The content Uri to decode.
+     * @return A decoded Bitmap.
+     * @throws IOException If the bitmap cannot be read.
      */
     private Bitmap loadBitmapFromUri(@NonNull Uri uri) throws IOException {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
@@ -454,7 +465,12 @@ public class OrganizerCreateEditEventFragment extends Fragment {
             );
         }
     }
-
+    /**
+     * Reads the selected poster image, scales it down to a reasonable size for
+     * Firestore storage, compresses it to JPEG, and returns the resulting byte array.
+     *
+     * @return Poster image bytes, or null if no image was selected or decoding failed.
+     */
     private byte[] loadPosterBytesFromUri() {
         if (selectedPosterUri == null) return null;
 
@@ -492,7 +508,10 @@ public class OrganizerCreateEditEventFragment extends Fragment {
             return null;
         }
     }
-
+    /**
+     * ActivityResultLauncher that opens the system image picker and updates the
+     * preview + selectedPosterUri when the user selects an image.
+     */
     private final ActivityResultLauncher<String> pickImageLauncher =
             registerForActivityResult(new ActivityResultContracts.GetContent(),
                     uri -> {

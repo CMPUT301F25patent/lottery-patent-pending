@@ -20,10 +20,12 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresPermission;
 import androidx.core.content.ContextCompat;
+import androidx.core.util.Pair;
 import androidx.fragment.app.Fragment;
 
 import com.example.lotterypatentpending.helpers.DateTimeFormatHelper;
 import com.example.lotterypatentpending.models.Event;
+import com.example.lotterypatentpending.models.EventState;
 import com.example.lotterypatentpending.models.FirebaseManager;
 import com.example.lotterypatentpending.models.User;
 import com.example.lotterypatentpending.viewModels.UserEventRepository;
@@ -68,7 +70,14 @@ public class AttendeeEventDetailsFragment extends Fragment {
     public AttendeeEventDetailsFragment() {
         super(R.layout.attendee_fragment_event_details);
     }
-
+    /**
+     * Initializes UI components, populates event details on screen,
+     * sets up button states for the current user, and attaches a real-time
+     * Firestore listener to keep the event data updated.
+     *
+     * @param view The rootfragment view.
+     * @param savedInstanceState Previous state (unused).
+     */
     @Override
     public void onViewCreated(@NonNull View view,
                               @Nullable Bundle savedInstanceState) {
@@ -77,18 +86,17 @@ public class AttendeeEventDetailsFragment extends Fragment {
         userEventRepo = UserEventRepository.getInstance();
         fm = FirebaseManager.getInstance();
 
-        TextView title = view.findViewById(R.id.eventTitle);
+        TextView title       = view.findViewById(R.id.eventTitle);
         TextView description = view.findViewById(R.id.eventLongDescription);
-        TextView location = view.findViewById(R.id.location);
-        TextView date = view.findViewById(R.id.eventDate);
-        TextView regStart = view.findViewById(R.id.regStart);
-        TextView regEnd = view.findViewById(R.id.regEnd);
-        TextView capacity = view.findViewById(R.id.maxEntrants);
+        TextView location    = view.findViewById(R.id.location);
+        TextView date        = view.findViewById(R.id.eventDate);
+        TextView regStart    = view.findViewById(R.id.regStart);
+        TextView regEnd      = view.findViewById(R.id.regEnd);
+        TextView capacity    = view.findViewById(R.id.maxEntrants);
         waitListCap = view.findViewById(R.id.waitingListCap);
-        TextView tag = view.findViewById(R.id.tag);
-        userStateView = view.findViewById(R.id.userState);
+        TextView tag         = view.findViewById(R.id.tag);
 
-        joinButton = view.findViewById(R.id.attendee_event_details_button_join);
+        joinButton  = view.findViewById(R.id.attendee_event_details_button_join);
         leaveButton = view.findViewById(R.id.attendee_event_details_button_leave);
         acceptButton = view.findViewById(R.id.attendee_event_details_button_accept);
         declineButton = view.findViewById(R.id.attendee_event_details_button_decline);
@@ -100,7 +108,7 @@ public class AttendeeEventDetailsFragment extends Fragment {
 
         // Get current event + user from repo
         Event currentEvent = userEventRepo.getEvent().getValue();
-        User currentUser = userEventRepo.getUser().getValue();
+        User currentUser   = userEventRepo.getUser().getValue();
 
         if (currentEvent == null) {
             Toast.makeText(requireContext(),
@@ -154,6 +162,7 @@ public class AttendeeEventDetailsFragment extends Fragment {
         String capacityValue = String.valueOf(currentEvent.getCapacity());
 
 
+
         // Tag: just the tag value
         String tagValue = currentEvent.getTag() == null
                 ? "General"
@@ -188,11 +197,14 @@ public class AttendeeEventDetailsFragment extends Fragment {
 
                     @Override
                     public void onFailure(Exception e) {
-                        Log.e("AttendeeEventDetails", "getEventLive failed", e);
+                         Log.e("AttendeeEventDetails", "getEventLive failed", e);
                     }
                 });
     }
-
+    /**
+     * Cleans up the Firestore event listener and clears the
+     * current event from the shared repository when the view is destroyed.
+     */
     @Override
     public void onDestroyView() {
         super.onDestroyView();
@@ -293,7 +305,12 @@ public class AttendeeEventDetailsFragment extends Fragment {
         }
         return false;
     }
-
+    /**
+     * Handles accepting an event invitation from the waiting list.
+     * Updates both local user/event models and Firestore state.
+     *
+     * @return true if the operation succeeded, false otherwise.
+     */
     private boolean acceptEventHelper() {
         User currentUser = userEventRepo.getUser().getValue();
         Event currentEvent = userEventRepo.getEvent().getValue();
@@ -317,7 +334,12 @@ public class AttendeeEventDetailsFragment extends Fragment {
         }
         return false;
     }
-
+    /**
+     * Handles declining an event invitation.
+     * Updates both local user/event models and Firestore state.
+     *
+     * @return true if the operation succeeded, false otherwise.
+     */
     private boolean declineEventHelper() {
         User currentUser = userEventRepo.getUser().getValue();
         Event currentEvent = userEventRepo.getEvent().getValue();
@@ -493,7 +515,12 @@ public class AttendeeEventDetailsFragment extends Fragment {
                 throw new RuntimeException("ERROR: User not in list!");
         }
     }
-
+    /**
+     * Returns the number of entrants currently on the event's waiting list.
+     *
+     * @param event The event whose waiting list is being measured.
+     * @return The count of entrants, or 0 if no list exists.
+     */
     private int getCurrentWaitingListSize(@NonNull Event event) {
         if (event.getWaitingList() == null ||
                 event.getWaitingList().getList() == null) {
@@ -501,7 +528,13 @@ public class AttendeeEventDetailsFragment extends Fragment {
         }
         return event.getWaitingList().getList().size();
     }
-
+    /**
+     * Updates waiting-list count text and refreshes button visibility/state
+     * based on the user's current waiting-list status.
+     *
+     * @param event The event whose UI state is being updated.
+     * @param user  The current user (may be null).
+     */
     private void refreshWaitingListUI(@NonNull Event event, @Nullable User user) {
         // 1) Compute sizes
         int wlCap = event.getWaitingListCapacity();
@@ -520,7 +553,10 @@ public class AttendeeEventDetailsFragment extends Fragment {
         WaitingListState state = event.getWaitingListStateForUser(user);
         updateButtons(state);
     }
-
+    /**
+     * Requests fine-location permission if not already granted.
+     * If permission is already available, proceeds to obtain location immediately.
+     */
     private void requestLocationPermission() {
         if (ContextCompat.checkSelfPermission(
                 requireContext(),
@@ -533,7 +569,10 @@ public class AttendeeEventDetailsFragment extends Fragment {
             locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
         }
     }
-
+    /**
+     * Handles the UI/Toast messaging for when the user denies
+     * the required location permission.
+     */
     private void onLocationPermissionDenied() {
         boolean shouldShowRationale =
                 shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION);
@@ -552,6 +591,11 @@ public class AttendeeEventDetailsFragment extends Fragment {
         }
     }
 
+    /**
+     * Retrieves the user's last known location (requires fine/coarse
+     * location permissions) and saves it to Firestore, then attempts
+     * to join the event.
+     */
 
     @RequiresPermission(allOf = {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION})
     private void getUserLocation() {

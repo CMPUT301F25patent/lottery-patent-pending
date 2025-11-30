@@ -19,7 +19,7 @@ import com.example.lotterypatentpending.models.User;
 import com.example.lotterypatentpending.viewModels.UserEventRepository;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.firebase.firestore.ListenerRegistration;
+
 
 
 
@@ -47,9 +47,6 @@ public class AttendeeActivity extends AppCompatActivity {
     /** Notification repository for listening to unread message count. */
     private NotificationRepository repo;
 
-    /** Handle for notification unread listener to remove on lifecycle events. */
-    private ListenerRegistration unreadReg;
-
     /** Fragment showing events available to the attendee. */
     private Fragment eventsFragment;
 
@@ -58,6 +55,8 @@ public class AttendeeActivity extends AppCompatActivity {
 
     /** Fragment handling QR code scanning for check-in. */
     private Fragment scanFragment;
+
+
 
 
     /**
@@ -161,34 +160,51 @@ public class AttendeeActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_attendee, menu);
 
-        // custom action layout with badge
         MenuItem inboxItem = menu.findItem(R.id.action_inbox);
         View actionView = inboxItem.getActionView();
 
         ImageView icon = actionView.findViewById(R.id.inboxIcon);
-        TextView badge  = actionView.findViewById(R.id.badgeText);
-
+        View badge  = actionView.findViewById(R.id.badgeDot);
 
         // open inbox on tap
-        actionView.setOnClickListener(v -> onOptionsItemSelected(inboxItem));
+        actionView.setOnClickListener(v -> {
+            // user opened inbox → hide dot immediately
+            badge.setVisibility(View.GONE);
+            onOptionsItemSelected(inboxItem);
+        });
 
-        // listen to unread count
+        // get current user (already loaded into UserEventRepository in MainActivity)
         User user = UserEventRepository.getInstance().getUser().getValue();
+        if (user == null) {
+            badge.setVisibility(View.GONE);
+            return true;
+        }
+
         String userId = user.getUserId();
 
-        // keep a reference so we can remove() in onStop()
-        unreadReg = repo.listenUnreadCount(
+        // Realtime unread badge using NotificationWatcher singleton
+        NotificationWatcher.getInstance().startUnreadBadge(
                 userId,
                 count -> {
                     int c = (count == null) ? 0 : count;
-                    badge.setVisibility(c <= 0 ? View.GONE : View.VISIBLE);
-                    if (c > 0) badge.setText(String.valueOf(c));
+                    runOnUiThread(() -> {
+                        boolean hasUnread = c > 0;
+                        badge.setVisibility(hasUnread ? View.VISIBLE : View.GONE);
+                    });
                 },
                 err -> android.util.Log.e("Inbox", "listenUnreadCount", err)
         );
 
         return true;
     }
+
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        NotificationWatcher.getInstance().stopUnreadBadge();
+    }
+
     /**
      * Handles toolbar item actions (currently Inbox).
      */
@@ -213,6 +229,8 @@ public class AttendeeActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        if (unreadReg != null) { unreadReg.remove(); unreadReg = null; }
+        // Stop badge listener when the screen is no longer visible
+        NotificationWatcher.getInstance().stopUnreadBadge();
     }
+
 }

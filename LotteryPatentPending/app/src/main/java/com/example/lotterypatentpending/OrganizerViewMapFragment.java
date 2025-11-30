@@ -35,7 +35,13 @@ public class OrganizerViewMapFragment extends Fragment implements OnMapReadyCall
     private EventViewModel viewModel;
     private LoadingOverlay loading;
 
-
+    /**
+     * Fragment that displays a Google Map showing the locations of entrants
+     * for the currently selected event. Pulls entrant coordinates from
+     * Firestore via FirebaseManager and automatically places markers for
+     * each user. If no locations are available, the map centers on a
+     * default location.
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -63,6 +69,14 @@ public class OrganizerViewMapFragment extends Fragment implements OnMapReadyCall
 
         return view;
     }
+    /**
+     * Called when the Google Map is ready for use. Configures map UI
+     * gestures and requests entrant location data from Firestore. When
+     * locations are retrieved, markers are rendered on the map; if the
+     * request fails, a log entry is written and loading is hidden.
+     *
+     * @param googleMap The GoogleMap instance that has finished loading.
+     */
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
@@ -88,26 +102,36 @@ public class OrganizerViewMapFragment extends Fragment implements OnMapReadyCall
         });
 
     }
-
+    /**
+     * Places markers on the map for each entrant who has shared a location.
+     * If no locations are available, centers the map on a default city view.
+     *
+     * @param userLocations List of user location objects returned from Firestore.
+     */
     private void loadUsersOnMap(ArrayList<UserLocation> userLocations) {
         if (userLocations == null || userLocations.isEmpty()) {
             // No entrants → load default location
-            LatLng defaultLocation = new LatLng(43.6532, -79.3832); // Toronto example
+            LatLng defaultLocation = new LatLng(53.5461, -113.4938);
             Toast.makeText(requireContext(), "No entrants yet", Toast.LENGTH_SHORT).show();
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(defaultLocation, 10f));
             return;
         }
 
         LatLngBounds.Builder bounds = new LatLngBounds.Builder();
+        boolean hasValidPoints = false;
 
         for(UserLocation location: userLocations){
+            // check to ensure the location object itself isn't null in the list
+            if (location == null) {
+                continue;
+            }
             Double lat = location.getLat();
             Double lng = location.getLng();
 
             Log.d("Location", "Lat: "+lat+", Lng: "+lng);
 
             if (lat == null || lng == null) continue;
-
+            hasValidPoints = true;
             LatLng userPos = new LatLng(lat, lng);
 
             mMap.addMarker(new MarkerOptions().position(userPos));
@@ -116,10 +140,16 @@ public class OrganizerViewMapFragment extends Fragment implements OnMapReadyCall
             bounds.include(userPos);
 
         }
-
-        // Zoom to all markers
-        mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds.build(), 100));
-
+        // Check if any valid markers were actually added
+        if (hasValidPoints) {
+            // Zoom to all markers
+            mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds.build(), 100));
+        } else {
+            // Handle case where list was not empty but contained no valid locations
+            LatLng defaultLocation = new LatLng(53.5461, -113.4938);
+            Toast.makeText(requireContext(), "No valid locations found for entrants.", Toast.LENGTH_SHORT).show();
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(defaultLocation, 10f));
+        }
     }
 
 }
