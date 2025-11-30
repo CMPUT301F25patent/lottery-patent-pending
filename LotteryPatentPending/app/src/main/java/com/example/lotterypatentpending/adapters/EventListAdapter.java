@@ -25,7 +25,9 @@ import java.util.List;
  * to add more features simply add more TextViews to item_event and here
  */
 public class EventListAdapter extends ArrayAdapter<Event> {
-
+    /**
+     * Callbacks for organizer actions (edit/delete).
+     */
     public interface OnEventActionListener {
         void onEdit(Event event);
         void onDelete(Event event);
@@ -34,19 +36,42 @@ public class EventListAdapter extends ArrayAdapter<Event> {
     private final boolean showActions;
 
     private OnEventActionListener listener;
-
+    /**
+     * Creates a read-only adapter where events are shown
+     * without edit/delete controls.
+     *
+     * @param context host Activity/Fragment
+     * @param events  list of events to display
+     */
     public EventListAdapter(@NonNull Context context, @NonNull List<Event> events){
         super(context, 0, events);
         this.showActions = false;
     }
-
+    /**
+     * Creates an adapter with organizer controls enabled.
+     * Edit/delete buttons are shown and routed to {@code listener}.
+     *
+     * @param context  host Activity/Fragment
+     * @param events   list of events to display
+     * @param listener callback for edit/delete actions
+     */
     public EventListAdapter(@NonNull Context context, @NonNull List<Event> events,
                             OnEventActionListener listener) {
         super(context, 0, events);
         this.listener = listener;
         this.showActions = true;
     }
-
+    /**
+     * Inflates and binds a row for an {@link Event}.
+     *
+     * <p>Populates text fields, formats timestamps, computes waiting-list
+     * usage, and conditionally shows edit/delete buttons.</p>
+     *
+     * @param position    row index
+     * @param convertView recycled view if available
+     * @param parent      ListView container
+     * @return the populated row view
+     */
     @Override
     public View getView(int position, View convertView, @NonNull ViewGroup parent){
 
@@ -70,10 +95,12 @@ public class EventListAdapter extends ArrayAdapter<Event> {
             name.setText(event.getTitle());
             tag.setText(event.getTag());
 
-            //use helper to convert Timestamp of UTC time to local time(string)
+            //Location
             String locationText = event.getLocation() != null && !event.getLocation().isEmpty() ?
                     event.getLocation() : "Not set";
             location.setText(locationText);
+
+            //use helper to convert Timestamp of UTC time to local time(string)
             String formattedTime = DateTimeFormatHelper.formatTimestamp(event.getDate());
             eventTime.setText(formattedTime);
             regTime.setText(event.getFormattedRegWindow());

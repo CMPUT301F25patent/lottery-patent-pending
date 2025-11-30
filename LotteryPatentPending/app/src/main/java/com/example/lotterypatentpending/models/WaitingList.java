@@ -105,7 +105,13 @@ public class WaitingList {
         }
         return in;
     }
-
+    /**
+     * Updates the stored state for the given entrant.
+     *
+     * @param entrant user whose state should change
+     * @param state   new {@link WaitingListState}
+     * @return true if the entrant was found and updated; false otherwise
+     */
     public boolean updateEntrantState(User entrant, WaitingListState state) {
         int index = -1;
         for (int i = 0; i < this.list.size(); i++) {
@@ -126,31 +132,24 @@ public class WaitingList {
 
         return false;
     }
-
+    /** @return capacity limit; -1 means unlimited */
     public int getCapacity() {
         return capacity;
     }
-
+    /** Sets the maximum number of entrants allowed. */
     public void setCapacity(int capacity) {
         this.capacity = capacity;
     }
 
     /**
-     * Selects a number of people randomly with a lottery system
+     * Runs the lottery selection algorithm on the current waiting list.
+     * Delegates to {@link LotterySystem#lotterySelect(List, Integer)}.
+     *
+     * @param numSelect number of entrants to select
      */
     public void lotterySelect(Integer numSelect) {
         LotterySystem.lotterySelect(this.list, numSelect);
     }
-
-    /**
-     * Reselects people, caring about states as well
-     */
-    /*
-    public void lotteryReselect(Integer numSelect) {
-        LotterySystem.lotteryReselect(this.list, numSelect);
-    }
-
-     */
 
     /**
      * Gets the number of all entrants in the list
@@ -165,7 +164,9 @@ public class WaitingList {
         }
         return n;
     }
-
+    /**
+     * @return all users in the waiting list (states discarded)
+     */
     public List<User> getUsersOnly(){
         ArrayList<User> users = new ArrayList<>();
         for (Pair<User, WaitingListState> pair : list) {
@@ -174,7 +175,9 @@ public class WaitingList {
 
         return users;
     }
-
+    /**
+     * @return users whose state is {@code SELECTED}
+     */
     public List<User> getSelectedEntrants() {
         List<User> selectedUsers = new ArrayList<>();
 

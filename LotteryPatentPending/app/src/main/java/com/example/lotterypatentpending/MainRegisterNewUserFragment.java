@@ -36,7 +36,12 @@ public class MainRegisterNewUserFragment extends Fragment {
                              Bundle savedInstanceState) {
         return inflater.inflate(R.layout.main_fragment_create_user, container, false);
     }
-
+    /**
+     * Initializes input fields and wires the Save button to trigger user creation.
+     *
+     * @param v The root fragment view.
+     * @param savedInstanceState Previously saved/unused state.
+     */
     @Override
     public void onViewCreated(@NonNull View v, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(v, savedInstanceState);
@@ -48,7 +53,11 @@ public class MainRegisterNewUserFragment extends Fragment {
 
         saveBtn.setOnClickListener(view -> saveNewUser());
     }
-
+    /**
+     * Validates form fields, constructs a new User object from input,
+     * writes it to Firestore, updates the shared UserEventRepository,
+     * and notifies the hosting Activity that onboarding is completed.
+     */
     private void saveNewUser() {
         String name  = nameEt.getText().toString().trim();
         String email = emailEt.getText().toString().trim();

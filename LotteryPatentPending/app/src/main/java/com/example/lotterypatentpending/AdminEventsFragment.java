@@ -126,6 +126,9 @@ public class AdminEventsFragment extends Fragment {
             return true;
         });
     }
+    /**
+     * Refreshes the ListView when visible event data changes.
+     */
 
     private void refreshList() {
         eventListAdapter.notifyDataSetChanged();

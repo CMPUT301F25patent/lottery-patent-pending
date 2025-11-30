@@ -22,6 +22,22 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class FirestoreUsersDataSource implements UserDataSource {
 
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
+    /**
+     * Retrieves entrant user IDs for a given event and group.
+     *
+     * <p>Reads the appropriate field from events/{eventId}:</p>
+     * <ul>
+     *   <li>WAITLIST → "waitingList"</li>
+     *   <li>SELECTED → "selectedEntrants"</li>
+     *   <li>CANCELLED → "cancelledEntrants"</li>
+     * </ul>
+     *
+     * <p>The map keys in Firestore are treated as user IDs.</p>
+     *
+     * @param eventId the event whose entrants to fetch
+     * @param group   which entrant group to read
+     * @return CompletableFuture resolving to a list of user IDs (empty if none)
+     */
 
     @Override
     public CompletableFuture<List<String>> getEntrantIds(String eventId, Group group) {
@@ -56,6 +72,22 @@ public class FirestoreUsersDataSource implements UserDataSource {
         return f;
     }
 
+    /**
+     * Filters a list of user IDs by their notifications opt-in preference.
+     *
+     * <p>Performs batched lookups (max 10 IDs per query due to Firestore
+     * whereIn limits). A user is included only if opt-in is explicitly true
+     * in one of the following fields:</p>
+     *
+     * <ul>
+     *   <li>users/{uid}.preferences.notificationsOptIn</li>
+     *   <li>users/{uid}.notificationsOptIn</li>
+     * </ul>
+     *
+     * @param eventId unused in this implementation but required by interface
+     * @param candidateUserIds list of user IDs to check
+     * @return CompletableFuture resolving to only those IDs with opt-in enabled
+     */
 
     @Override
     public CompletableFuture<List<String>> filterOptedIn(String eventId, List<String> candidateUserIds) {

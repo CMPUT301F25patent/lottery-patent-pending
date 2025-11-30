@@ -111,8 +111,9 @@ public class LotteryResultNotifier {
         return toTask(cf);
     }
 
-    //internals
-
+    /**
+     * Fan-out helper that writes WIN notifications to all given recipients.
+     */
     private CompletableFuture<Void> fanOutWin(String org, String evt, String title, String body, List<String> recipients) {
         // send to zero users is still "success"
         if (recipients.isEmpty()) return CompletableFuture.completedFuture(null);
@@ -123,7 +124,9 @@ public class LotteryResultNotifier {
         }
         return CompletableFuture.allOf(writes.toArray(new CompletableFuture[0]));
     }
-
+    /**
+     * Fan-out helper that writes LOSE notifications to all given recipients.
+     */
     private CompletableFuture<Void> fanOutLose(String org, String evt, String title, String body, List<String> recipients) {
         if (recipients.isEmpty()) return CompletableFuture.completedFuture(null);
 

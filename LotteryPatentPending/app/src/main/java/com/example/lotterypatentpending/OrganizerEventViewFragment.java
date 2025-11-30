@@ -59,7 +59,7 @@ public class OrganizerEventViewFragment extends Fragment {
     private ImageView posterImage;
 
     private String eventId;
-    private Button viewWLBtn, viewMapBtn, viewAttendantsBtn, generateQRCode;
+    private Button viewWLBtn, viewMapBtn, generateQRCode;
     private CheckBox geoLocationReq;
     private ImageButton notiButton;
     private OrganizerNotifier organizerNotifier;
@@ -115,7 +115,6 @@ public class OrganizerEventViewFragment extends Fragment {
         notiButton = v.findViewById(R.id.notiBtn);
         viewWLBtn = v.findViewById(R.id.viewWLBtn);
         viewMapBtn = v.findViewById(R.id.viewMapBtn);
-        viewAttendantsBtn = v.findViewById(R.id.viewAttendantsBtn);
         posterImage = v.findViewById(R.id.eventImage);
 
 
@@ -219,10 +218,6 @@ public class OrganizerEventViewFragment extends Fragment {
             }
         });
 
-        viewAttendantsBtn.setOnClickListener(view -> {
-
-        });
-
     }
 
     /**
@@ -289,12 +284,14 @@ public class OrganizerEventViewFragment extends Fragment {
                 .show();
     }
 
-    /** Second dialog: text box to compose the actual message. */
+    /**
+     * Second dialog: text box to compose the actual message.
+     *  @param group The recipient group chosen in the previous dialog.
+     */
     private void showComposeDialog(TargetGroup group) {
         LayoutInflater inflater = LayoutInflater.from(getContext());
         View dialogView = inflater.inflate(R.layout.dialog_notification_compose, null);
         EditText input = dialogView.findViewById(R.id.editMessage);
-
 
         input.setSelection(input.getText().length()); // cursor at end
 
@@ -356,7 +353,12 @@ public class OrganizerEventViewFragment extends Fragment {
     private String currentOrganizerId() {
         return currentOrganizerId;
     }
-
+    /**
+     * Verifies that the current event and organizer ID have been loaded.
+     * Shows a toast message on failure.
+     *
+     * @return true if both are loaded; false otherwise.
+     */
     private boolean ensureEventAndOrganizerLoaded() {
         if (currentEvent == null) {
             Toast.makeText(getContext(), "Event not loaded yet. Please try again.", Toast.LENGTH_SHORT).show();
@@ -369,7 +371,13 @@ public class OrganizerEventViewFragment extends Fragment {
         return true;
     }
 
-    /** Chosen entrants – still needs real chosenIds list wired up later. */
+    /**
+     * Sends a notification to entrants chosen to sign up. This currently
+     * uses an empty placeholder list of entrant IDs until the UI selection
+     * is wired in.
+     *
+     * @param body The message body to send.
+     */
     private void sendChosenSignUp(String body) {
         if (!ensureEventAndOrganizerLoaded()) return;
         String orgId = currentOrganizerId();
@@ -397,7 +405,11 @@ public class OrganizerEventViewFragment extends Fragment {
                     return null;
                 });
     }
-
+    /**
+     * Sends a notification to all entrants on the event's waitlist.
+     *
+     * @param body The message body to send.
+     */
     private void sendWaitlist(String body) {
         if (!ensureEventAndOrganizerLoaded()) return;
         String orgId = currentOrganizerId();
@@ -416,7 +428,12 @@ public class OrganizerEventViewFragment extends Fragment {
                     return null;
                 });
     }
-
+    /**
+     * Sends a notification to all entrants who have been selected
+     * for participation.
+     *
+     * @param body The message body to send.
+     */
     private void sendSelected(String body) {
         if (!ensureEventAndOrganizerLoaded()) return;
         String orgId = currentOrganizerId();
@@ -435,7 +452,12 @@ public class OrganizerEventViewFragment extends Fragment {
                     return null;
                 });
     }
-
+    /**
+     * Sends a notification to all entrants whose participation
+     * has been cancelled.
+     *
+     * @param body The message body to send.
+     */
     private void sendCancelled(String body) {
         if (!ensureEventAndOrganizerLoaded()) return;
         String orgId = currentOrganizerId();

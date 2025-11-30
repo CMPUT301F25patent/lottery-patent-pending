@@ -1,14 +1,19 @@
 package com.example.lotterypatentpending.models;
 
-// package com.example.lotterypatentpending.models;
-
+/**
+ * Simple metadata container for images stored in Firebase Storage.
+ * Each record corresponds to one uploaded image and tracks its ID,
+ * associated event, storage path, uploader, and creation timestamp.
+ */
 public class ImageRecord {
     private String id;          // Firestore doc id
     private String eventId;     // linked event
     private String storagePath; // path in Firebase Storage (e.g. "event_posters/<eventId>.jpg")
     private String uploaderId;  // organizer uid (optional)
     private long createdAt;     // millis since epoch
-
+    /**
+     * Default Firestore-required constructor.
+     */
     public ImageRecord() {}
 
     public ImageRecord(String id, String eventId, String storagePath, String uploaderId, long createdAt) {
