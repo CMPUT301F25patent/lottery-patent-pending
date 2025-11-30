@@ -39,26 +39,38 @@ import com.google.android.gms.location.LocationServices;
 
 /**
  * Fragment that displays details for a selected event from the attendee view.
- * Users can join or leave the event's waiting list from this screen.
- *
+ * Users can join or leave the event's waiting list, and accept/decline selection, from this screen.
  * This fragment is typically shown when an attendee taps on an event in the event list.
  */
 public class AttendeeEventDetailsFragment extends Fragment {
+    /** Repository holding the current user and event state. */
     private UserEventRepository userEventRepo;
+    /** Manager for Firebase interactions. */
     private FirebaseManager fm;
+    /** TextView displaying the waiting list size and capacity. */
     private TextView waitListCap;
+    /** Button for joining the event's waiting list. */
     private Button joinButton;
+    /** Button for accepting an event spot. */
     private Button acceptButton;
+    /** Button for declining an event spot. */
     private Button declineButton;
+    /** Button for re-joining the waiting list after declining/cancelling. */
     private Button rejoinButton;
+    /** Button for cancelling an accepted spot. */
     private Button cancelButton;
+    /** Button for leaving the waiting list. */
     private Button leaveButton;
+    /** ImageView displaying the event poster. */
     private ImageView posterImage;
 
+    /** Registration for the real-time listener on the current event. */
     private ListenerRegistration eventListener;
 
+    /** Request code for location permission (unused due to ActivityResultLauncher). */
     private final int LOCATION_REQ_CODE = 1001;
 
+    /** Launcher for requesting location permission. */
     @SuppressLint("MissingPermission")
     private final ActivityResultLauncher<String> locationPermissionLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
@@ -70,11 +82,16 @@ public class AttendeeEventDetailsFragment extends Fragment {
             });
 
 
-
+    /**
+     * Required empty public constructor for fragment inflation.
+     */
     public AttendeeEventDetailsFragment() {
         super(R.layout.attendee_fragment_event_details);
     }
 
+    /**
+     * Initializes views, sets static event data, and sets up the real-time event listener.
+     */
     @Override
     public void onViewCreated(@NonNull View view,
                               @Nullable Bundle savedInstanceState) {
@@ -199,11 +216,14 @@ public class AttendeeEventDetailsFragment extends Fragment {
 
                     @Override
                     public void onFailure(Exception e) {
-                         Log.e("AttendeeEventDetails", "getEventLive failed", e);
+                        Log.e("AttendeeEventDetails", "getEventLive failed", e);
                     }
                 });
     }
 
+    /**
+     * Called when the view is destroyed. Removes the Firestore listener and clears the event from the repository.
+     */
     @Override
     public void onDestroyView() {
         super.onDestroyView();
@@ -220,7 +240,8 @@ public class AttendeeEventDetailsFragment extends Fragment {
 
     /**
      * Adds the current user to the selected event's waiting list
-     * and updates local + Firestore state.
+     * and updates local and Firestore state. Checks capacity and current status first.
+     * @return true if joined, false otherwise.
      */
     private boolean joinEventHelper() {
         User currentUser  = userEventRepo.getUser().getValue();
@@ -275,7 +296,8 @@ public class AttendeeEventDetailsFragment extends Fragment {
 
     /**
      * Removes the current user from the selected event's waiting list
-     * and updates local + Firestore state.
+     * and updates local and Firestore state.
+     * @return true if successful, false otherwise.
      */
     private boolean leaveEventHelper() {
         User currentUser  = userEventRepo.getUser().getValue();
@@ -304,6 +326,10 @@ public class AttendeeEventDetailsFragment extends Fragment {
         return false;
     }
 
+    /**
+     * Updates the user's waiting list state to {@code ACCEPTED}.
+     * @return true if successful, false otherwise.
+     */
     private boolean acceptEventHelper() {
         User currentUser  = userEventRepo.getUser().getValue();
         Event currentEvent = userEventRepo.getEvent().getValue();
@@ -332,6 +358,10 @@ public class AttendeeEventDetailsFragment extends Fragment {
         return false;
     }
 
+    /**
+     * Updates the user's waiting list state to {@code DECLINED}.
+     * @return true if successful, false otherwise.
+     */
     private boolean declineEventHelper() {
         User currentUser  = userEventRepo.getUser().getValue();
         Event currentEvent = userEventRepo.getEvent().getValue();
@@ -361,7 +391,10 @@ public class AttendeeEventDetailsFragment extends Fragment {
     }
 
     /**
-     * Uses User.joinedEventIds to decide if this user is already joined to this event.
+     * Checks if the user is currently on the event's waiting list (via {@code User.joinedEventIds}).
+     * @param user The current user.
+     * @param event The current event.
+     * @return true if the user has joined this event, false otherwise.
      */
     private boolean isUserJoined(@Nullable User user, @Nullable Event event) {
         if (user == null || event == null) {
@@ -373,6 +406,12 @@ public class AttendeeEventDetailsFragment extends Fragment {
         return user.getJoinedEventIds().contains(event.getId());
     }
 
+    /**
+     * Determines the user's current state within the event's waiting list.
+     * @param user The current user.
+     * @param event The current event.
+     * @return The user's {@link WaitingListState}.
+     */
     private WaitingListState getUserState(@Nullable User user, @Nullable Event event) {
         if (user == null || event == null) {
             return WaitingListState.NOT_IN;
@@ -389,7 +428,9 @@ public class AttendeeEventDetailsFragment extends Fragment {
     }
 
     /**
-     * Only show one of the buttons at a time.
+     * Hides all action buttons and sets the visibility and click listener for the correct button
+     * based on the user's current {@link WaitingListState}.
+     * @param state The current state of the user in relation to the event.
      */
     private void updateButtons(WaitingListState state) {
         User currentUser  = userEventRepo.getUser().getValue();
@@ -457,6 +498,11 @@ public class AttendeeEventDetailsFragment extends Fragment {
         }
     }
 
+    /**
+     * Gets the current number of users on the waiting list.
+     * @param event The {@link Event} object.
+     * @return The size of the waiting list, or 0 if it's null.
+     */
     private int getCurrentWaitingListSize(@NonNull Event event) {
         if (event.getWaitingList() == null ||
                 event.getWaitingList().getList() == null) {
@@ -465,6 +511,11 @@ public class AttendeeEventDetailsFragment extends Fragment {
         return event.getWaitingList().getList().size();
     }
 
+    /**
+     * Updates the UI elements related to the waiting list capacity and the user action buttons.
+     * @param event The latest {@link Event} data.
+     * @param user The current {@link User} data.
+     */
     private void refreshWaitingListUI(@NonNull Event event, @Nullable User user) {
         User currentUser  = userEventRepo.getUser().getValue();
         Event currentEvent = userEventRepo.getEvent().getValue();
@@ -490,6 +541,9 @@ public class AttendeeEventDetailsFragment extends Fragment {
         updateButtons(userState);
     }
 
+    /**
+     * Initiates the process to request the location permission if needed.
+     */
     private void requestLocationPermission() {
         if (ContextCompat.checkSelfPermission(
                 requireContext(),
@@ -503,6 +557,9 @@ public class AttendeeEventDetailsFragment extends Fragment {
         }
     }
 
+    /**
+     * Handles the case where location permission is denied by the user.
+     */
     private void onLocationPermissionDenied() {
         boolean shouldShowRationale =
                 shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION);
@@ -522,6 +579,9 @@ public class AttendeeEventDetailsFragment extends Fragment {
     }
 
 
+    /**
+     * Fetches the user's last known location and saves it to Firestore before calling {@link #joinEventHelper()}.
+     */
     @RequiresPermission(allOf = {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION})
     private void getUserLocation() {
         User currentUser  = userEventRepo.getUser().getValue();

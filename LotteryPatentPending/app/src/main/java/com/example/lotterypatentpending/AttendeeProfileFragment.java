@@ -24,9 +24,6 @@ import java.util.List;
 
 
 /**
- * Class AttendeeActivity
- * @author Erik
- * @contributor
  * Fragment for displaying and updating a logged-in attendee's profile.
  * Allows a user to update their name, email, and contact information, toggle notification preferences,
  * and delete their account.
@@ -54,6 +51,10 @@ public class AttendeeProfileFragment extends Fragment {
     }
 
 
+    /**
+     * Initializes UI components, sets initial user data, and attaches listeners for saving
+     * the profile, toggling notifications, and deleting the account.
+     */
     @Override
     public void onViewCreated(@NonNull View v, Bundle savedInstanceState) {
         super.onViewCreated(v, savedInstanceState);

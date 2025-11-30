@@ -43,9 +43,9 @@ import android.util.Base64;
 /**
  * Fragment that displays the details of a selected Event.
  * <p>
- * Observes an Event object from EventViewModel and updates the UI accordingly.
+ * Observes an {@link Event} object from {@link EventViewModel} and updates the UI accordingly.
  * Provides functionality for generating QR codes, toggling geolocation requirement,
- * and navigating back or home.
+ * and sending group notifications to event participants.
  * </p>
  *
  * @author
@@ -53,20 +53,52 @@ import android.util.Base64;
  */
 public class OrganizerEventViewFragment extends Fragment {
 
-    private TextView eventTitle, eventDescr, eventLocation, eventDate, eventRegStart, eventRegEnd, maxEntrants, waitListCap, eventTag;
+    /** TextView for the event's title. */
+    private TextView eventTitle;
+    /** TextView for the event's long description. */
+    private TextView eventDescr;
+    /** TextView for the event's location. */
+    private TextView eventLocation;
+    /** TextView for the event's date and time. */
+    private TextView eventDate;
+    /** TextView for the registration start date and time. */
+    private TextView eventRegStart;
+    /** TextView for the registration end date and time. */
+    private TextView eventRegEnd;
+    /** TextView for the event's maximum capacity/entrants. */
+    private TextView maxEntrants;
+    /** TextView for the event's waiting list capacity. */
+    private TextView waitListCap;
+    /** TextView for the event's tag/category. */
+    private TextView eventTag;
+    /** ImageView to display the generated QR code. */
     private ImageView qrView;
 
+    /** ImageView to display the event poster. */
     private ImageView posterImage;
 
+    /** The Firestore ID of the current event. */
     private String eventId;
-    private Button viewWLBtn, viewMapBtn, generateQRCode;
+    /** Button to navigate to the waiting list view. */
+    private Button viewWLBtn;
+    /** Button to navigate to the map view (if geolocation is enabled). */
+    private Button viewMapBtn;
+    /** Button to trigger the QR code generation. */
+    private Button generateQRCode;
+    /** CheckBox to toggle the geolocation requirement for check-ins. */
     private CheckBox geoLocationReq;
+    /** ImageButton to open the notification options dialog. */
     private ImageButton notiButton;
+    /** Helper class for sending various group notifications. */
     private OrganizerNotifier organizerNotifier;
+    /** The current {@link Event} object being viewed. */
     private Event currentEvent;
+    /** The ID of the currently logged-in organizer. */
     private String currentOrganizerId;
 
-    // Who the notification is going to
+    /**
+     * Enumeration to define the target group for sending notifications.
+     */
     private enum TargetGroup {
         CHOSEN_SIGNUP,
         WAITLIST,
@@ -92,7 +124,7 @@ public class OrganizerEventViewFragment extends Fragment {
 
     /**
      * Called after the view has been created.
-     * Initializes UI elements, sets observers and click listeners for buttons and checkbox.
+     * Initializes UI elements, sets observers, and sets click listeners for buttons and checkbox.
      *
      * @param v The root view of the fragment.
      * @param savedInstanceState Bundle containing saved instance state.
@@ -231,7 +263,9 @@ public class OrganizerEventViewFragment extends Fragment {
         qrView.setVisibility(View.VISIBLE);
     }
 
-    /** First dialog: choose which group you want to message. */
+    /**
+     * First dialog: prompts the organizer to choose the target group for the notification.
+     */
     private void showNotificationOptionsDialog() {
         // Get the logged-in organizer from the shared repository
         User organizer = UserEventRepository.getInstance().getUser().getValue();
@@ -284,7 +318,10 @@ public class OrganizerEventViewFragment extends Fragment {
                 .show();
     }
 
-    /** Second dialog: text box to compose the actual message. */
+    /**
+     * Second dialog: shows a text box for the organizer to compose the message body.
+     * @param group The target group selected in the first dialog.
+     */
     private void showComposeDialog(TargetGroup group) {
         LayoutInflater inflater = LayoutInflater.from(getContext());
         View dialogView = inflater.inflate(R.layout.dialog_notification_compose, null);
@@ -348,10 +385,18 @@ public class OrganizerEventViewFragment extends Fragment {
         dialog.show();
     }
 
+    /**
+     * Retrieves the ID of the current organizer.
+     * @return The current organizer's UID.
+     */
     private String currentOrganizerId() {
         return currentOrganizerId;
     }
 
+    /**
+     * Checks if the {@code currentEvent} and {@code currentOrganizerId} have been successfully loaded.
+     * @return true if both are loaded, false otherwise (and shows a Toast message).
+     */
     private boolean ensureEventAndOrganizerLoaded() {
         if (currentEvent == null) {
             Toast.makeText(getContext(), "Event not loaded yet. Please try again.", Toast.LENGTH_SHORT).show();
@@ -364,7 +409,10 @@ public class OrganizerEventViewFragment extends Fragment {
         return true;
     }
 
-    /** Chosen entrants – still needs real chosenIds list wired up later. */
+    /**
+     * Sends a custom notification to a list of chosen entrants to sign up.
+     * @param body The message content.
+     */
     private void sendChosenSignUp(String body) {
         if (!ensureEventAndOrganizerLoaded()) return;
         String orgId = currentOrganizerId();
@@ -393,6 +441,10 @@ public class OrganizerEventViewFragment extends Fragment {
                 });
     }
 
+    /**
+     * Sends a custom notification to all waitlisted entrants for the current event.
+     * @param body The message content.
+     */
     private void sendWaitlist(String body) {
         if (!ensureEventAndOrganizerLoaded()) return;
         String orgId = currentOrganizerId();
@@ -412,6 +464,10 @@ public class OrganizerEventViewFragment extends Fragment {
                 });
     }
 
+    /**
+     * Sends a custom notification to all selected (non-waitlisted, non-cancelled) entrants.
+     * @param body The message content.
+     */
     private void sendSelected(String body) {
         if (!ensureEventAndOrganizerLoaded()) return;
         String orgId = currentOrganizerId();
@@ -431,6 +487,10 @@ public class OrganizerEventViewFragment extends Fragment {
                 });
     }
 
+    /**
+     * Sends a custom notification to all cancelled entrants for the current event.
+     * @param body The message content.
+     */
     private void sendCancelled(String body) {
         if (!ensureEventAndOrganizerLoaded()) return;
         String orgId = currentOrganizerId();

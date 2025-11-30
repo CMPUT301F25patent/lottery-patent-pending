@@ -48,34 +48,62 @@ import java.io.InputStream;
 
 
 /**
- * Fragment that allows users to create a new Event.
+ * Fragment that allows users to create a new Event or edit an existing one.
  * <p>
- * Collects input from the user, creates an Event object, stores it in Firestore,
- * and navigates to OrganizerEventViewFragment to display the newly created event.
+ * Collects input from the user, validates fields, creates or updates an Event object,
+ * stores it in Firestore, and navigates to OrganizerEventViewFragment to display the event.
+ * Handles image selection and inline storage of event posters.
  * </p>
  * @author
  * @contributor Erik
  */
 public class OrganizerCreateEditEventFragment extends Fragment {
 
-    private EditText titleEt, descriptionEt, locationEt, capacityEt, waitingListCapEt;
+    /** EditText for the event's title. */
+    private EditText titleEt;
+    /** EditText for the event's description. */
+    private EditText descriptionEt;
+    /** EditText for the event's location. */
+    private EditText locationEt;
+    /** EditText for the maximum number of entrants. */
+    private EditText capacityEt;
+    /** EditText for the waiting list capacity. */
+    private EditText waitingListCapEt;
+    /** EditText for inputting a new tag to add to the dropdown. */
     private EditText newTagInput;
+    /** Button to add a new tag. */
     private MaterialButton addTagButton;
+    /** AutoCompleteTextView for selecting or typing an event tag. */
     private AutoCompleteTextView tagDropdown;
-    private TextView pageTitle, eventDateEt, regStartDateEt, regEndDateEt;
-    private Button cancelBtn, createEditBtn;
+    /** TextView displaying the page title ("Create New Event" or "Edit Event"). */
+    private TextView pageTitle;
+    /** TextView for selecting and displaying the event's date and time. */
+    private TextView eventDateEt;
+    /** TextView for selecting and displaying the registration start date and time. */
+    private TextView regStartDateEt;
+    /** TextView for selecting and displaying the registration end date and time. */
+    private TextView regEndDateEt;
+    /** Button to cancel the operation and go back. */
+    private Button cancelBtn;
+    /** Button to create or save the event. */
+    private Button createEditBtn;
+    /** Firebase Manager instance for database operations. */
     private FirebaseManager fm;
+    /** ViewModel to share the Event object between fragments. */
     private EventViewModel viewModel;
 
+    /** ImageView to display a preview of the selected poster. */
     private ImageView posterPreview;
+    /** Button to trigger the image selection from the gallery. */
     private Button btnSelectPoster;
+    /** URI of the currently selected poster image. */
     private Uri selectedPosterUri = null;
 
     /**
      * Inflates the fragment's layout.
      *
-     * @param inflater           The LayoutInflater object that can be used to inflate any views.
-     * @param container          The parent ViewGroup.
+     * @param inflater The LayoutInflater object that can be used to inflate any views.
+     * @param container The parent ViewGroup.
      * @param savedInstanceState Bundle containing saved instance state.
      * @return The root View of the fragment's layout.
      */
@@ -87,9 +115,9 @@ public class OrganizerCreateEditEventFragment extends Fragment {
 
     /**
      * Called after the view has been created.
-     * Initializes UI elements, sets click listeners for buttons.
+     * Initializes UI elements, sets click listeners for buttons, and populates fields if editing an existing event.
      *
-     * @param v                  The root view of the fragment.
+     * @param v The root view of the fragment.
      * @param savedInstanceState Bundle containing saved instance state.
      */
     @Override
@@ -221,7 +249,7 @@ public class OrganizerCreateEditEventFragment extends Fragment {
             });
         });
 
-    // Attach date Dialog and time Dialog for each TextView date
+        // Attach date Dialog and time Dialog for each TextView date
         DateTimePickerHelper.attachDateTimePicker(eventDateEt, requireContext());
         DateTimePickerHelper.attachDateTimePicker(regStartDateEt, requireContext());
         DateTimePickerHelper.attachDateTimePicker(regEndDateEt, requireContext());
@@ -233,8 +261,12 @@ public class OrganizerCreateEditEventFragment extends Fragment {
     }
 
     /**
-     * Collects input from EditText/TextViews fields, creates a new Event object,
-     * saves it to Firestore, and updates the EventViewModel.
+     * Collects input from EditText/TextViews fields, creates or updates an Event object,
+     * saves it to Firestore, and updates the {@link EventViewModel}.
+     *
+     * @param action The action type, either "create" for a new event or "edit" for an existing one.
+     * @param passed_event The existing {@link Event} object if editing, otherwise null.
+     * @return true if the event was successfully created/edited and validation passed, false otherwise.
      */
     public boolean createEditEvent(String action, Event passed_event) {
         String title = titleEt.getText().toString().trim();
@@ -384,11 +416,12 @@ public class OrganizerCreateEditEventFragment extends Fragment {
 
 
     /**
+     * Validates the chronological order of the registration window relative to the event date.
      *
      * @param eventDate timestamp of the events date
      * @param regStart timestamp of the registration start date
      * @param regEnd timestamp of the registration end date
-     * @return true/false if timestamps are validated and make sense.
+     * @return true if the timestamps are validated and make sense (regStart < regEnd <= eventDate), false otherwise.
      */
     private boolean validateRegistrationWindow(Timestamp eventDate,
                                                Timestamp regStart,
@@ -421,6 +454,7 @@ public class OrganizerCreateEditEventFragment extends Fragment {
 
     /**
      * Loads bitmap from selectedPosterUri, then calls FirebaseManager.uploadEventPosterInline.
+     * @param eventId The ID of the event to associate the poster with (currently unused in this implementation).
      */
     private void uploadPosterInline(String eventId) {
         if (selectedPosterUri == null) return;
@@ -441,6 +475,9 @@ public class OrganizerCreateEditEventFragment extends Fragment {
 
     /**
      * Helper for decoding a Bitmap from a Uri, handling pre/post API 28.
+     * @param uri The URI of the image content.
+     * @return The decoded Bitmap.
+     * @throws IOException If the image cannot be decoded.
      */
     private Bitmap loadBitmapFromUri(@NonNull Uri uri) throws IOException {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
@@ -455,6 +492,12 @@ public class OrganizerCreateEditEventFragment extends Fragment {
         }
     }
 
+    /**
+     * Reads the image data from {@code selectedPosterUri}, scales it down to {@code 600px} max side,
+     * compresses it as JPEG (70% quality), and returns the resulting byte array.
+     *
+     * @return The scaled and compressed poster image as a byte array, or null if reading fails.
+     */
     private byte[] loadPosterBytesFromUri() {
         if (selectedPosterUri == null) return null;
 
@@ -493,6 +536,7 @@ public class OrganizerCreateEditEventFragment extends Fragment {
         }
     }
 
+    /** Activity result launcher to handle selecting an image from the device's content provider. */
     private final ActivityResultLauncher<String> pickImageLauncher =
             registerForActivityResult(new ActivityResultContracts.GetContent(),
                     uri -> {

@@ -30,16 +30,30 @@ import com.google.firebase.auth.FirebaseUser;
 
 /**
  * Class MainActivity
+ * The primary entry point for the application. Handles Firebase initialization,
+ * anonymous user sign-in/existing user lookup, user onboarding (if needed),
+ * and dynamic navigation based on user roles (Attendee, Organizer, Admin).
+ * Also manages the required POST_NOTIFICATIONS permission for Android 13+.
  * @collaborators Erik, Michael
  */
 public class MainActivity extends AppCompatActivity implements MainRegisterNewUserFragment.OnProfileSaved {
+    /** Manager for Firebase interactions. */
     private FirebaseManager fm;
+    /** Button for navigating to the Attendee dashboard. */
     private View attendeeBtn;
+    /** Button for navigating to the Organizer dashboard. */
     private View organizerBtn;
+    /** Button for navigating to the Admin dashboard. */
     private View adminBtn;
+    /** Helper class for managing the full-screen loading spinner. */
     private LoadingOverlay loading;
+    /** The main content layout to be hidden during loading/onboarding. */
     private View mainLayout;
 
+    /**
+     * Initializes the activity, Firebase, UI components, loading overlay,
+     * and performs user authentication/onboarding checks.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -98,10 +112,11 @@ public class MainActivity extends AppCompatActivity implements MainRegisterNewUs
 
 
     }
+    /** Request code for POST_NOTIFICATIONS permission. */
     private static final int REQ_POST_NOTIFICATIONS = 1001;
 
     /**
-     * Ensure we have POST_NOTIFICATIONS permission on Android 13+.
+     * Ensures we have POST_NOTIFICATIONS permission on Android 13+ (Tiramisu).
      */
     private void ensureNotificationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -120,7 +135,7 @@ public class MainActivity extends AppCompatActivity implements MainRegisterNewUs
     }
 
     /**
-     * Checks if the current user is an admin before launching the AdminActivity.
+     * Checks if the current logged-in user has admin privileges before launching {@link AdminActivity}.
      */
     private void handleAdminButtonClick() {
         User currentUser = UserEventRepository.getInstance().getUser().getValue();
@@ -136,6 +151,11 @@ public class MainActivity extends AppCompatActivity implements MainRegisterNewUs
     }
 
 
+    /**
+     * Fetches the user document from Firestore. If the document exists, sets the user in the
+     * repository and starts the notification stream. If it doesn't exist, initiates the onboarding process.
+     * @param uid The Firebase User ID (UID).
+     */
     private void checkUserDoc(String uid) {
         loading.show();
         fm.getUser(uid, new FirebaseManager.FirebaseCallback<User>() {
@@ -168,6 +188,10 @@ public class MainActivity extends AppCompatActivity implements MainRegisterNewUs
         });
     }
 
+    /**
+     * Replaces the content area with the {@link MainRegisterNewUserFragment} to collect
+     * the new user's profile details.
+     */
     private void registerNewUserOverlay() {
         int containerId = R.id.createUserOverlay; // make sure this exists in activity_main.xml
         View container = findViewById(containerId);
@@ -183,6 +207,10 @@ public class MainActivity extends AppCompatActivity implements MainRegisterNewUs
         }
     }
 
+    /**
+     * Callback method called when the user successfully saves their profile in the onboarding fragment.
+     * Removes the onboarding fragment and reloads the user data.
+     */
     @Override
     public void onProfileSaved() {
         int containerId = R.id.createUserOverlay;

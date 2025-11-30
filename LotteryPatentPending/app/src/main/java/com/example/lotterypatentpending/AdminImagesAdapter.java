@@ -23,7 +23,6 @@ public class AdminImagesAdapter extends RecyclerView.Adapter<AdminImagesAdapter.
 
     /**
      * A listener interface for handling click and long-click events on items in the RecyclerView.
-     * The hosting Fragment or Activity must implement this interface to respond to user input.
      */
     public interface OnImageClickListener {
         /**
@@ -41,7 +40,9 @@ public class AdminImagesAdapter extends RecyclerView.Adapter<AdminImagesAdapter.
         void onImageLongClick(Event event);
     }
 
+    /** The list of events to be displayed. */
     private final List<Event> eventList;
+    /** The listener to handle click events. */
     private final OnImageClickListener listener;
 
     /**
@@ -55,6 +56,9 @@ public class AdminImagesAdapter extends RecyclerView.Adapter<AdminImagesAdapter.
         this.listener = listener;
     }
 
+    /**
+     * Creates a new ViewHolder for an item view.
+     */
     @NonNull
     @Override
     public ImageViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -62,12 +66,18 @@ public class AdminImagesAdapter extends RecyclerView.Adapter<AdminImagesAdapter.
         return new ImageViewHolder(view);
     }
 
+    /**
+     * Binds the event data at the specified position to the ViewHolder's views.
+     */
     @Override
     public void onBindViewHolder(@NonNull ImageViewHolder holder, int position) {
         Event event = eventList.get(position);
         holder.bind(event, listener);
     }
 
+    /**
+     * Returns the total number of items in the data set held by the adapter.
+     */
     @Override
     public int getItemCount() {
         return eventList.size();
@@ -75,12 +85,17 @@ public class AdminImagesAdapter extends RecyclerView.Adapter<AdminImagesAdapter.
 
     /**
      * ViewHolder for an individual event image item.
-     * It holds the views for the image and event name.
      */
     static class ImageViewHolder extends RecyclerView.ViewHolder {
+        /** ImageView to display the event poster. */
         ImageView imageView;
+        /** TextView to display the event name. */
         TextView eventNameTextView;
 
+        /**
+         * Constructs the ViewHolder.
+         * @param itemView The view for the item row.
+         */
         public ImageViewHolder(@NonNull View itemView) {
             super(itemView);
             imageView = itemView.findViewById(R.id.imageView);
@@ -88,7 +103,7 @@ public class AdminImagesAdapter extends RecyclerView.Adapter<AdminImagesAdapter.
         }
 
         /**
-         * Binds an event's data to the views in the ViewHolder.
+         * Binds an event's data and click listeners to the ViewHolder's views.
          *
          * @param event    The event to display.
          * @param listener The listener to attach to the item view for click handling.

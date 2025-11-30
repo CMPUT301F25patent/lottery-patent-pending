@@ -34,17 +34,22 @@ import java.util.List;
  */
 public class AdminImagesFragment extends Fragment implements AdminImagesAdapter.OnImageClickListener {
 
+    /** Displays the grid of event posters. */
     private RecyclerView recyclerView;
+    /** Adapter to bind {@link Event} data to the {@link RecyclerView}. */
     private AdminImagesAdapter adapter;
+    /** List holding {@link Event} objects that have a poster. */
     private List<Event> eventList;
+    /** Progress bar shown while fetching data. */
     private ProgressBar progressBar;
+    /** Firestore database instance. */
     private FirebaseFirestore db;
 
     /**
      * Inflates the fragment's layout and initializes its views and data.
      *
-     * @param inflater           The LayoutInflater object that can be used to inflate any views in the fragment.
-     * @param container          If non-null, this is the parent view that the fragment's UI should be attached to.
+     * @param inflater           The LayoutInflater object.
+     * @param container          The parent view that the fragment's UI should be attached to.
      * @param savedInstanceState If non-null, this fragment is being re-constructed from a previous saved state.
      * @return The View for the fragment's UI.
      */
@@ -65,7 +70,7 @@ public class AdminImagesFragment extends Fragment implements AdminImagesAdapter.
     }
 
     /**
-     * Configures the RecyclerView with a GridLayoutManager and sets up the adapter.
+     * Configures the RecyclerView with a {@link GridLayoutManager} and sets up the adapter.
      */
     private void setupRecyclerView() {
         recyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2));

@@ -30,8 +30,11 @@ import com.example.lotterypatentpending.viewModels.UserEventRepository;
  */
 public class OrganizerActivityFragment extends Fragment {
 
+    /** Button to navigate to the create event screen. */
     Button create_event;
+    /** Button to navigate to the list of created events. */
     Button view_events;
+    /** TextView to display a greeting to the organizer. */
     TextView greeting;
 
 

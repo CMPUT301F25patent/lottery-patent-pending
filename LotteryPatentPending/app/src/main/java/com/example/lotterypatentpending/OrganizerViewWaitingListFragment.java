@@ -39,29 +39,61 @@ import java.util.List;
 
 import kotlinx.serialization.internal.ArrayClassDesc;
 
+/**
+ * Fragment that displays the list of entrants for an event, including those entered,
+ * selected, and canceled.
+ * <p>
+ * Provides functionality for running the lottery sample (if applicable),
+ * filtering the list by entrant state, and manually canceling an entrant.
+ * </p>
+ */
 public class OrganizerViewWaitingListFragment extends Fragment {
+    /** Button to run the lottery sample/selection process. */
     private MaterialButton sampleBtn;
+    /** Button to manually cancel a selected entrant. */
     private Button cancelEntrantBtn;
+    /** ViewModel to access the current event details. */
     private EventViewModel evm;
+    /** Singleton instance of {@link FirebaseManager} for data operations. */
     private FirebaseManager fm;
+    /** Controller for displaying the loading spinner overlay. */
     private LoadingOverlay loading;
+    /** Master list of all entrants (User and their state) for the event. */
     private ArrayList<Pair<User, WaitingListState>> waitingList = new ArrayList<>();
     // Filtered list actually shown in ListView
+    /** List of entrants currently displayed in the {@link ListView}, based on active filters. */
     private ArrayList<Pair<User, WaitingListState>> visibleWaitingList = new ArrayList<>();
 
+    /** ListView component displaying the entrant list. */
     private ListView waitinglistView;
+    /** Adapter for binding entrant data to the {@link ListView}. */
     private WaitingListAdapter wLAdapter;
+    /** Index of the currently selected entrant in the {@link #visibleWaitingList}. */
     private int selectedPosition = -1;
+    /** The currently selected entrant (User and their state). */
     private Pair<User, WaitingListState> selectedEntrant = null;
 
     // Popup + filter state
+    /** PopupWindow used to display the user filtering options. */
     private PopupWindow userFilterPopup;
+    /** Flag to show all users, overriding state filters. */
     private boolean filterAllUsers = true;
+    /** Flag to show users in the {@link WaitingListState#ENTERED} state. */
     private boolean filterEnteredUsers = false;
+    /** Flag to show users in the {@link WaitingListState#SELECTED} state. */
     private boolean filterSelectedUsers = false;
+    /** Flag to show users in the {@link WaitingListState#CANCELED} state. */
     private boolean filterCanceledUsers = false;
 
 
+    /**
+     * Inflates the fragment's layout.
+     *
+     * @param inflater The LayoutInflater object to inflate views.
+     * @param container The parent ViewGroup.
+     * @param savedInstanceState Bundle containing saved instance state.
+     * @return The root View of the fragment's layout.
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -69,6 +101,13 @@ public class OrganizerViewWaitingListFragment extends Fragment {
 
     }
 
+    /**
+     * Called after the view has been created.
+     * Initializes UI elements, sets up the list adapter, and defines click listeners.
+     *
+     * @param v The root view of the fragment.
+     * @param savedInstanceState Bundle containing saved instance state.
+     */
     @Override
     public void onViewCreated(@NonNull View v, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(v, savedInstanceState);
@@ -140,6 +179,11 @@ public class OrganizerViewWaitingListFragment extends Fragment {
 
     }
 
+    /**
+     * Fetches the current waiting list data for the event from Firebase.
+     *
+     * @param eventId The ID of the event.
+     */
     private void fetchWaitingList(String eventId) {
         loading.show();
         fm.getEventWaitingList(eventId, new FirebaseManager.FirebaseCallback<ArrayList<Pair<User, WaitingListState>>>() {
@@ -167,10 +211,19 @@ public class OrganizerViewWaitingListFragment extends Fragment {
         });
     }
 
+    /**
+     * Notifies the {@link WaitingListAdapter} that the dataset in {@link #visibleWaitingList} has changed,
+     * triggering a list refresh.
+     */
     private void refreshListFromVisible(){
         wLAdapter.notifyDataSetChanged();
     }
 
+    /**
+     * Updates the visibility and behavior of the lottery sample button based on the event's state.
+     *
+     * @param currentEvent The current {@link Event} object.
+     */
     private void updateButtons(Event currentEvent) {
         sampleBtn.setVisibility(View.GONE);
         Log.i("OrganizerViewWaitingListFragment", "Event state: " + currentEvent.getEventState());
@@ -185,6 +238,11 @@ public class OrganizerViewWaitingListFragment extends Fragment {
         }
     }
 
+    /**
+     * Executes the lottery sampling logic for the given event, updating the event's selected entrants.
+     *
+     * @param event The {@link Event} to run the lottery for.
+     */
     private void sampleBtnHelper(Event event) {
         loading.show();
 
@@ -196,7 +254,8 @@ public class OrganizerViewWaitingListFragment extends Fragment {
     }
 
     /**
-     * Handles the logic for cancelling a selected entrant.
+     * Handles the logic for manually changing a selected entrant's state to {@link WaitingListState#CANCELED}.
+     *
      * @param entrant The User/WaitingListState pair to cancel.
      */
     private void cancelEntrantHelper(Pair<User, WaitingListState> entrant) {
@@ -238,6 +297,10 @@ public class OrganizerViewWaitingListFragment extends Fragment {
     }
 
 
+    /**
+     * Applies the current filter settings (stored in the {@code filter} flags) to the
+     * {@link #waitingList} and populates the {@link #visibleWaitingList}.
+     */
     private void applyUserFilter() {
         visibleWaitingList.clear();
 
@@ -269,6 +332,11 @@ public class OrganizerViewWaitingListFragment extends Fragment {
         wLAdapter.setSelectedPosition(selectedPosition);  // this also calls notifyDataSetChanged()
     }
 
+    /**
+     * Displays a popup window allowing the user to select filters for the entrant list.
+     *
+     * @param anchor The view to anchor the popup window to.
+     */
     private void showUserFilterPopup(View anchor) {
         if (userFilterPopup != null && userFilterPopup.isShowing()) {
             userFilterPopup.dismiss();

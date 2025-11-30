@@ -35,6 +35,8 @@ import java.util.EventListener;
 /**
  * Fragment allowing organizers to view their event list (future
  * and search for a specific event by ID. (only functionality included so far)
+ * Displays a list of events created by the current organizer, supports searching
+ * by event name, and provides options to view, edit, or delete events.
  * @author
  * @contributor Erik
  */
@@ -42,16 +44,25 @@ import java.util.EventListener;
 public class OrganizerViewEventsListFragment extends Fragment {
 
 
+    /** Input field for searching events by title. */
     private TextInputEditText searchInput;
+    /** Button to trigger the search functionality. */
     private MaterialButton searchButton;
+    /** ListView to display the filtered list of events. */
     private ListView listView;
+    /** Singleton instance of {@link FirebaseManager} for data operations. */
     private FirebaseManager fm;
+    /** Adapter for binding event data to the {@link ListView}. */
     private EventListAdapter eventListAdapter;
     // all events from Firestore
+    /** List containing all events organized by the current user, fetched from Firestore. */
     private final ArrayList<Event> allEvents = new ArrayList<>();
     // events currently shown in the list (after filtering)
+    /** List of events currently visible in the ListView (a filtered subset of {@link #allEvents}). */
     private final ArrayList<Event> visibleEvents = new ArrayList<>();
+    /** Controller for showing and hiding the loading spinner overlay. */
     private LoadingOverlay loading;
+    /** Firestore listener to keep the list of organized events synchronized in real-time. */
     private ListenerRegistration organizedEventsListener;
 
 
@@ -71,7 +82,8 @@ public class OrganizerViewEventsListFragment extends Fragment {
 
     /**
      * Called after the view has been created.
-     * Initializes UI elements, sets click listeners for buttons.
+     * Initializes UI elements, sets up the list adapter, attaches the Firestore listener
+     * to load organized events, and sets click listeners for searching and list items.
      *
      * @param v                  The root view of the fragment.
      * @param savedInstanceState Bundle containing saved instance state.
@@ -180,22 +192,22 @@ public class OrganizerViewEventsListFragment extends Fragment {
                     }
                 });
 
-    // Clicking a row opens that event (from filtered list)
+        // Clicking a row opens that event (from filtered list)
         listView.setOnItemClickListener((parent, view, position, id) -> {
-        if (position < 0 || position >= visibleEvents.size()) return;
+            if (position < 0 || position >= visibleEvents.size()) return;
 
-        Event clicked = visibleEvents.get(position);
-        EventViewModel evm =
-                new ViewModelProvider(requireActivity()).get(EventViewModel.class);
-        evm.setEvent(clicked);
+            Event clicked = visibleEvents.get(position);
+            EventViewModel evm =
+                    new ViewModelProvider(requireActivity()).get(EventViewModel.class);
+            evm.setEvent(clicked);
 
-        NavHostFragment.findNavController(this)
-                .navigate(R.id.action_viewEventsList_to_Event_View);
-    });
+            NavHostFragment.findNavController(this)
+                    .navigate(R.id.action_viewEventsList_to_Event_View);
+        });
 
         //Click search button
         searchButton.setOnClickListener(view ->
-            getSearchedEvent());
+                getSearchedEvent());
 
         // Press Enter / Search on keyboard
         searchInput.setOnEditorActionListener((textView, actionId, keyEvent) -> {
@@ -212,6 +224,10 @@ public class OrganizerViewEventsListFragment extends Fragment {
         });
     }
 
+    /**
+     * Called when the view hierarchy is being destroyed.
+     * Removes the Firestore listener to prevent memory leaks.
+     */
     @Override
     public void onDestroyView() {
         super.onDestroyView();
@@ -222,14 +238,18 @@ public class OrganizerViewEventsListFragment extends Fragment {
         }
     }
 
+    /**
+     * Notifies the {@link EventListAdapter} that the dataset in {@link #visibleEvents} has changed,
+     * triggering a list refresh.
+     */
     private void refreshListFromVisible(){
         eventListAdapter.notifyDataSetChanged();
     }
 
 
     /**
-     * Retrieves an event from Firebase based on the text entered
-     * in the search field and stores it in the shared EventViewModel.
+     * Filters the {@link #allEvents} list based on the text entered in the search field
+     * (matching against the event title), updates {@link #visibleEvents}, and refreshes the list.
      */
     public void getSearchedEvent(){
         String query = "";
@@ -249,7 +269,7 @@ public class OrganizerViewEventsListFragment extends Fragment {
         for (Event e: allEvents) {
             String title = e.getTitle();
             if (title != null &&
-                title.toLowerCase().contains(query.toLowerCase())){
+                    title.toLowerCase().contains(query.toLowerCase())){
                 matches.add(e);
             }
         }
@@ -262,6 +282,10 @@ public class OrganizerViewEventsListFragment extends Fragment {
         refreshListFromVisible();
     }
 
+    /**
+     * Deletes the specified event from the local list and from Firestore.
+     * @param event The event to be deleted.
+     */
     public void deleteEvent(Event event){
         visibleEvents.remove(event);
         fm.deleteEvent(event.getId());

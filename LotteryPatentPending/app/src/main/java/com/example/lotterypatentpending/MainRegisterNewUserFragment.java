@@ -20,23 +20,42 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 /**
- * Class Fragment for a new user to register
+ * Fragment for a new user to register their profile details (name, email, phone)
+ * after initial sign-in (typically anonymous). This data is then saved to Firestore.
  * @author Erik
  * @contributor  Erik, Michael
- *   The create user fragment that appears and adds new user to DB
+ * The create user fragment that appears and adds new user to DB
  */
 public class MainRegisterNewUserFragment extends Fragment {
-    public interface OnProfileSaved { void onProfileSaved(); }
+    /** Interface for the hosting activity to implement, called when the profile is successfully saved. */
+    public interface OnProfileSaved {
+        /**
+         * Called by the fragment to notify the host activity that the user profile has been saved.
+         */
+        void onProfileSaved();
+    }
 
-    private EditText nameEt, emailEt, phoneEt;
+    /** EditText for the user's name. */
+    private EditText nameEt;
+    /** EditText for the user's email. */
+    private EditText emailEt;
+    /** EditText for the user's phone number/contact info. */
+    private EditText phoneEt;
+    /** Button to trigger the user profile saving process. */
     private Button saveBtn;
 
+    /**
+     * Inflates the fragment layout.
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         return inflater.inflate(R.layout.main_fragment_create_user, container, false);
     }
 
+    /**
+     * Initializes the UI views and sets the click listener for the save button.
+     */
     @Override
     public void onViewCreated(@NonNull View v, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(v, savedInstanceState);
@@ -49,6 +68,10 @@ public class MainRegisterNewUserFragment extends Fragment {
         saveBtn.setOnClickListener(view -> saveNewUser());
     }
 
+    /**
+     * Validates input fields, creates a new {@link User} object, saves it to Firestore,
+     * sets it in the {@link UserEventRepository}, and notifies the host activity.
+     */
     private void saveNewUser() {
         String name  = nameEt.getText().toString().trim();
         String email = emailEt.getText().toString().trim();

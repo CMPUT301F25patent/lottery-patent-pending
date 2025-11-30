@@ -30,34 +30,40 @@ import java.util.List;
  * and manage registered users.
  *
  * This is the fragment version of the old AdminUsersActivity:
- *  - Loads all users from Firestore via FirebaseManager
- *  - Displays them in a ListView with "Name (email) [ADMIN]" text
- *  - Long-pressing a user shows a confirm-delete dialog and deletes
- *    the user from Firestore, then refreshes the list.
+ * - Loads all users from Firestore via FirebaseManager
+ * - Displays them in a ListView with "Name (email) [ADMIN]" text
+ * - Long-pressing a user shows a confirm-delete dialog and deletes
+ * the user from Firestore, then refreshes the list.
  */
 public class AdminUsersFragment extends Fragment {
 
-    // Firebase service layer (singleton)
+    /** Firebase service layer (singleton). */
     private FirebaseManager firebaseManager;
 
-    // UI references
+    /** ListView showing the users. */
     private ListView listView;
 
-    // Adapter showing simple strings like "Name (email) [ADMIN]"
+    /** Adapter showing simple strings like "Name (email) [ADMIN]". */
     private ArrayAdapter<String> adapter;
 
-    // Raw User objects (full data)
+    /** Raw {@link User} objects (full data). */
     private final List<User> userList = new ArrayList<>();
-    // What we actually display in the ListView
+    /** Formatted strings displayed in the ListView. */
     private final List<String> userDisplayList = new ArrayList<>();
 
-    // Full-screen loading overlay (spinner) reused from other screens
+    /** Full-screen loading overlay (spinner) reused from other screens. */
     private LoadingOverlay loading;
 
+    /**
+     * Required empty constructor.
+     */
     public AdminUsersFragment() {
         // Required empty constructor
     }
 
+    /**
+     * Inflates the fragment layout.
+     */
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container,
@@ -68,6 +74,9 @@ public class AdminUsersFragment extends Fragment {
         return inflater.inflate(R.layout.admin_fragment_users, container, false);
     }
 
+    /**
+     * Initializes views, adapter, loading overlay, and listeners.
+     */
     @Override
     public void onViewCreated(@NonNull View v,
                               @Nullable Bundle savedInstanceState) {
@@ -116,7 +125,7 @@ public class AdminUsersFragment extends Fragment {
     }
 
     /**
-     * Fetches all user data from Firestore via FirebaseManager and updates the list view.
+     * Fetches all user data from Firestore via {@link FirebaseManager} and updates the list view.
      */
     private void loadUsersFromFirebase() {
         firebaseManager.getAllUsers(new FirebaseManager.FirebaseCallback<QuerySnapshot>() {
@@ -163,6 +172,7 @@ public class AdminUsersFragment extends Fragment {
 
     /**
      * Pops up a confirm-delete dialog for the given user.
+     * @param user the {@link User} to confirm deletion for.
      */
     private void confirmDelete(User user) {
         new AlertDialog.Builder(requireContext())
@@ -176,7 +186,7 @@ public class AdminUsersFragment extends Fragment {
     /**
      * Deletes a user from Firestore and refreshes the on-screen list.
      *
-     * @param user the User to delete.
+     * @param user the {@link User} to delete.
      */
     private void deleteUser(User user) {
         // Show spinner during delete + reload

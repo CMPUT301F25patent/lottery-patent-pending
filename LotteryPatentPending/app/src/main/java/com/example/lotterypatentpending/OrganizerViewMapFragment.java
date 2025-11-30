@@ -29,13 +29,33 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Fragment that displays a Google Map with markers representing the last known
+ * locations of the event's entrants, provided the event requires geolocation
+ * for check-in.
+ * <p>
+ * Implements {@link OnMapReadyCallback} to initialize the map and fetch location data.
+ * </p>
+ */
 public class OrganizerViewMapFragment extends Fragment implements OnMapReadyCallback {
+    /** The Google Map object. */
     private GoogleMap mMap;
+    /** Singleton instance of {@link FirebaseManager} for data operations. */
     private FirebaseManager fm = FirebaseManager.getInstance();
+    /** ViewModel to access the currently selected event details. */
     private EventViewModel viewModel;
+    /** Controller for displaying the loading spinner overlay. */
     private LoadingOverlay loading;
 
 
+    /**
+     * Inflates the fragment's layout and initializes the Google Map.
+     *
+     * @param inflater The LayoutInflater object that can be used to inflate any views.
+     * @param container The parent view group.
+     * @param savedInstanceState Bundle containing saved instance state.
+     * @return The root View of the fragment's layout.
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -64,6 +84,12 @@ public class OrganizerViewMapFragment extends Fragment implements OnMapReadyCall
         return view;
     }
 
+    /**
+     * Callback method called when the map is ready to be used.
+     * Fetches entrant locations from Firebase and loads them onto the map.
+     *
+     * @param googleMap The initialized GoogleMap instance.
+     */
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
@@ -89,6 +115,12 @@ public class OrganizerViewMapFragment extends Fragment implements OnMapReadyCall
 
     }
 
+    /**
+     * Places markers on the map for each user location provided and adjusts the camera zoom
+     * to encompass all markers.
+     *
+     * @param userLocations A list of {@link UserLocation} objects for the event's entrants.
+     */
     private void loadUsersOnMap(ArrayList<UserLocation> userLocations) {
         if (userLocations == null || userLocations.isEmpty()) {
             // No entrants → load default location

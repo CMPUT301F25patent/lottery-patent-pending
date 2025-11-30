@@ -38,6 +38,7 @@ import com.example.lotterypatentpending.viewModels.UserEventRepository;
  */
 public class AttendeeQRScannerFragment extends Fragment {
 
+    /** The QR code scanner utility object. */
     private CodeScanner codeScanner;
     /**
      * A flag to prevent multiple fragment transactions from being triggered by a single scan.
@@ -45,7 +46,7 @@ public class AttendeeQRScannerFragment extends Fragment {
     private boolean launched = false;
 
     /**
-     * An ActivityResultLauncher for requesting the CAMERA permission at runtime.
+     * An {@link ActivityResultLauncher} for requesting the CAMERA permission at runtime.
      * If the permission is granted, the scanner is started. If denied, a toast message is shown.
      */
     private final ActivityResultLauncher<String> askCamera =
@@ -57,19 +58,17 @@ public class AttendeeQRScannerFragment extends Fragment {
 
     /**
      * Default constructor.
-     * Passes the layout resource for this fragment to the superclass constructor.
      */
     public AttendeeQRScannerFragment() {
         super(R.layout.attendee_fragment_qr_scanner);
     }
     /**
      * Called immediately after {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}
-     * has returned, but before any saved state has been restored in to the view.
-     * This is where the camera permission check and scanner initialization are triggered.
+     * has returned. Checks for camera permission and initializes the scanner if permission is granted.
      *
      * @param view               The View returned by {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}.
      * @param savedInstanceState If non-null, this fragment is being re-constructed
-     *                           from a previous saved state as given in the Bundle.
+     * from a previous saved state.
      */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
@@ -86,9 +85,8 @@ public class AttendeeQRScannerFragment extends Fragment {
     }
     /**
      * Initializes and starts the {@link CodeScanner}.
-     * This method sets up the scanner view, defines the callback for when a QR code is successfully
-     * decoded, and handles the subsequent logic of validating the QR code and navigating to the
-     * event details.
+     * Defines the callback for successful QR code decoding, which validates the code,
+     * fetches the event from Firebase, and navigates to the event details fragment.
      */
     private void startScanner() {
         View v = requireView();
@@ -155,7 +153,7 @@ public class AttendeeQRScannerFragment extends Fragment {
     }
     /**
      * Called when the fragment is visible to the user and actively running.
-     * This is a good place to start the camera preview.
+     * Starts the camera preview if the scanner is initialized.
      */
     @Override
     public void onResume() {
@@ -165,8 +163,7 @@ public class AttendeeQRScannerFragment extends Fragment {
     }
     /**
      * Called when the Fragment is no longer resumed.
-     * This is the time to release camera resources to prevent memory leaks and
-     * allow other apps to use the camera.
+     * Releases camera resources to prevent memory leaks and allow other apps to use the camera.
      */
     @Override
     public void onPause() {

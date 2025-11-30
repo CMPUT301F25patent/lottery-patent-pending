@@ -36,11 +36,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class NotificationWatcher {
 
     // ---- functional interfaces for lambdas ----
+    /** Functional interface for receiving an Integer value (e.g., a count). */
     @FunctionalInterface
     public interface IntCallback {
         void onValue(@Nullable Integer value);
     }
 
+    /** Functional interface for receiving an Exception error. */
     @FunctionalInterface
     public interface ErrorCallback {
         void onError(@NonNull Exception e);
@@ -49,6 +51,10 @@ public class NotificationWatcher {
     // ---- singleton boilerplate ----
     private static NotificationWatcher instance;
 
+    /**
+     * Returns the singleton instance of {@link NotificationWatcher}.
+     * @return The single instance.
+     */
     public static synchronized NotificationWatcher getInstance() {
         if (instance == null) {
             instance = new NotificationWatcher();
@@ -59,22 +65,28 @@ public class NotificationWatcher {
     private NotificationWatcher() {}
 
     // ---- dependencies ----
+    /** Repository for accessing notification data. */
     private final NotificationRepository repo = new FirestoreNotificationRepository();
+    /** Instance of {@link FirebaseFirestore}. */
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     // Firestore listener for badge
+    /** Registration for the Firestore listener monitoring the unread notification count. */
     @Nullable
     private ListenerRegistration unreadBadgeReg;
 
     // Firestore listener for popup stream
+    /** Registration for the Firestore listener monitoring new notifications for system popups. */
     @Nullable
     private ListenerRegistration popupReg;
 
     // Track last popup so we don't double-show on config changes
+    /** Stores the ID of the last notification shown as a system popup to prevent duplicates. */
     @Nullable
     private String lastPopupId;
 
     // Simple counter for system notification IDs
+    /** Atomic counter to generate unique IDs for system notifications. */
     private final AtomicInteger notifIdCounter = new AtomicInteger(1);
 
     // ========== BADGE WATCHER ==========
@@ -83,6 +95,9 @@ public class NotificationWatcher {
      * Start watching the unread-count for a user and forward updates
      * to the provided callback. If there's already a watcher active,
      * it is removed first.
+     * @param userId The ID of the user whose unread count to watch.
+     * @param onCount Callback to receive the unread count.
+     * @param onError Callback to handle errors.
      */
     public void startUnreadBadge(@NonNull String userId,
                                  @NonNull IntCallback onCount,
@@ -113,6 +128,8 @@ public class NotificationWatcher {
      * a system notification whenever a NEW unread document is added.
      *
      * Called from MainActivity AFTER the user document is loaded.
+     * @param appContext The application context to use for notification services.
+     * @param userId The ID of the user whose notifications to watch.
      */
     public void startPopupStream(@NonNull Context appContext,
                                  @NonNull String userId) {
@@ -169,8 +186,13 @@ public class NotificationWatcher {
 
     // ========== SYSTEM NOTIFICATION HELPERS ==========
 
+    /** The ID for the notification channel used by this watcher. */
     private static final String CHANNEL_ID = "inbox_high_1";
 
+    /**
+     * Ensures the necessary notification channel is created for Android O (API 26) and above.
+     * @param ctx The context used to get the system service.
+     */
     private void ensureChannel(Context ctx) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel ch = new NotificationChannel(
@@ -184,6 +206,11 @@ public class NotificationWatcher {
         }
     }
 
+    /**
+     * Builds and displays a system notification for a new incoming notification.
+     * @param ctx The context used to build and display the notification.
+     * @param n The {@link Notification} object containing the content.
+     */
     private void showSystemNotification(Context ctx, Notification n) {
         ensureChannel(ctx);
 

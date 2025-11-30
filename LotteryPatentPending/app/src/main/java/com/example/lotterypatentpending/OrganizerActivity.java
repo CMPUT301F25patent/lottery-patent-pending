@@ -22,21 +22,30 @@ import com.google.android.gms.tasks.Tasks;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
+import java.util.concurrent.CompletableFuture;
+
 /**
  * Activity used by event organizers to manage notifications for lottery results,
  * waitlisted users, selected participants, and cancelled events.
  * <p>
  * Handles UI initialization, edge-to-edge setup, and provides helper methods
- * for sending notifications to specific groups of users via OrganizerNotifier
- * and LotteryResultNotifier.
+ * for sending notifications to specific groups of users via {@link OrganizerNotifier}
+ * and {@link LotteryResultNotifier}.
  * </p>
  */
 public class OrganizerActivity extends AppCompatActivity {
+    /** Helper class for sending general notifications to groups of users. */
     private OrganizerNotifier organizerNotifier;
+    /** ViewModel to hold and manage UI-related data for organizer fragments. */
     private OrganizerViewModel organizerVm;
     // Call this when the organizer clicks "Send" to a hand-picked set of users.
+    /** Helper class for handling notifications specifically related to lottery results (winners/losers). */
     private final LotteryResultNotifier resultNotifier = new LotteryResultNotifier();
 
+    /**
+     * Initializes the activity, sets up the toolbar and navigation components,
+     * and initializes the notifiers and ViewModel.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -216,7 +225,13 @@ public class OrganizerActivity extends AppCompatActivity {
                 });
     }
 
-    /** Winners only (if you have a separate button). */
+    /**
+     * Notifies only the winners of the lottery results.
+     * @param organizerId current organizer's uid
+     * @param eventId event document id
+     * @param eventTitle used for message text
+     * @param winnerIds the selected winners
+     */
     private void notifyWinnersOnly(String organizerId, String eventId, String eventTitle,
                                    java.util.List<String> winnerIds) {
         resultNotifier.notifyWinners(organizerId, eventId, eventTitle, winnerIds)
@@ -227,7 +242,14 @@ public class OrganizerActivity extends AppCompatActivity {
                 });
     }
 
-    /** Losers only (if you have a separate button). */
+    /**
+     * Notifies only the losers (non-winners) of the lottery results.
+     * @param organizerId current organizer's uid
+     * @param eventId event document id
+     * @param eventTitle used for message text
+     * @param allEntrantIds full pool considered in the draw
+     * @param winnerIds the selected winners (used to calculate losers)
+     */
     private void notifyLosersOnly(String organizerId, String eventId, String eventTitle,
                                   java.util.List<String> allEntrantIds, java.util.List<String> winnerIds) {
         resultNotifier.notifyLosersFromPool(organizerId, eventId, eventTitle, allEntrantIds, winnerIds)

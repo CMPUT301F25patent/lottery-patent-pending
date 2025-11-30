@@ -35,26 +35,39 @@ import java.util.List;
  */
 public class AdminEventsFragment extends Fragment {
 
+    /** Instance of the Firebase data manager. */
     private FirebaseManager firebaseManager;
 
+    /** Input field for searching/filtering events. */
     private TextInputEditText searchInput;
+    /** Button to trigger the search/filter operation. */
     private MaterialButton searchButton;
+    /** ListView to display the events. */
     private ListView listView;
 
-    // all events from Firestore
+    /** List containing all events fetched from Firestore. */
     private final ArrayList<Event> allEvents = new ArrayList<>();
-    // events currently shown (after filtering)
+    /** List containing events currently displayed to the user (filtered subset of allEvents). */
     private final ArrayList<Event> visibleEvents = new ArrayList<>();
 
+    /** Registration object for the real-time listener on all events. */
     private ListenerRegistration eventsListener;
 
+    /** Adapter to link event data to the ListView. */
     private EventListAdapter eventListAdapter;
+    /** Utility for showing a full-screen loading indicator. */
     private LoadingOverlay loading;
 
+    /**
+     * Required empty public constructor.
+     */
     public AdminEventsFragment() {
         // Required empty public constructor
     }
 
+    /**
+     * Inflates the layout for this fragment.
+     */
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container,
@@ -62,6 +75,9 @@ public class AdminEventsFragment extends Fragment {
         return inflater.inflate(R.layout.admin_fragment_events, container, false);
     }
 
+    /**
+     * Initializes views, sets up the adapter, loading overlay, and listeners for search and delete.
+     */
     @Override
     public void onViewCreated(@NonNull View v,
                               @Nullable Bundle savedInstanceState) {
@@ -127,12 +143,16 @@ public class AdminEventsFragment extends Fragment {
         });
     }
 
+    /**
+     * Notifies the adapter that the data set has changed, causing the ListView to refresh.
+     */
     private void refreshList() {
         eventListAdapter.notifyDataSetChanged();
     }
 
     /**
-     * Deletes an event from Firestore and reloads the list.
+     * Deletes a specified event from Firestore and reloads the entire list to reflect the change.
+     * @param event The {@link Event} object to be deleted.
      */
     private void removeEvent(Event event) {
         loading.show();
@@ -145,9 +165,15 @@ public class AdminEventsFragment extends Fragment {
     }
 
     /**
-     * Loads all events from Firestore and populates allEvents + visibleEvents.
+     * Establishes a real-time listener to load all events from Firestore.
+     * The results populate both {@code allEvents} and {@code visibleEvents}.
      */
     private void loadEventsFromFirebase() {
+        // Remove existing listener if present
+        if (eventsListener != null) {
+            eventsListener.remove();
+        }
+
         eventsListener = firebaseManager.getAllEventsLive(new FirebaseManager.FirebaseCallback<ArrayList<Event>>() {
             @Override
             public void onSuccess(ArrayList<Event> result) {
@@ -179,6 +205,10 @@ public class AdminEventsFragment extends Fragment {
         });
     }
 
+    /**
+     * Called when the view hierarchy is being destroyed.
+     * The real-time Firestore listener is removed here to prevent memory leaks.
+     */
     @Override
     public void onDestroyView() {
         super.onDestroyView();
@@ -190,7 +220,8 @@ public class AdminEventsFragment extends Fragment {
     }
 
     /**
-     * Filters visibleEvents by title using the text in the search bar.
+     * Filters the {@code allEvents} list based on the text currently in the search bar.
+     * The filtered results are placed into {@code visibleEvents} and the list is refreshed.
      */
     private void filterEvents() {
         String query = "";
@@ -208,10 +239,10 @@ public class AdminEventsFragment extends Fragment {
         }
 
         ArrayList<Event> matches = new ArrayList<>();
+        String lowerQuery = query.toLowerCase();
         for (Event e : allEvents) {
             String title = e.getTitle();
-            if (title != null &&
-                    title.toLowerCase().contains(query.toLowerCase())) {
+            if (title != null && title.toLowerCase().contains(lowerQuery)) {
                 matches.add(e);
             }
         }

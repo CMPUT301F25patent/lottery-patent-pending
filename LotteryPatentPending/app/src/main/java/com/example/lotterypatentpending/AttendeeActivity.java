@@ -56,14 +56,17 @@ public class AttendeeActivity extends AppCompatActivity {
     /** Fragment handling QR code scanning for check-in. */
     private Fragment scanFragment;
 
+    /** TextView acting as the badge for unread notification count. */
     private TextView inboxBadge;
+
+    /** The ID of the current user for the inbox listener. */
     private String inboxUserId;
 
 
 
     /**
-     * Initializes the attendee dashboard, navigation bar, notification badge,
-     * and default fragment. Also sets up Firestore listeners.
+     * Initializes the attendee dashboard, navigation bar, and default fragment.
+     * Sets up Firestore listeners and fragment instances.
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -116,11 +119,12 @@ public class AttendeeActivity extends AppCompatActivity {
             return false;
         });
     }
+
     /**
-     * Replaces the fragment container with a new fragment.
+     * Replaces the content area with a new fragment.
      *
      * @param f the fragment to display
-     * @return always true for nav handler use
+     * @return always true for navigation handler use
      */
     private boolean load(Fragment f) {
         getSupportFragmentManager().beginTransaction()
@@ -128,8 +132,9 @@ public class AttendeeActivity extends AppCompatActivity {
                 .commit();
         return true;
     }
+
     /**
-     * Sets the title in the top toolbar.
+     * Sets the title in the top {@link MaterialToolbar}.
      *
      * @param t title text to display
      */
@@ -137,6 +142,7 @@ public class AttendeeActivity extends AppCompatActivity {
         MaterialToolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setTitle(t);
     }
+
     /**
      * Displays a help popup explaining the lottery selection system
      * for event entry.
@@ -157,6 +163,8 @@ public class AttendeeActivity extends AppCompatActivity {
     /**
      * Inflates toolbar menu and initializes the inbox badge listener
      * to update unread notification count in real time.
+     * @param menu The options menu in which you place your items.
+     * @return true for the menu to be displayed.
      */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -196,6 +204,9 @@ public class AttendeeActivity extends AppCompatActivity {
         return true;
     }
 
+    /**
+     * Restarts the unread badge listener if the activity is resumed.
+     */
     @Override
     protected void onResume() {
         super.onResume();
@@ -219,6 +230,9 @@ public class AttendeeActivity extends AppCompatActivity {
         );
     }
 
+    /**
+     * Stops the unread badge listener when the activity is paused.
+     */
     @Override
     protected void onPause() {
         super.onPause();
@@ -226,7 +240,9 @@ public class AttendeeActivity extends AppCompatActivity {
     }
 
     /**
-     * Handles toolbar item actions (currently Inbox).
+     * Handles toolbar item actions (currently Inbox and Info).
+     * @param item The menu item that was selected.
+     * @return true if the event was handled.
      */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -243,8 +259,9 @@ public class AttendeeActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
     /**
-     * Removes Firestore listeners to avoid memory leaks when activity stops.
+     * Stops the notification badge listener when the activity is no longer visible.
      */
     @Override
     protected void onStop() {

@@ -24,18 +24,29 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Allows Admins to view and remove event organizers
+ * Allows Admins to view and remove event organizers.
+ * This activity loads all events, collects the unique organizer IDs, and then displays
+ * the corresponding {@link User} profiles. Admins can delete a user (organizer) via long-press.
  */
 public class AdminOrganizersActivity extends AppCompatActivity {
 
+    /** Manages interaction with Firebase Firestore. */
     private FirebaseManager firebaseManager;
+    /** ListView displaying the organizers. */
     private ListView listView;
+    /** Adapter to link the organizer display names to the ListView. */
     private ArrayAdapter<String> adapter;
+    /** Progress bar shown during data loading. */
     private ProgressBar progressBar;
 
+    /** List of {@link User} objects who are organizers. */
     private final List<User> organizerList = new ArrayList<>();
+    /** List of formatted strings for display in the ListView. */
     private final List<String> organizerDisplayList = new ArrayList<>();
 
+    /**
+     * Initializes the activity, sets up the ListView, and attaches the long-press delete listener.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -62,7 +73,7 @@ public class AdminOrganizersActivity extends AppCompatActivity {
     }
 
     /**
-     * Fetch events → collect organizer IDs → load those users
+     * Initiates the process to fetch all events to identify unique organizer IDs.
      */
     private void loadOrganizersFromFirebase() {
         progressBar.setVisibility(View.VISIBLE);
@@ -90,7 +101,8 @@ public class AdminOrganizersActivity extends AppCompatActivity {
     }
 
     /**
-     * Filter Firestore users down to organizer list
+     * Fetches all user profiles from Firestore and filters them down to the set of known organizers.
+     * @param organizerIds The set of user IDs identified as organizers from events.
      */
     private void fetchUsersAndFilterByOrganizerIds(Set<String> organizerIds) {
         firebaseManager.getAllUsers(new FirebaseManager.FirebaseCallback<QuerySnapshot>() {
@@ -126,7 +138,8 @@ public class AdminOrganizersActivity extends AppCompatActivity {
     }
 
     /**
-     * Confirmation dialog
+     * Shows a confirmation dialog before deleting an organizer.
+     * @param user The {@link User} object to confirm deletion for.
      */
     private void confirmDelete(User user) {
         new AlertDialog.Builder(this)
@@ -137,6 +150,10 @@ public class AdminOrganizersActivity extends AppCompatActivity {
                 .show();
     }
 
+    /**
+     * Executes the deletion of the organizer's user document in Firestore and refreshes the list.
+     * @param user The {@link User} object to delete.
+     */
     private void deleteOrganizer(User user) {
         if (user.getUserId() == null) {
             Toast.makeText(this, "Error: User ID missing", Toast.LENGTH_SHORT).show();

@@ -25,28 +25,38 @@ import java.util.List;
  * Displays the Notification audit log for admins.
  * <p>Layout: {@code activity_admin_notif.xml}.
  * <ul>
- *   <li>Toolbar: {@code @id/toolbar}</li>
- *   <li>Pull-to-refresh: {@code @id/swipe}</li>
- *   <li>List: {@code @id/recycler}</li>
- *   <li>Empty state: {@code @id/emptyState}</li>
- *   <li>Spinner: {@code @id/progress}</li>
+ * <li>Toolbar: {@code @id/toolbar}</li>
+ * <li>Pull-to-refresh: {@code @id/swipe}</li>
+ * <li>List: {@code @id/recycler}</li>
+ * <li>Empty state: {@code @id/emptyState}</li>
+ * <li>Spinner: {@code @id/progress}</li>
  * </ul>
  * Data: {@link FirestoreAdminLogRepository#getAllLogs()} (one-shot). Pull to refresh re-runs it.
- *
  * @author Moffat
  * @maintainer Moffat
  */
 public class NotificationAdminActivity extends AppCompatActivity {
 
+    /** The {@link SwipeRefreshLayout} for pull-to-refresh functionality. */
     private SwipeRefreshLayout swipe;
+    /** The {@link RecyclerView} to display the notification logs. */
     private RecyclerView recycler;
+    /** The view shown when the log list is empty. */
     private View emptyState;
+    /** The progress indicator shown during data loading. */
     private CircularProgressIndicator progress;
 
+    /** Repository for accessing notification log data in Firestore. */
     private final FirestoreAdminLogRepository repo = new FirestoreAdminLogRepository();
+    /** Adapter for binding {@link NotificationLog} data to the {@link RecyclerView}. */
     private AdminLogAdapter adapter;
+    /** Registration object for the real-time Firestore listener. */
     private ListenerRegistration logsReg;
 
+    /**
+     * Initializes the activity, sets up the toolbar, RecyclerView, and initiates
+     * the real-time listener for notification logs.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -106,6 +116,11 @@ public class NotificationAdminActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Displays an {@link androidx.appcompat.app.AlertDialog} containing detailed information
+     * about the selected notification log.
+     * @param log The {@link NotificationLog} to display details for.
+     */
     private void showLogDetailsDialog(NotificationLog log) {
         StringBuilder sb = new StringBuilder();
         sb.append("Category: ").append(log.getCategory()).append("\n\n")
@@ -123,6 +138,10 @@ public class NotificationAdminActivity extends AppCompatActivity {
                 .setPositiveButton(android.R.string.ok, null)
                 .show();
     }
+
+    /**
+     * Stops the real-time Firestore listener when the activity is no longer visible.
+     */
     @Override
     protected void onStop() {
         super.onStop();
@@ -132,4 +151,3 @@ public class NotificationAdminActivity extends AppCompatActivity {
         }
     }
 }
-
