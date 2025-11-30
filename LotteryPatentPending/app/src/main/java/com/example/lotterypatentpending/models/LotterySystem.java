@@ -19,6 +19,7 @@ public class LotterySystem {
     /**
      * Unified lottery:
      * - Picks winners from users whose state is ENTERED or NOT_SELECTED
+     * - NOT_SELECTED is for redrawing the lottery
      * - Sets winners to SELECTED
      * - Sets everyone else in that group to NOT_SELECTED
      *
