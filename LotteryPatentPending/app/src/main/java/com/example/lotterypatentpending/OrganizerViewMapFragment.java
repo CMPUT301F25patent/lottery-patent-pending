@@ -109,9 +109,11 @@ public class OrganizerViewMapFragment extends Fragment implements OnMapReadyCall
      * @param userLocations List of user location objects returned from Firestore.
      */
     private void loadUsersOnMap(ArrayList<UserLocation> userLocations) {
+        boolean hasPoints = false;
+        LatLng defaultLocation = new LatLng(43.6532, -79.3832);
+
         if (userLocations == null || userLocations.isEmpty()) {
             // No entrants → load default location
-            LatLng defaultLocation = new LatLng(43.6532, -79.3832); // Toronto example
             Toast.makeText(requireContext(), "No entrants yet", Toast.LENGTH_SHORT).show();
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(defaultLocation, 10f));
             return;
@@ -120,6 +122,10 @@ public class OrganizerViewMapFragment extends Fragment implements OnMapReadyCall
         LatLngBounds.Builder bounds = new LatLngBounds.Builder();
 
         for(UserLocation location: userLocations){
+            // check to ensure the location object itself isn't null in the list
+            if (location == null) {
+                continue;
+            }
             Double lat = location.getLat();
             Double lng = location.getLng();
 
@@ -133,11 +139,20 @@ public class OrganizerViewMapFragment extends Fragment implements OnMapReadyCall
 
             // Add to bounds
             bounds.include(userPos);
+            hasPoints = true;
 
         }
 
         // Zoom to all markers
-        mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds.build(), 100));
+        if(hasPoints){
+            mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds.build(), 100));
+        }
+        else{
+            // Handle case where list was not empty but contained no valid locations
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(defaultLocation, 10f));
+            Toast.makeText(requireContext(), "No valid locations found for entrants.", Toast.LENGTH_SHORT).show();
+        }
+
 
     }
 

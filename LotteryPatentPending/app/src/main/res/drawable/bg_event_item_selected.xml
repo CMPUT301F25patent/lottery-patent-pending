@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- darker / accent color for selection -->
-    <solid android:color="@color/dark_grey" />
+    <solid android:color="@color/waiting_item_selected_bg" />
     <corners android:radius="12dp" />
     <padding
         android:left="8dp"

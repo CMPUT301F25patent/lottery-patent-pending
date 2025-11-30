@@ -40,7 +40,7 @@ public class LotterySystemTest {
     @Test
     public void testSelectsCorrectNumberOfWinners() {
         int numSelect = 2;
-        LotterySystem.lotterySelect(list, numSelect);
+        LotterySystem.lotteryDraw(list, numSelect);
 
         int selectedCount = 0;
         int notSelectedCount = 0;
@@ -57,7 +57,7 @@ public class LotterySystemTest {
     @Test
     public void testSelectAllWhenNumGreaterThanListSize() {
         int numSelect = 10; // greater than size
-        LotterySystem.lotterySelect(list, numSelect);
+        LotterySystem.lotteryDraw(list, numSelect);
 
         for (Pair<User, WaitingListState> pair : list) {
             assertEquals(WaitingListState.SELECTED, pair.second);
@@ -69,7 +69,7 @@ public class LotterySystemTest {
         List<Pair<User, WaitingListState>> emptyList = new ArrayList<>();
 
         try {
-            LotterySystem.lotterySelect(emptyList, 3);
+            LotterySystem.lotteryDraw(emptyList, 3);
         } catch (Exception e) {
             fail("lotterySelect() should handle empty lists safely, but threw: " + e.getMessage());
         }
