@@ -25,17 +25,23 @@ public class OrganizerViewModel extends ViewModel {
 
     /**
      * Publish lottery results: notify winners AND losers.
-     * Returns a Task that completes when both sub-tasks finish.
+     * Returns a Task<Void> that completes when both sub-tasks finish.
      */
-    public Task<List<Task<?>>> publishResults(@NonNull String organizerId,
-                                              @NonNull String eventId,
-                                              @NonNull String eventTitle,
-                                              @NonNull List<String> allEntrantIds,
-                                              @NonNull List<String> winnerIds) {
-        Task<Void> tWin  = resultNotifier.notifyWinners(organizerId, eventId, eventTitle, winnerIds);
-        Task<Void> tLose = resultNotifier.notifyLosersFromPool(organizerId, eventId, eventTitle, allEntrantIds, winnerIds);
-        // whenAllComplete lets the Activity re-enable UI / show a single toast afterward
-        return Tasks.whenAllComplete(tWin, tLose);
+    public Task<Void> publishResults(@NonNull String organizerId,
+                                     @NonNull String eventId,
+                                     @NonNull String eventTitle,
+                                     @NonNull List<String> allEntrantIds,
+                                     @NonNull List<String> winnerIds) {
+
+        Task<Void> tWin  = resultNotifier.notifyWinners(
+                organizerId, eventId, eventTitle, winnerIds
+        );
+
+        Task<Void> tLose = resultNotifier.notifyLosersFromPool(
+                organizerId, eventId, eventTitle, allEntrantIds, winnerIds
+        );
+
+        // Completes successfully when BOTH finish, or fails if either fails
+        return Tasks.whenAll(tWin, tLose);
     }
 }
-

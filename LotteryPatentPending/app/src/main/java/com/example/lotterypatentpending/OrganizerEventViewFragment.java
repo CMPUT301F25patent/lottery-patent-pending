@@ -21,12 +21,16 @@ import com.example.lotterypatentpending.models.Event;
 import com.example.lotterypatentpending.models.FirebaseManager;
 import com.example.lotterypatentpending.models.FirestoreAdminLogRepository;
 import com.example.lotterypatentpending.models.FirestoreNotificationRepository;
+import com.example.lotterypatentpending.models.LotterySystem;
 import com.example.lotterypatentpending.models.NotificationRepository;
+import com.example.lotterypatentpending.models.WaitingListState;
+import com.example.lotterypatentpending.viewModels.OrganizerViewModel;
 import com.example.lotterypatentpending.viewModels.UserEventRepository;
 import com.example.lotterypatentpending.models.User;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.util.Pair;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
@@ -38,6 +42,8 @@ import com.example.lotterypatentpending.viewModels.EventViewModel;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Base64;
+
+import java.util.List;
 
 
 /**
@@ -59,10 +65,11 @@ public class OrganizerEventViewFragment extends Fragment {
     private ImageView posterImage;
 
     private String eventId;
-    private Button viewWLBtn, viewMapBtn, generateQRCode;
+    private Button viewWLBtn, viewMapBtn, generateQRCode, runLotteryBtn;
     private CheckBox geoLocationReq;
     private ImageButton notiButton;
     private OrganizerNotifier organizerNotifier;
+    private OrganizerViewModel organizerViewModel;
     private Event currentEvent;
     private String currentOrganizerId;
 
@@ -376,104 +383,244 @@ public class OrganizerEventViewFragment extends Fragment {
      * uses an empty placeholder list of entrant IDs until the UI selection
      * is wired in.
      *
-     * @param body The message body to send.
      */
-    private void sendChosenSignUp(String body) {
-        if (!ensureEventAndOrganizerLoaded()) return;
-        String orgId = currentOrganizerId();
-        String eventId = currentEvent.getId();
-        String title = "Sign up for " + currentEvent.getTitle();
+    /** Chosen entrants who still need to sign up */
+    private void sendChosenSignUp(@NonNull String body) {
+        if (currentEvent == null || currentOrganizerId == null) return;
 
-        // TODO: supply real chosenIds from UI selection
+        String orgId   = currentOrganizerId;
+        String eventId = currentEvent.getId();
+        String title   = "Sign up for " + currentEvent.getTitle();
+
+        // TODO: fill this from your UI when you add a multi-select
         java.util.List<String> chosenIds = new java.util.ArrayList<>();
 
-        organizerNotifier.notifyChosenToSignup(orgId, eventId, title, body, chosenIds)
+        organizerNotifier.notifyChosenToSignup(orgId, eventId, title, body)
                 .thenAccept(ids -> requireActivity().runOnUiThread(() ->
-                        Toast.makeText(
+                        android.widget.Toast.makeText(
                                 getContext(),
-                                "Notified " + ids.size() + " entrants",
-                                Toast.LENGTH_SHORT
-                        ).show()))
+                                "Notified " + ids.size() + " chosen entrants",
+                                android.widget.Toast.LENGTH_SHORT
+                        ).show()
+                ))
                 .exceptionally(e -> {
                     e.printStackTrace();
                     requireActivity().runOnUiThread(() ->
-                            Toast.makeText(
+                            android.widget.Toast.makeText(
                                     getContext(),
                                     "Failed to send notification",
-                                    Toast.LENGTH_SHORT
+                                    android.widget.Toast.LENGTH_SHORT
                             ).show());
                     return null;
                 });
     }
-    /**
-     * Sends a notification to all entrants on the event's waitlist.
-     *
-     * @param body The message body to send.
-     */
-    private void sendWaitlist(String body) {
-        if (!ensureEventAndOrganizerLoaded()) return;
-        String orgId = currentOrganizerId();
+
+    /** Everyone currently in the waiting list (ENTERED / NOT_SELECTED) */
+    private void sendWaitlist(@NonNull String body) {
+        if (currentEvent == null || currentOrganizerId == null) return;
+
+        String orgId   = currentOrganizerId;
         String eventId = currentEvent.getId();
-        String title = "Update for " + currentEvent.getTitle();
+        String title   = "Update for " + currentEvent.getTitle();
 
         organizerNotifier.notifyAllWaitlist(orgId, eventId, title, body)
                 .thenAccept(ids -> requireActivity().runOnUiThread(() ->
-                        Toast.makeText(
+                        android.widget.Toast.makeText(
                                 getContext(),
                                 "Notified " + ids.size() + " waitlisted entrants",
-                                Toast.LENGTH_SHORT
-                        ).show()))
+                                android.widget.Toast.LENGTH_SHORT
+                        ).show()
+                ))
                 .exceptionally(e -> {
                     e.printStackTrace();
+                    requireActivity().runOnUiThread(() ->
+                            android.widget.Toast.makeText(
+                                    getContext(),
+                                    "Failed to send notification",
+                                    android.widget.Toast.LENGTH_SHORT
+                            ).show());
                     return null;
                 });
     }
-    /**
-     * Sends a notification to all entrants who have been selected
-     * for participation.
-     *
-     * @param body The message body to send.
-     */
-    private void sendSelected(String body) {
-        if (!ensureEventAndOrganizerLoaded()) return;
-        String orgId = currentOrganizerId();
+
+    /** Everyone whose state is SELECTED / ACCEPTED (your team can tweak) */
+    private void sendSelected(@NonNull String body) {
+        if (currentEvent == null || currentOrganizerId == null) return;
+
+        String orgId   = currentOrganizerId;
         String eventId = currentEvent.getId();
-        String title = "Update for " + currentEvent.getTitle();
+        String title   = "Update for " + currentEvent.getTitle();
 
         organizerNotifier.notifyAllSelected(orgId, eventId, title, body)
                 .thenAccept(ids -> requireActivity().runOnUiThread(() ->
-                        Toast.makeText(
+                        android.widget.Toast.makeText(
                                 getContext(),
                                 "Notified " + ids.size() + " selected entrants",
-                                Toast.LENGTH_SHORT
-                        ).show()))
+                                android.widget.Toast.LENGTH_SHORT
+                        ).show()
+                ))
                 .exceptionally(e -> {
                     e.printStackTrace();
+                    requireActivity().runOnUiThread(() ->
+                            android.widget.Toast.makeText(
+                                    getContext(),
+                                    "Failed to send notification",
+                                    android.widget.Toast.LENGTH_SHORT
+                            ).show());
                     return null;
                 });
     }
-    /**
-     * Sends a notification to all entrants whose participation
-     * has been cancelled.
-     *
-     * @param body The message body to send.
-     */
-    private void sendCancelled(String body) {
-        if (!ensureEventAndOrganizerLoaded()) return;
-        String orgId = currentOrganizerId();
+
+    /** Everyone whose state is CANCELED */
+    private void sendCancelled(@NonNull String body) {
+        if (currentEvent == null || currentOrganizerId == null) return;
+
+        String orgId   = currentOrganizerId;
         String eventId = currentEvent.getId();
-        String title = "Event cancelled: " + currentEvent.getTitle();
+        String title   = "Event update: " + currentEvent.getTitle();
 
         organizerNotifier.notifyAllCancelled(orgId, eventId, title, body)
                 .thenAccept(ids -> requireActivity().runOnUiThread(() ->
-                        Toast.makeText(
+                        android.widget.Toast.makeText(
                                 getContext(),
                                 "Notified " + ids.size() + " cancelled entrants",
-                                Toast.LENGTH_SHORT
-                        ).show()))
+                                android.widget.Toast.LENGTH_SHORT
+                        ).show()
+                ))
                 .exceptionally(e -> {
                     e.printStackTrace();
+                    requireActivity().runOnUiThread(() ->
+                            android.widget.Toast.makeText(
+                                    getContext(),
+                                    "Failed to send notification",
+                                    android.widget.Toast.LENGTH_SHORT
+                            ).show());
                     return null;
                 });
+    }
+
+    private void onRunLotteryClicked() {
+        if (currentEvent == null) {
+            Toast.makeText(getContext(), "Event not loaded yet.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        User organizer = UserEventRepository.getInstance().getUser().getValue();
+        if (organizer == null || organizer.getUserId() == null) {
+            Toast.makeText(getContext(), "Organizer not loaded.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String organizerId = organizer.getUserId();
+        String eventId = currentEvent.getId();
+        String eventTitle = currentEvent.getTitle();
+
+        // confirm with the organizer
+        new androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                .setTitle("Run lottery?")
+                .setMessage("This will randomly select entrants from the waiting list " +
+                        "for \"" + eventTitle + "\" and notify them of the result.")
+                .setPositiveButton("Run", (d, which) -> runLotteryForEvent(organizerId, eventId, eventTitle))
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+    private void runLotteryForEvent(String organizerId,
+                                    String eventId,
+                                    String eventTitle) {
+
+        runLotteryBtn.setEnabled(false);
+
+        FirebaseManager fm = FirebaseManager.getInstance();
+
+        fm.getWaitingListPairs(eventId, new FirebaseManager.FirebaseCallback<List<Pair<User, WaitingListState>>>() {
+            @Override
+            public void onSuccess(List<androidx.core.util.Pair<User, WaitingListState>> pairs) {
+                if (pairs == null || pairs.isEmpty()) {
+                    runLotteryBtn.setEnabled(true);
+                    Toast.makeText(getContext(),
+                            "No entrants in the waiting list.",
+                            Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                // 1) Run the lottery: mark SELECTED / NOT_SELECTED
+                int capacity = currentEvent.getCapacity();
+                // You might want: capacity - alreadyEnrolledCount if that's tracked elsewhere.
+                LotterySystem.lotterySelect(pairs, capacity);
+
+                // 2) Persist new states to Firestore
+                FirebaseManager.getInstance().updateWaitingListStates(
+                        eventId,
+                        pairs,
+                        new FirebaseManager.FirebaseCallback<Void>() {
+                            @Override
+                            public void onSuccess(Void unused) {
+                                // 3) Build allEntrantIds + winnerIds for notifications
+                                java.util.List<String> allEntrantIds = new java.util.ArrayList<>();
+                                java.util.List<String> winnerIds = new java.util.ArrayList<>();
+
+                                for (androidx.core.util.Pair<User, WaitingListState> p : pairs) {
+                                    User u = p.first;
+                                    WaitingListState state = p.second;
+                                    if (u == null || u.getUserId() == null) continue;
+
+                                    String uid = u.getUserId();
+                                    allEntrantIds.add(uid);
+                                    if (state == WaitingListState.SELECTED) {
+                                        winnerIds.add(uid);
+                                    }
+                                }
+
+                                // 4) Fire win + lose notifications via ViewModel
+                                organizerViewModel.publishResults(
+                                                organizerId,
+                                                eventId,
+                                                eventTitle,
+                                                allEntrantIds,
+                                                winnerIds
+                                        )
+                                        .addOnSuccessListener(tasks -> {
+                                            runLotteryBtn.setEnabled(true);
+                                            Toast.makeText(
+                                                    getContext(),
+                                                    "Lottery results published and entrants notified.",
+                                                    Toast.LENGTH_SHORT
+                                            ).show();
+                                        })
+                                        .addOnFailureListener(e -> {
+                                            runLotteryBtn.setEnabled(true);
+                                            e.printStackTrace();
+                                            Toast.makeText(
+                                                    getContext(),
+                                                    "Lottery ran but notifications failed.",
+                                                    Toast.LENGTH_LONG
+                                            ).show();
+                                        });
+                            }
+
+                            @Override
+                            public void onFailure(Exception e) {
+                                runLotteryBtn.setEnabled(true);
+                                e.printStackTrace();
+                                Toast.makeText(
+                                        getContext(),
+                                        "Failed to update waiting list states.",
+                                        Toast.LENGTH_LONG
+                                ).show();
+                            }
+                        });
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                runLotteryBtn.setEnabled(true);
+                e.printStackTrace();
+                Toast.makeText(
+                        getContext(),
+                        "Failed to load waiting list.",
+                        Toast.LENGTH_LONG
+                ).show();
+            }
+        });
     }
 }

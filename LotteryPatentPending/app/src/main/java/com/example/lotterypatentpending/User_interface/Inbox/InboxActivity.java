@@ -12,6 +12,8 @@ import com.example.lotterypatentpending.R;
 import com.example.lotterypatentpending.models.FirestoreNotificationRepository;
 import com.example.lotterypatentpending.models.Notification;
 import com.example.lotterypatentpending.models.NotificationRepository;
+import com.example.lotterypatentpending.models.FirebaseManager;
+import com.example.lotterypatentpending.models.WaitingListState;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -56,15 +58,35 @@ public class InboxActivity extends AppCompatActivity {
         rv.setLayoutManager(new LinearLayoutManager(this));
 
         adapter = new NotificationAdapter(n -> {
-            // Mark as read
+            // Common: mark as read if needed
             if (!n.isRead() && n.getId() != null) {
                 repo.markRead(n.getUserId(), n.getId());
                 n.setRead(true);
-
                 int pos = adapter.getCurrentList().indexOf(n);
                 if (pos >= 0) adapter.notifyItemChanged(pos);
             }
+
+            // Branch on category
+            switch (n.getCategory()) {
+                case LOTTERY_WIN:
+                    showLotteryWinDialog(n);
+                    break;
+                case LOTTERY_LOSE:
+                    showInfoDialog(
+                            n.getTitle(),
+                            n.getBody() != null ? n.getBody()
+                                    : "You weren’t selected this time. We’ll keep you posted if anything changes."
+                    );
+                    break;
+                default:
+                    showInfoDialog(
+                            n.getTitle(),
+                            n.getBody()
+                    );
+                    break;
+            }
         });
+
         rv.setAdapter(adapter);
 
         //Load data from Firestore or use demo if empty
@@ -76,6 +98,73 @@ public class InboxActivity extends AppCompatActivity {
         }
         currentUserId = u.getUid();
     }
+
+    private void showInfoDialog(String title, String body) {
+        new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle(title != null ? title : "Notification")
+                .setMessage(body != null ? body : "")
+                .setPositiveButton("OK", null)
+                .show();
+    }
+
+    private void showLotteryWinDialog(Notification n) {
+        String title = n.getTitle() != null ? n.getTitle() : "Lottery result";
+        String body = (n.getBody() != null ? n.getBody() + "\n\n" : "") +
+                "Do you want to accept this spot?";
+
+        new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle(title)
+                .setMessage(body)
+                .setNegativeButton("Can’t attend", (d, w) -> {
+                    updateWaitingListStates(n, WaitingListState.CANCELED);
+                })
+                .setPositiveButton("Accept spot", (d, w) -> {
+                    updateWaitingListStates(n, WaitingListState.ACCEPTED);
+                })
+                .show();
+    }
+
+    private void updateWaitingListStates(Notification n, WaitingListState state) {
+        String eventId = n.getEventId();   // make sure Notification has this field
+        String userId  = n.getUserId();
+
+        if (eventId == null || userId == null) {
+            // Nothing we can do – but don’t crash
+            return;
+        }
+
+        FirebaseManager.getInstance().updateWaitingListStates(
+                eventId,
+                userId,
+                state,
+                new FirebaseManager.FirebaseCallback<Void>() {
+                    @Override
+                    public void onSuccess(Void unused) {
+                        runOnUiThread(() ->
+                                android.widget.Toast.makeText(
+                                        InboxActivity.this,
+                                        "Your response has been saved.",
+                                        android.widget.Toast.LENGTH_SHORT
+                                ).show()
+                        );
+                    }
+
+                    @Override
+                    public void onFailure(Exception e) {
+                        e.printStackTrace();
+                        runOnUiThread(() ->
+                                android.widget.Toast.makeText(
+                                        InboxActivity.this,
+                                        "Failed to update your status. Please try again.",
+                                        android.widget.Toast.LENGTH_SHORT
+                                ).show()
+                        );
+                    }
+                }
+        );
+    }
+
+
     @Override
     protected void onStart() {
         super.onStart();

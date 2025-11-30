@@ -101,7 +101,7 @@ public class MainActivity extends AppCompatActivity implements MainRegisterNewUs
                         registerNewUserOverlay();
                     });
         }
-        // Ask OS for notification permission (Android 13+)
+        // Ask OS for notification permission
         ensureNotificationPermission();
 
 
@@ -162,14 +162,13 @@ public class MainActivity extends AppCompatActivity implements MainRegisterNewUs
                 }
                 else {
                     UserEventRepository.getInstance().setUser(user);
-                    //if not new user show main_layout
-                    if (mainLayout != null) mainLayout.setVisibility(View.VISIBLE);
                     // Start real-time popup listener for this user
                     NotificationWatcher.getInstance().startPopupStream(
                             getApplicationContext(),
                             user.getUserId()
                     );
-
+                    //if not new user show main_layout
+                    if (mainLayout != null) mainLayout.setVisibility(View.VISIBLE);
                 }
             }
             @Override

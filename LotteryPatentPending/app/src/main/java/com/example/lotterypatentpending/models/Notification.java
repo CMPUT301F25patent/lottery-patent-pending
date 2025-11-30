@@ -22,7 +22,7 @@ public class Notification implements Parcelable {
      * Categories describing the type of notification delivered to a user.
      * Used for entrant/organizer flows such as WIN, LOSE, WAITLIST, etc.
      */
-    public enum Category { CHOSEN_SIGNUP, WAITLIST, SELECTED, CANCELLED, WIN, LOSE, ORGANIZER_MESSAGE }
+    public enum Category { CHOSEN_SIGNUP, WAITLIST, SELECTED, CANCELLED, LOTTERY_WIN, LOTTERY_LOSE, ORGANIZER_MESSAGE }
 
     @DocumentId private String id;
     private String userId = "";
