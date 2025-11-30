@@ -153,7 +153,6 @@ public class MainActivity extends AppCompatActivity implements MainRegisterNewUs
      */
     private void handleAdminButtonClick() {
         User currentUser = UserEventRepository.getInstance().getUser().getValue();
-
         // Check if user data is loaded and if the user is an admin
         if (currentUser != null && currentUser.isAdmin()) {
             // User is an admin, grant access
@@ -184,6 +183,11 @@ public class MainActivity extends AppCompatActivity implements MainRegisterNewUs
                     UserEventRepository.getInstance().setUser(user);
                     //if not new user show main_layout
                     if (mainLayout != null) mainLayout.setVisibility(View.VISIBLE);
+                    if (user.isAdmin()) {
+                        adminBtn.setVisibility(View.VISIBLE);
+                    } else {
+                        adminBtn.setVisibility(View.GONE);
+                    }
                     // Start real-time popup listener for this user
                     NotificationWatcher.getInstance().startPopupStream(
                             getApplicationContext(),
