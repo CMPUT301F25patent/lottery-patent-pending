@@ -205,11 +205,10 @@ public class OrganizerViewWaitingListFragment extends Fragment {
     private void applyUserFilter() {
         visibleWaitingList.clear();
 
-        boolean useStateFilter = !filterAllUsers &&
-                (filterEnteredUsers || filterSelectedUsers || filterCanceledUsers);
+        boolean useStateFilter = filterAllUsers;
 
         for (Pair<User, WaitingListState> entry : waitingList) {
-            if (!useStateFilter) {
+            if (useStateFilter) {
                 visibleWaitingList.add(entry);
                 continue;
             }

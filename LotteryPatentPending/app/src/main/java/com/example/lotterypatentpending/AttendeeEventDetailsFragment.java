@@ -54,6 +54,8 @@ public class AttendeeEventDetailsFragment extends Fragment {
     private Button cancelButton;
     private Button leaveButton;
     private ImageView posterImage;
+    private TextView userStateView;
+    private WaitingListState userState;
 
     private ListenerRegistration eventListener;
 
@@ -83,15 +85,16 @@ public class AttendeeEventDetailsFragment extends Fragment {
         userEventRepo = UserEventRepository.getInstance();
         fm = FirebaseManager.getInstance();
 
-        TextView title       = view.findViewById(R.id.eventTitle);
+        TextView title = view.findViewById(R.id.eventTitle);
         TextView description = view.findViewById(R.id.eventLongDescription);
-        TextView location    = view.findViewById(R.id.location);
-        TextView date        = view.findViewById(R.id.eventDate);
-        TextView regStart    = view.findViewById(R.id.regStart);
-        TextView regEnd      = view.findViewById(R.id.regEnd);
-        TextView capacity    = view.findViewById(R.id.maxEntrants);
+        TextView location = view.findViewById(R.id.location);
+        TextView date = view.findViewById(R.id.eventDate);
+        TextView regStart = view.findViewById(R.id.regStart);
+        TextView regEnd = view.findViewById(R.id.regEnd);
+        TextView capacity = view.findViewById(R.id.maxEntrants);
         waitListCap = view.findViewById(R.id.waitingListCap);
-        TextView tag         = view.findViewById(R.id.tag);
+        TextView tag = view.findViewById(R.id.tag);
+        userStateView = view.findViewById(R.id.userState);
 
         joinButton  = view.findViewById(R.id.attendee_event_details_button_join);
         leaveButton = view.findViewById(R.id.attendee_event_details_button_leave);
@@ -176,7 +179,7 @@ public class AttendeeEventDetailsFragment extends Fragment {
         tag.setText(tagValue);
 
         //  Join/Leave button state
-        WaitingListState userState = getUserState(currentUser, currentEvent);
+        userState = getUserState(currentUser, currentEvent);
         updateButtons(userState);
 
         // --- Live updates for this event ---
@@ -282,6 +285,7 @@ public class AttendeeEventDetailsFragment extends Fragment {
         Event currentEvent = userEventRepo.getEvent().getValue();
 
         if (currentUser != null && currentEvent != null) {
+
             // Firestore
             fm.removeEntrantFromWaitingList(currentEvent.getId(), currentUser.getUserId());
             fm.removeJoinedEventFromEntrant(currentEvent.getId(), currentUser.getUserId());
@@ -360,6 +364,47 @@ public class AttendeeEventDetailsFragment extends Fragment {
         return false;
     }
 
+    private boolean cancelEventHelper() {
+        User currentUser = userEventRepo.getUser().getValue();
+        Event currentEvent = userEventRepo.getEvent().getValue();
+
+        if (currentUser != null && currentEvent != null) {
+            // local
+            currentEvent.updateEntrantState(currentUser, WaitingListState.CANCELED);
+            currentUser.removeJoinedEvent(currentEvent.getId());
+            currentUser.addDeclinedEvent(currentEvent.getId());
+        }
+
+
+        return false;
+    }
+
+    private boolean rejoinEventHelper(){
+        User currentUser = userEventRepo.getUser().getValue();
+        Event currentEvent = userEventRepo.getEvent().getValue();
+
+        if (currentUser != null && currentEvent != null) {
+            // local
+            currentEvent.updateEntrantState(currentUser, WaitingListState.NOT_SELECTED);
+            currentUser.removeJoinedEvent(currentEvent.getId());
+            currentUser.addDeclinedEvent(currentEvent.getId());
+
+            fm.updateEntrantState(currentEvent.getId(), currentUser.getUserId(), WaitingListState.NOT_SELECTED);
+            fm.addOrUpdateUser(currentUser);
+
+            userEventRepo.setUser(currentUser);
+            userEventRepo.setEvent(currentEvent);
+
+            refreshWaitingListUI(currentEvent, currentUser);
+
+            Toast.makeText(getContext(),
+                    "Declined event!",
+                    Toast.LENGTH_SHORT).show();
+
+            return true;
+        }
+    }
+
     /**
      * Uses User.joinedEventIds to decide if this user is already joined to this event.
      */
@@ -403,8 +448,7 @@ public class AttendeeEventDetailsFragment extends Fragment {
         leaveButton.setVisibility(View.GONE);
 
         if(!currentEvent.isOpenForReg()){
-            joinButton.setVisibility(View.VISIBLE);
-            joinButton.setText("Registration ended");
+            userStateView.setText("Registration is not open/closed");
             return;
         }
 
@@ -422,12 +466,15 @@ public class AttendeeEventDetailsFragment extends Fragment {
 
         switch (state) {
             case ENTERED:
+                userStateView.setText("You have entered the event");
                 leaveButton.setVisibility(View.VISIBLE);
                 leaveButton.setOnClickListener(v -> {
                     leaveEventHelper();
                 });
                 break;
+
             case SELECTED:
+                userStateView.setText("You have been selected for the event");
                 acceptButton.setVisibility(View.VISIBLE);
                 declineButton.setVisibility(View.VISIBLE);
                 acceptButton.setOnClickListener(v -> {
@@ -437,21 +484,41 @@ public class AttendeeEventDetailsFragment extends Fragment {
                     declineEventHelper();
                 });
                 break;
+
             case NOT_SELECTED:
-                rejoinButton.setVisibility(View.VISIBLE);
+                userStateView.setText("Not selected for event, but if not all users accept you will be entered into raffle again");
                 leaveButton.setVisibility(View.VISIBLE);
+                leaveButton.setOnClickListener(v -> {
+                    leaveEventHelper();
+                });
                 break;
+
             case ACCEPTED:
+                userStateView.setText("Congradulations, you have been accepted to the event");
                 cancelButton.setVisibility(View.VISIBLE);
+                cancelButton.setOnClickListener(v -> {
+                    cancelEventHelper();
+                });
                 break;
+
             case DECLINED:
-                rejoinButton.setVisibility(View.VISIBLE);
+                userStateView.setText("You have declinded the event");
                 leaveButton.setVisibility(View.VISIBLE);
+                leaveButton.setOnClickListener(v ->{
+                    leaveEventHelper();
+                });
+                rejoinButton.setVisibility(View.VISIBLE);
+                rejoinButton.setOnClickListener(v -> {
+                    rejoinEventHelper();
+                });
                 break;
+
             case CANCELED:
+                userStateView.setText("You have canceled the event");
                 rejoinButton.setVisibility(View.VISIBLE);
                 leaveButton.setVisibility(View.VISIBLE);
                 break;
+
             case NOT_IN:
                 throw new RuntimeException("ERROR: User not in list!");
         }
@@ -469,6 +536,7 @@ public class AttendeeEventDetailsFragment extends Fragment {
         User currentUser  = userEventRepo.getUser().getValue();
         Event currentEvent = userEventRepo.getEvent().getValue();
         EventState currentEventState = currentEvent.getEventState();
+
         // 1) Compute sizes
         int wlCap = event.getWaitingListCapacity();
         int currentSize = getCurrentWaitingListSize(event);
@@ -482,10 +550,7 @@ public class AttendeeEventDetailsFragment extends Fragment {
         }
         waitListCap.setText(waitListValue);
 
-        // 3) Check event state
-        // TODO: need to do stuff like block event stuff if past reg date and not in
-
-        // 4) Show correct buttons
+        // 3) Show correct buttons
         WaitingListState userState = getUserState(currentUser, currentEvent);
         updateButtons(userState);
     }
