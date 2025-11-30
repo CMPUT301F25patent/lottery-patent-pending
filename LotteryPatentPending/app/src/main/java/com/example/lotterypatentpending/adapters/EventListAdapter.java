@@ -23,23 +23,49 @@ import java.util.List;
  * contributor: Erik
  *
  * to add more features simply add more TextViews to item_event and here
+ *
+ * used for displaying {@link Event}
  */
 public class EventListAdapter extends ArrayAdapter<Event> {
-
+    /**
+     * Interface to implement for views that want to list events, to edit and delete events
+     */
     public interface OnEventActionListener {
+        /**
+         * Called when the user edits an event.
+         *
+         * @param event The {@link Event} to be edited.
+         */
         void onEdit(Event event);
+        /**
+         * Called when the user deletes an event.
+         *
+         * @param event The {@link Event} to be deleted.
+         */
         void onDelete(Event event);
     }
+
 
     private final boolean showActions;
 
     private OnEventActionListener listener;
 
+    /**
+     * Creates an EventListAdapter without the listeners for edit/delete
+     * @param context The current context
+     * @param events THe list of events to display
+     */
     public EventListAdapter(@NonNull Context context, @NonNull List<Event> events){
         super(context, 0, events);
         this.showActions = false;
     }
 
+    /**
+     * Creates an EventListAdapter with the listeners for edit/delete
+     * @param context The current context
+     * @param events The list of ecents to display
+     * @param listener Listener to handle events
+     */
     public EventListAdapter(@NonNull Context context, @NonNull List<Event> events,
                             OnEventActionListener listener) {
         super(context, 0, events);
@@ -47,6 +73,19 @@ public class EventListAdapter extends ArrayAdapter<Event> {
         this.showActions = true;
     }
 
+    /**
+     * getView override
+     * @param position The position of the item within the adapter's data set of the item whose view
+     *        we want.
+     * @param convertView The old view to reuse, if possible. Note: You should check that this view
+     *        is non-null and of an appropriate type before using. If it is not possible to convert
+     *        this view to display the correct data, this method can create a new view.
+     *        Heterogeneous lists can specify their number of view types, so that this View is
+     *        always of the right type (see {@link #getViewTypeCount()} and
+     *        {@link #getItemViewType(int)}).
+     * @param parent The parent that this view will eventually be attached to
+     * @return list of items view
+     */
     @Override
     public View getView(int position, View convertView, @NonNull ViewGroup parent){
 

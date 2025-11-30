@@ -11,7 +11,6 @@ import java.util.concurrent.CompletableFuture;
  *
  * Used by domain services to decide who to notify.
  */
-
 public interface UserDataSource {
     enum Group { WAITLIST, SELECTED, CANCELLED }
     CompletableFuture<List<String>> getEntrantIds(String eventId, Group group);

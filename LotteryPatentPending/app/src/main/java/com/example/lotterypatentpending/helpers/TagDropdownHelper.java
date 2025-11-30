@@ -11,6 +11,9 @@ import com.example.lotterypatentpending.models.FirebaseManager;
 
 import java.util.List;
 
+/**
+ * Helper class for implementing drop down tabs
+ */
 public class TagDropdownHelper {
 
     /**

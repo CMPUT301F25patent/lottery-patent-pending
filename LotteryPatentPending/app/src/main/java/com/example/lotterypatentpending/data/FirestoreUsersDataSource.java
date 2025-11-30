@@ -23,6 +23,12 @@ public class FirestoreUsersDataSource implements UserDataSource {
 
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
 
+    /**
+     * Gets entrant ids for a certain event from firebase
+     * @param eventId The event's ID to get entrant IDs from
+     * @param group The group the user is in
+     * @return A list of entrant IDs
+     */
     @Override
     public CompletableFuture<List<String>> getEntrantIds(String eventId, Group group) {
         CompletableFuture<List<String>> f = new CompletableFuture<>();
@@ -56,7 +62,12 @@ public class FirestoreUsersDataSource implements UserDataSource {
         return f;
     }
 
-
+    /**
+     * Filters users by if they are opted in for notifications
+     * @param eventId The event ID to filter entrants from
+     * @param candidateUserIds The list of user IDs to filter
+     * @return A list of filtered user iDs
+     */
     @Override
     public CompletableFuture<List<String>> filterOptedIn(String eventId, List<String> candidateUserIds) {
         final CompletableFuture<List<String>> f = new CompletableFuture<>();

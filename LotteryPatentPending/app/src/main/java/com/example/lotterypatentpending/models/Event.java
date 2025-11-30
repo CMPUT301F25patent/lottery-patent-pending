@@ -73,10 +73,18 @@ public class Event {
         this.geolocationRequired = false;
     }
 
+    /**
+     * Gets the poster image's bytes that represent it
+     * @return
+     */
     public byte[] getPosterBytes() {
         return posterBytes;
     }
 
+    /**
+     * Sets the poster image's bytes that represent it
+     * @param posterBytes
+     */
     public void setPosterBytes(byte[] posterBytes) {
         this.posterBytes = posterBytes;
     }
@@ -222,6 +230,10 @@ public class Event {
         this.geolocationRequired = geolocationRequired;
     }
 
+    /**
+     * Gets the event's state
+     * @return EventState
+     */
     public EventState getEventState() {
         switch (this.eventState) {
             case NOT_STARTED:
@@ -241,6 +253,10 @@ public class Event {
         return this.eventState;
     }
 
+    /**
+     * Sets the event's state
+     * @param eventState
+     */
     public void setEventState(EventState eventState) {
         this.eventState = eventState;
     }
@@ -325,6 +341,11 @@ public class Event {
         return this.waitingList.checkEntrant(entrant);
     }
 
+    /**
+     * Returns whether or not the event contains the user
+     * @param user User to check
+     * @return true/false
+     */
     public boolean containsUser(User user) {
         if (user == null) {
             return false;
@@ -332,18 +353,35 @@ public class Event {
         return waitingList.checkEntrant(user);
     }
 
+    /**
+     * Updates an entrant's state in the waiting list
+     * @param entrant Entrant to update
+     * @param state State to update the entrant to
+     * @return True if the entrant is successfuly updated, false otherwise
+     */
     public boolean updateEntrantState(User entrant, WaitingListState state) {
         return this.waitingList.updateEntrantState(entrant, state);
     }
 
+    /**
+     * Returns whether or not an event is before its registration start date
+     * @return t/f
+     */
     private boolean isBeforeStartDate() {
         return (new Timestamp(new Date()).compareTo(this.regStartDate) < 0);
     }
 
+    /**
+     * Returns whether or not an event is past its registration end date
+     * @return t/f
+     */
     private boolean isPastEndDate() {
         return (new Timestamp(new Date()).compareTo(this.regEndDate) >= 0);
     }
 
+    /**
+     * Updates an event's state depending on where it falls in the timeline with registration dates
+     */
     public void updateRegistrationState() {
         if (this.isBeforeStartDate()) {
             this.eventState = EventState.NOT_STARTED;
@@ -356,6 +394,9 @@ public class Event {
         }
     }
 
+    /**
+     *
+     */
     public void selectEntrants() {
         this.waitingList.lotterySelect(this.capacity);
         this.eventState = EventState.SELECTED_ENTRANTS;

@@ -23,7 +23,6 @@ import java.util.stream.Collectors;
  * @author Moffat
  * @maintainer Moffat
  */
-
 public class OrganizerNotifier {
     private final NotificationRepository notifications;
     private final UserDataSource users;
@@ -55,6 +54,7 @@ public class OrganizerNotifier {
         return notifyGroup(org, evt, title, body, UserDataSource.Group.CANCELLED, Category.CANCELLED);
     }
 
+    /** Broadcast to entire GROUP based on inputted group */
     private CompletableFuture<List<String>> notifyGroup(String org, String evt, String title, String body, UserDataSource.Group g, Category cat){
         return users.getEntrantIds(evt, g)
                 .thenCompose(ids -> users.filterOptedIn(evt, ids))

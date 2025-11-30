@@ -32,7 +32,6 @@ public class DateTimePickerHelper {
      * @param target     the TextView to fill
      * @param context    context (e.g. requireContext())
      */
-
     public static void attachDateTimePicker(TextView target, Context context) {
         target.setOnClickListener(v -> {
             Calendar cal = Calendar.getInstance();

@@ -6,7 +6,6 @@ import java.util.concurrent.CompletableFuture;
  * @author Moffat
  * @maintainer Moffat
  */
-
 public interface AdminLogRepository {
     CompletableFuture<Void> record(NotificationLog log);
 }
