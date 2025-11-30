@@ -9,11 +9,13 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.util.Pair;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.lotterypatentpending.R;
 import com.example.lotterypatentpending.helpers.DateTimeFormatHelper;
 import com.example.lotterypatentpending.models.Event;
+import com.example.lotterypatentpending.models.WaitingListState;
 import com.example.lotterypatentpending.viewModels.EventViewModel;
 
 import java.util.List;
@@ -89,6 +91,7 @@ public class EventListAdapter extends ArrayAdapter<Event> {
         TextView waitlist = convertView.findViewById(R.id.eventWaitlist);
         ImageButton editBtn = convertView.findViewById(R.id.btnEdit);
         ImageButton deleteBtn = convertView.findViewById(R.id.btnDelete);
+        TextView capacityView = convertView.findViewById(R.id.eventCapacity);
 
 
         if (event != null) {
@@ -105,7 +108,7 @@ public class EventListAdapter extends ArrayAdapter<Event> {
             eventTime.setText(formattedTime);
             regTime.setText(event.getFormattedRegWindow());
 
-            //  Compute waiting list text: "X / Y" or "N/A"
+            // ---------- Waitlist: "X / Y" or "N/A" ----------
             int wlCap = event.getWaitingListCapacity();
 
             int currentSize = 0;
@@ -122,6 +125,24 @@ public class EventListAdapter extends ArrayAdapter<Event> {
             }
             waitlist.setText(wlText);
 
+            // ---------- Event capacity: "ACCEPTED / CAPACITY" e.g. "1 / 40" ----------
+            int capacity = event.getCapacity();
+            int acceptedCount = 0;
+
+            if (event.getWaitingList() != null &&
+                    event.getWaitingList().getList() != null) {
+
+                for (Pair<?, WaitingListState> entry : event.getWaitingList().getList()) {
+                    if (entry != null && entry.second == WaitingListState.ACCEPTED) {
+                        acceptedCount++;
+                    }
+                }
+            }
+
+            String capacityText = acceptedCount + " / " + capacity;
+            capacityView.setText(capacityText);
+
+            // ---------- Edit/Delete buttons ----------
             if (!showActions) {
                 // Any fragment that used the 2-arg constructor:
                 // hide buttons completely

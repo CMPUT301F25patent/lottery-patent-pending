@@ -18,15 +18,16 @@ import com.example.lotterypatentpending.data.UserDataSource;
 import com.example.lotterypatentpending.domain.OrganizerNotifier;
 import com.example.lotterypatentpending.models.AdminLogRepository;
 import com.example.lotterypatentpending.models.Event;
-import com.example.lotterypatentpending.models.FirebaseManager;
 import com.example.lotterypatentpending.models.FirestoreAdminLogRepository;
 import com.example.lotterypatentpending.models.FirestoreNotificationRepository;
 import com.example.lotterypatentpending.models.NotificationRepository;
+import com.example.lotterypatentpending.models.WaitingListState;
 import com.example.lotterypatentpending.viewModels.UserEventRepository;
 import com.example.lotterypatentpending.models.User;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.util.Pair;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
@@ -37,7 +38,6 @@ import com.example.lotterypatentpending.viewModels.EventViewModel;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.util.Base64;
 
 
 /**
@@ -120,49 +120,73 @@ public class OrganizerEventViewFragment extends Fragment {
 
         EventViewModel viewModel = new ViewModelProvider(requireActivity()).get(EventViewModel.class);
         viewModel.getEvent().observe(getViewLifecycleOwner(), event -> {
+            if (event == null) return;
+
             eventTitle.setText(event.getTitle());
             eventDescr.setText(event.getDescription());
             currentEvent = event;
-            String maxEntrantsText = "Event Capacity: " + event.getCapacity();
-            String locationText = "Location: ";
-            String dateText = "Date: ";
-            String regStartText = "Registration Start: ";
-            String regEndText = "Registration End: ";
-            String location = event.getLocation();
+
+            // ----- 1) Capacity usage: ACCEPTED / CAPACITY -----
+            int capacity = event.getCapacity();
+            int acceptedCount = 0;
             int wlCap = event.getWaitingListCapacity();
-            String waitListText = "Waiting List Capacity: ";
-            String tagText = "Tag: " + event.getTag();
-            // Load event poster from Storage (if it exists)
+            int currentWLSize = 0;
 
+            if (event.getWaitingList() != null &&
+                    event.getWaitingList().getList() != null) {
 
+                for (Pair<User, WaitingListState> entry : event.getWaitingList().getList()) {
+                    if (entry == null) continue;
 
-            if(wlCap == -1){
-                waitListText += "N/A";
-            }else{
-                waitListText += event.getWaitingListCapacity();
+                    currentWLSize++;  // everyone in the list counts towards size
+
+                    if (entry.second == WaitingListState.ACCEPTED) {
+                        acceptedCount++;
+                    }
+                }
             }
 
-            if(location == null || location.isEmpty()){
+            String maxEntrantsText = acceptedCount + " / " + capacity;
+
+            // ----- 2) Waiting list usage: WL_SIZE / WL_CAP -----
+            String waitListText = "";
+            if (wlCap == -1) {
+                // unlimited waiting list → show "size / N/A"
+                waitListText += currentWLSize;
+            } else {
+                waitListText += currentWLSize + " / " + wlCap;
+            }
+
+            // ----- 3) Other fields (same as before) -----
+            String locationText = "";
+            String dateText = "";
+            String regStartText = "";
+            String regEndText = "";
+            String tagText = "" + event.getTag();
+
+            String location = event.getLocation();
+
+            if (location == null || location.isEmpty()) {
                 locationText += "TBD";
-            }else{
+            } else {
                 locationText += location;
             }
 
-            if(event.getDate() == null){
+            if (event.getDate() == null) {
                 dateText += "TBD";
-            }else{
+            } else {
                 dateText += DateTimeFormatHelper.formatTimestamp(event.getDate());
             }
 
-            if(event.getRegStartDate() == null){
+            if (event.getRegStartDate() == null) {
                 regStartText += "TBD";
-            }else{
+            } else {
                 regStartText += DateTimeFormatHelper.formatTimestamp(event.getRegStartDate());
             }
 
-            if(event.getRegEndDate() == null){
+            if (event.getRegEndDate() == null) {
                 regEndText += "TBD";
-            }else{
+            } else {
                 regEndText += DateTimeFormatHelper.formatTimestamp(event.getRegEndDate());
             }
 
@@ -182,7 +206,6 @@ public class OrganizerEventViewFragment extends Fragment {
                 Bitmap bmp = BitmapFactory.decodeByteArray(posterBytes, 0, posterBytes.length);
                 posterImage.setImageBitmap(bmp);
             }
-
         });
 
         NotificationRepository notifRepo = new FirestoreNotificationRepository();

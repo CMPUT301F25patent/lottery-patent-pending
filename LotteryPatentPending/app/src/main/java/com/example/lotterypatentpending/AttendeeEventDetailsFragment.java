@@ -54,6 +54,8 @@ public class AttendeeEventDetailsFragment extends Fragment {
 
     private TextView userStateView;
 
+    private TextView capacity;
+
     private ListenerRegistration eventListener;
 
 
@@ -83,7 +85,7 @@ public class AttendeeEventDetailsFragment extends Fragment {
         TextView date = view.findViewById(R.id.eventDate);
         TextView regStart = view.findViewById(R.id.regStart);
         TextView regEnd = view.findViewById(R.id.regEnd);
-        TextView capacity = view.findViewById(R.id.maxEntrants);
+        capacity = view.findViewById(R.id.maxEntrants);
         waitListCap = view.findViewById(R.id.waitingListCap);
         TextView tag = view.findViewById(R.id.tag);
         userStateView = view.findViewById(R.id.userState);
@@ -95,12 +97,12 @@ public class AttendeeEventDetailsFragment extends Fragment {
         rejoinButton = view.findViewById(R.id.attendee_event_details_button_rejoin);
         cancelButton = view.findViewById(R.id.attendee_event_details_button_cancel);
 
-
         posterImage = view.findViewById(R.id.eventImage);
 
         // Get current event + user from repo
         Event currentEvent = userEventRepo.getEvent().getValue();
         User currentUser   = userEventRepo.getUser().getValue();
+
 
         if (currentEvent == null) {
             Toast.makeText(requireContext(),
@@ -109,6 +111,9 @@ public class AttendeeEventDetailsFragment extends Fragment {
             // You can pop back or just return and not bind anything
             return;
         }
+
+        String capacityValue = String.valueOf(currentEvent.getCapacity());
+        capacity.setText(capacityValue);
 
         title.setText(currentEvent.getTitle());
         description.setText(currentEvent.getDescription());
@@ -149,11 +154,6 @@ public class AttendeeEventDetailsFragment extends Fragment {
         } else {
             regEndValue = DateTimeFormatHelper.formatTimestamp(currentEvent.getRegEndDate());
         }
-
-        // Capacity: just the number as text
-        String capacityValue = String.valueOf(currentEvent.getCapacity());
-
-
 
         // Tag: just the tag value
         String tagValue = currentEvent.getTag() == null
@@ -527,20 +527,38 @@ public class AttendeeEventDetailsFragment extends Fragment {
      * @param user  The current user (may be null).
      */
     private void refreshWaitingListUI(@NonNull Event event, @Nullable User user) {
-        // 1) Compute sizes
+        // 1) Compute waiting list sizes
         int wlCap = event.getWaitingListCapacity();
         int currentSize = getCurrentWaitingListSize(event);
 
-        // 2) Update "X / Y" (or N/A)
+        // 2) Update waiting list text: "X / Y" (or "N/A" if unlimited)
         String waitListValue;
         if (wlCap == -1) {
-            waitListValue = "N/A";
+            waitListValue = currentSize + " / N/A";
         } else {
             waitListValue = currentSize + " / " + wlCap;
         }
         waitListCap.setText(waitListValue);
 
-        // 3) Show correct buttons
+        // 3) Compute capacity usage: ACCEPTED / CAPACITY, e.g. "1 / 40"
+        if (capacity != null) {
+            int acceptedCount = 0;
+
+            if (event.getWaitingList() != null &&
+                    event.getWaitingList().getList() != null) {
+
+                for (Pair<User, WaitingListState> entry : event.getWaitingList().getList()) {
+                    if (entry != null && entry.second == WaitingListState.ACCEPTED) {
+                        acceptedCount++;
+                    }
+                }
+            }
+
+            String capacityText = acceptedCount + " / " + event.getCapacity();
+            capacity.setText(capacityText);
+        }
+
+        // 4) Show correct buttons for the user based on their waiting-list state
         WaitingListState state = event.getWaitingListStateForUser(user);
         updateButtons(state);
     }

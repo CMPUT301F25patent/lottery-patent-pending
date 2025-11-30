@@ -128,6 +128,30 @@
         android:layout_marginBottom="8dp">
 
         <TextView
+            android:id="@+id/eventCapacityLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Event Capacity"
+            android:textStyle="bold"
+            android:textSize="14sp"
+            android:textColor="@color/black"/>
+
+        <TextView
+            android:id="@+id/eventCapacity"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="N/A"
+            android:textSize="13sp"
+            android:textColor="@color/black"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginBottom="8dp">
+
+        <TextView
             android:id="@+id/eventWaitlistLabel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -144,7 +168,6 @@
             android:textSize="13sp"
             android:textColor="@color/black"/>
     </LinearLayout>
-
 
     <!-- Edit/Delete Row -->
     <LinearLayout
