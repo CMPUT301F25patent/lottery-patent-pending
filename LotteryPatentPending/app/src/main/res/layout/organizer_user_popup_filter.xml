@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/popup_root"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/bg_event_form"
+    android:padding="8dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textStyle="bold"
+            android:text="Filter Users"
+            android:gravity="center"
+            android:textColor="@color/white"/>
+
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/browseAllUsers"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="All Users"
+            android:textColor="@color/white"
+            android:padding="5dp"
+            android:checked="true"
+            app:switchPadding="8dp" />
+
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/browseEnteredUsers"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Enrolled Users"
+            android:textColor="@color/white"
+            android:padding="5dp"
+            app:switchPadding="8dp" />
+
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/browseSelectedUsers"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Selected Users"
+            android:textColor="@color/white"
+            android:padding="5dp"
+            app:switchPadding="8dp" />
+
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/browseCanceledUsers"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Canceled Users"
+            android:textColor="@color/white"
+            android:padding="5dp"
+            app:switchPadding="8dp" />
+</LinearLayout>

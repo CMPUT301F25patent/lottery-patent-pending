@@ -29,11 +29,9 @@ import com.example.lotterypatentpending.viewModels.UserEventRepository;
  * @author Ebuka
  */
 public class OrganizerActivityFragment extends Fragment {
-
     Button create_event;
     Button view_events;
     TextView greeting;
-
 
     /**
      * Inflates the fragment layout.
@@ -49,7 +47,6 @@ public class OrganizerActivityFragment extends Fragment {
         return inflater.inflate(R.layout.organizer_fragment_organizer_activity, container, false);
 
     }
-
     /**
      * Called immediately after the view is created.
      * <p>

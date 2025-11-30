@@ -62,7 +62,9 @@ public class AdminOrganizersActivity extends AppCompatActivity {
     }
 
     /**
-     * Fetch events → collect organizer IDs → load those users
+     * Loads all organizers by first fetching all events, extracting organizer IDs,
+     * and then requesting the corresponding User documents.
+     * Shows a progress spinner while the data loads.
      */
     private void loadOrganizersFromFirebase() {
         progressBar.setVisibility(View.VISIBLE);
@@ -90,7 +92,10 @@ public class AdminOrganizersActivity extends AppCompatActivity {
     }
 
     /**
-     * Filter Firestore users down to organizer list
+     * Fetches all users from Firestore, filters them to only those whose IDs
+     * appear in the provided organizer ID set, and updates the display list.
+     *
+     * @param organizerIds Set of user IDs who are organizers of at least one event.
      */
     private void fetchUsersAndFilterByOrganizerIds(Set<String> organizerIds) {
         firebaseManager.getAllUsers(new FirebaseManager.FirebaseCallback<QuerySnapshot>() {
@@ -116,7 +121,11 @@ public class AdminOrganizersActivity extends AppCompatActivity {
                 adapter.notifyDataSetChanged();
                 progressBar.setVisibility(View.GONE);
             }
-
+            /**
+             * Called when fetching users fails. Hides the progress bar and logs the error.
+             *
+             * @param e The exception describing the failure.
+             */
             @Override
             public void onFailure(Exception e) {
                 progressBar.setVisibility(View.GONE);
@@ -136,7 +145,12 @@ public class AdminOrganizersActivity extends AppCompatActivity {
                 .setNegativeButton("Cancel", null)
                 .show();
     }
-
+    /**
+     * Deletes an organizer's user document from Firestore.
+     * Does not delete events associated with the organizer.
+     *
+     * @param user The organizer to remove.
+     */
     private void deleteOrganizer(User user) {
         if (user.getUserId() == null) {
             Toast.makeText(this, "Error: User ID missing", Toast.LENGTH_SHORT).show();

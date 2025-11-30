@@ -131,52 +131,51 @@ public class User {
             joinedEventIds.add(eventId);
         }
     }
-
+    /** Removes an event ID from joined list. */
     public void removeJoinedEvent(String eventId) {
         if (joinedEventIds != null) {
             joinedEventIds.remove(eventId);
         }
     }
 
-    // Accepted events
+    /** Adds an event ID to accepted list. */
     public void addAcceptedEvent(String eventId) {
         if (!acceptedEventIds.contains(eventId)) {
             acceptedEventIds.add(eventId);
         }
     }
-
+    /** Removes an event ID from accepted list. */
     public void removeAcceptedEvent(String eventId) {
         if (acceptedEventIds != null) {
             acceptedEventIds.remove(eventId);
         }
     }
-
-    // Declined events
+    /** Adds an event ID to declined list. */
     public void addDeclinedEvent(String eventId) {
         if (!declinedEventIds.contains(eventId)) {
             declinedEventIds.add(eventId);
         }
     }
-
+    /** Removes an event ID from declined list. */
     public void removeDeclinedEvent(String eventId) {
         if (declinedEventIds != null) {
             declinedEventIds.remove(eventId);
         }
     }
 
-    // Past events
+    /** Adds an event ID to past events list. */
     public void addPastEvent(String eventId) {
         if (!pastEventIds.contains(eventId)) {
             pastEventIds.add(eventId);
         }
     }
-
+    /** Removes an event ID from past events list. */
     public void removePastEvent(String eventId) {
         if (pastEventIds != null) {
             pastEventIds.remove(eventId);
         }
     }
-
+    /** @return the user’s last known location, or null if unset. */
     public UserLocation getLocation() {
         return location;
     }
@@ -184,7 +183,7 @@ public class User {
     public void setLocation(UserLocation location) {
         this.location = location;
     }
-
+    /** Convenience: sets a fresh {@link UserLocation}. */
     public void addLocation(double lat, double lng){
         this.location = new UserLocation(lat, lng);
     }

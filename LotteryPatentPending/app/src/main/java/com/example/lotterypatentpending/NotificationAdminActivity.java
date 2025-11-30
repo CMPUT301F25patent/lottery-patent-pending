@@ -2,22 +2,23 @@ package com.example.lotterypatentpending;
 
 import android.os.Bundle;
 import android.view.View;
-import android.widget.TextView;
 
 
-import androidx.annotation.NonNull;
+
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-import com.example.lotterypatentpending.models.AdminLogPresenter;
+
 import com.example.lotterypatentpending.models.FirestoreAdminLogRepository;
 import com.example.lotterypatentpending.models.NotificationLog;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
+import com.google.firebase.firestore.ListenerRegistration;
 
-import java.util.ArrayList;
+
 import java.util.List;
 
 /**
@@ -44,7 +45,13 @@ public class NotificationAdminActivity extends AppCompatActivity {
 
     private final FirestoreAdminLogRepository repo = new FirestoreAdminLogRepository();
     private AdminNotifAdapter adapter;
-
+    private ListenerRegistration logsReg;
+    /**
+     * Initializes the admin notification log screen, sets up UI components,
+     * configures pull-to-refresh behavior, and performs the initial data load.
+     *
+     * @param savedInstanceState Previously saved state (unused).
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,92 +68,73 @@ public class NotificationAdminActivity extends AppCompatActivity {
         progress = findViewById(R.id.progress);
 
         recycler.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new AdminNotifAdapter();
+        adapter = new AdminLogAdapter(log -> showLogDetailsDialog(log));
         recycler.setAdapter(adapter);
 
-        swipe.setOnRefreshListener(this::refresh);
-        firstLoad();
-    }
-
-    /** First load shows a spinner, then swaps to list/empty state. */
-    private void firstLoad() {
-        showLoading(true);
-        repo.getAllLogs()
-                .thenAccept(list -> runOnUiThread(() -> {
-                    showLoading(false);
-                    applyList(list);
-                }))
-                .exceptionally(e -> {
-                    runOnUiThread(() -> {
-                        showLoading(false);
-                        applyList(new ArrayList<>()); // fall back to empty
-                    });
-                    return null;
-                });
-    }
-
-    /** Pull-to-refresh handler. */
-    private void refresh() {
-        repo.getAllLogs()
-                .thenAccept(list -> runOnUiThread(() -> {
+        // initial load + optional live listener
+        progress.setVisibility(View.VISIBLE);
+        logsReg = repo.listenAllLogs(new FirestoreAdminLogRepository.LogListener() {
+            @Override
+            public void onChanged(List<NotificationLog> logs) {
+                runOnUiThread(() -> {
+                    progress.setVisibility(View.GONE);
+                    adapter.submitList(logs);
+                    emptyState.setVisibility(logs == null || logs.isEmpty()
+                            ? View.VISIBLE : View.GONE);
                     swipe.setRefreshing(false);
-                    applyList(list);
-                }))
-                .exceptionally(e -> {
-                    runOnUiThread(() -> swipe.setRefreshing(false));
-                    return null;
                 });
-    }
-
-    private void applyList(List<NotificationLog> items) {
-        if (items == null) items = new ArrayList<>();
-        adapter.submit(items);
-        boolean isEmpty = items.isEmpty();
-        recycler.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
-        emptyState.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
-    }
-
-    private void showLoading(boolean show) {
-        progress.setVisibility(show ? View.VISIBLE : View.GONE);
-        recycler.setVisibility(show ? View.GONE : View.VISIBLE);
-        emptyState.setVisibility(View.GONE);
-    }
-
-    /** Minimal adapter that renders NotificationLog using item_admin_notif.xml. */
-    private static final class AdminNotifAdapter extends RecyclerView.Adapter<AdminNotifAdapter.VH> {
-        private final List<NotificationLog> data = new ArrayList<>();
-
-        static final class VH extends RecyclerView.ViewHolder {
-            final TextView title, body, meta;
-            VH(@NonNull View v) {
-                super(v);
-                title = v.findViewById(R.id.title);
-                body  = v.findViewById(R.id.body);
-                meta  = v.findViewById(R.id.meta);
             }
-        }
 
-        void submit(@NonNull List<NotificationLog> items) {
-            data.clear();
-            data.addAll(items);
-            notifyDataSetChanged();
-        }
+            @Override
+            public void onError(Exception e) {
+                runOnUiThread(() -> {
+                    progress.setVisibility(View.GONE);
+                    swipe.setRefreshing(false);
+                    android.util.Log.e("AdminLogs", "listenAllLogs", e);
+                });
+            }
+        });
 
-        @NonNull
-        @Override public VH onCreateViewHolder(@NonNull android.view.ViewGroup parent, int viewType) {
-            View row = android.view.LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.item_admin_notif, parent, false);
-            return new VH(row);
-        }
+        swipe.setOnRefreshListener(() -> {
+            // Simple refresh: re-trigger Firestore using getAllLogs()
+            repo.getAllLogs()
+                    .thenAccept(logs -> runOnUiThread(() -> {
+                        adapter.submitList(logs);
+                        emptyState.setVisibility(logs == null || logs.isEmpty()
+                                ? View.VISIBLE : View.GONE);
+                        swipe.setRefreshing(false);
+                    }))
+                    .exceptionally(e -> {
+                        runOnUiThread(() -> swipe.setRefreshing(false));
+                        return null;
+                    });
+        });
+    }
 
-        @Override public void onBindViewHolder(@NonNull VH h, int pos) {
-            NotificationLog n = data.get(pos);
-            h.title.setText(AdminLogPresenter.formatTitle(n));
-            h.body.setText(AdminLogPresenter.formatBody(n));
-            h.meta.setText(AdminLogPresenter.formatMeta(n));
-        }
+    private void showLogDetailsDialog(NotificationLog log) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Category: ").append(log.getCategory()).append("\n\n")
+                .append("Event: ").append(log.getEventId()).append("\n")
+                .append("Organizer: ").append(log.getOrganizerId()).append("\n\n")
+                .append("Recipients: ").append(
+                        log.getRecipientIds() == null ? "0" : log.getRecipientIds().size()
+                ).append("\n\n")
+                .append("Body preview:\n")
+                .append(log.getPayloadPreview() == null ? "(none)" : log.getPayloadPreview());
 
-        @Override public int getItemCount() { return data.size(); }
+        new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("Notification details")
+                .setMessage(sb.toString())
+                .setPositiveButton(android.R.string.ok, null)
+                .show();
+    }
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (logsReg != null) {
+            logsReg.remove();
+            logsReg = null;
+        }
     }
 }
 

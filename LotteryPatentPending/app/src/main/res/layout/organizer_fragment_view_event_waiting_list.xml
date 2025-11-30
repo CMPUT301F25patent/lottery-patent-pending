@@ -9,27 +9,52 @@
     tools:context=".OrganizerViewEventsListFragment"
     android:id="@+id/organizer_events_root">
 
-    <!-- Lottery Sample button at top -->
+    <!-- Lottery Sample button at bottom -->
     <LinearLayout
         android:id="@+id/lottery_sample_container"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
+        android:orientation="horizontal"
         android:padding="8dp"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
+
+        <ImageView
+            android:src="@drawable/filter_solid_full"
+            android:id="@+id/filterDropDown"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_gravity="center"/>
+
+
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_lottery_sample"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:text="Sample Attendants"
             android:textSize="12sp"
             android:minWidth="0dp"
-            android:layout_marginTop="4dp"
             android:backgroundTint="@color/light_blue_dark"
-            android:textColor="@color/white"/>
+            android:textColor="@color/white"
+            android:layout_margin="5dp"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/organizer_event_waiting_list_button_cancel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Cancel Entrants"
+            android:textSize="12sp"
+            android:minWidth="0dp"
+            android:backgroundTint="@color/light_blue_dark"
+            android:textColor="@color/white"
+            android:layout_margin="5dp"/>
+
+
     </LinearLayout>
 
     <!-- List fills rest of space -->
@@ -55,5 +80,6 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

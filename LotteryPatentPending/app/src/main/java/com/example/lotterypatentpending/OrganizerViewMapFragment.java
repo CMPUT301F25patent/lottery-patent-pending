@@ -35,7 +35,13 @@ public class OrganizerViewMapFragment extends Fragment implements OnMapReadyCall
     private EventViewModel viewModel;
     private LoadingOverlay loading;
 
-
+    /**
+     * Fragment that displays a Google Map showing the locations of entrants
+     * for the currently selected event. Pulls entrant coordinates from
+     * Firestore via FirebaseManager and automatically places markers for
+     * each user. If no locations are available, the map centers on a
+     * default location.
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -63,6 +69,14 @@ public class OrganizerViewMapFragment extends Fragment implements OnMapReadyCall
 
         return view;
     }
+    /**
+     * Called when the Google Map is ready for use. Configures map UI
+     * gestures and requests entrant location data from Firestore. When
+     * locations are retrieved, markers are rendered on the map; if the
+     * request fails, a log entry is written and loading is hidden.
+     *
+     * @param googleMap The GoogleMap instance that has finished loading.
+     */
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
@@ -88,7 +102,12 @@ public class OrganizerViewMapFragment extends Fragment implements OnMapReadyCall
         });
 
     }
-
+    /**
+     * Places markers on the map for each entrant who has shared a location.
+     * If no locations are available, centers the map on a default city view.
+     *
+     * @param userLocations List of user location objects returned from Firestore.
+     */
     private void loadUsersOnMap(ArrayList<UserLocation> userLocations) {
         boolean hasPoints = false;
         LatLng defaultLocation = new LatLng(43.6532, -79.3832);

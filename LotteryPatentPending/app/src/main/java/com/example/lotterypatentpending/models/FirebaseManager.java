@@ -210,6 +210,8 @@ public class FirebaseManager {
         data.put("regStartDate",  event.getRegStartDate()); // Timestamp or null
         data.put("regEndDate",    event.getRegEndDate());   // Timestamp or null  : null);
 
+        data.put("eventState", event.getEventState());
+
 
 
         // Organizer is just a User
@@ -272,7 +274,11 @@ public class FirebaseManager {
     }
 
 
-    //Converts Firestore data back into an Event object
+    /**
+     * Converts a Firestore document map into an Event object.
+     * Handles mixed numeric types, nested organizer references,
+     * waiting list structures, and optional poster blobs.
+     */
     public Event mapToEvent(Map<String, Object> data) {
         if (data == null) return null;
 
@@ -373,10 +379,28 @@ public class FirebaseManager {
             event.setPosterBytes((byte[]) posterObj);
         }
 
+        Object eventStateObj = data.get("eventState");
+        if (eventStateObj instanceof String) {
+            String stateName = (String) eventStateObj;
+            try {
+                EventState eventState = EventState.valueOf(stateName);
+                event.setEventState(eventState);
+                Log.i("FirebaseManager", "Event state: " + eventState);
+            } catch (IllegalArgumentException e) {
+                Log.e("FirebaseManager", "Invalid EventState string in Firestore: " + stateName);
+            }
+        } else {
+            Log.w("FirebaseManager", "Event state field is missing or not a string.");
+        }
+
+
         return event;
     }
 
-
+    /**
+     * Converts a waiting list of (User, State) pairs into a Firestore-
+     * compatible map keyed by userId.
+     */
     public Map<String, Object> serializeWaitingList(ArrayList<Pair<User, WaitingListState>> list) {
         Map<String, Object> map = new HashMap<>();
 
@@ -390,7 +414,10 @@ public class FirebaseManager {
     }
 
 
-    //new deserialize for storing it as map keyed by user id (more efficient on lookup, update and delete
+    /**
+     * Reconstructs waiting list entries from Firestore and asynchronously
+     * loads corresponding User objects. Returns a fully populated list.
+     */
     public void deserializeWaitingList(
             Map<String, Object> raw_map,
             FirebaseCallback<ArrayList<Pair<User, WaitingListState>>> callback
@@ -415,19 +442,24 @@ public class FirebaseManager {
             getUser(uid, new FirebaseCallback<User>() {
                 @Override
                 public void onSuccess(User user) {
+                    Log.i("FirebaseManager", "Successfully retrieved user: " + user.getUserId());
                     out.add(new Pair<>(user, state));
                     if (++loaded[0] == total) callback.onSuccess(out);
                 }
 
                 @Override
                 public void onFailure(Exception ex) {
+                    Log.e("FirebaseManager", "Failed to retrieve user " + uid + ": " + ex.getMessage());
                     if (++loaded[0] == total) callback.onSuccess(out);
                 }
             });
         }
     }
 
-
+    /**
+     * Saves an event using the provided ID or the event's own ID.
+     * Overwrites existing fields unless merged externally.
+     */
     public void addOrUpdateEvent(String eventId, Event event) {
         if (eventId == null || eventId.isEmpty()) {
             eventId = event.getId(); // fallback to event’s own ID
@@ -515,6 +547,11 @@ public class FirebaseManager {
                 });
     }
 
+    /**
+     *
+     * @param callback
+     * @return ListenerRegistration, destroy this by ListenerRegistation.remove()
+     */
     public ListenerRegistration getAllEventsLive(FirebaseCallback<ArrayList<Event>> callback) {
         return db.collection("events")
                 .addSnapshotListener((snapshot, e) -> {
@@ -717,7 +754,6 @@ public class FirebaseManager {
                 });
     }
 
-
     // generic notification add, will updated after looking at notification class
 
     /**
@@ -822,10 +858,11 @@ public class FirebaseManager {
                     Object wlObj = snapshot.get("waitingList");
                     if (wlObj instanceof Map) {
                         Map<String, Object> waitingListMap = (Map<String, Object>) wlObj;
-
+                        Log.i("FirebaseManager", "Waiting List Map: " + waitingListMap);
                         deserializeWaitingList(waitingListMap, new FirebaseCallback<ArrayList<Pair<User, WaitingListState>>>() {
                             @Override
                             public void onSuccess(ArrayList<Pair<User, WaitingListState>> result) {
+                                Log.i("FirebaseManager", "Waiting list: " + result);
                                 callback.onSuccess(result); // fully populated waiting list
                             }
 
