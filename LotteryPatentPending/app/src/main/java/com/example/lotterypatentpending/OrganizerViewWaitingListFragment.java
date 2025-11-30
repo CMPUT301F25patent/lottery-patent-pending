@@ -256,12 +256,6 @@ public class OrganizerViewWaitingListFragment extends Fragment {
             }
         });
     }
-    /**
-     * Refreshes the ListView by notifying the adapter of data changes.
-     */
-    private void refreshListFromVisible(){
-        wLAdapter.notifyDataSetChanged();
-    }
 
     private void updateButtons(Event currentEvent) {
         sampleBtn.setVisibility(View.GONE);
@@ -271,8 +265,8 @@ public class OrganizerViewWaitingListFragment extends Fragment {
         EventState state = currentEvent.getEventState();
 
         // rule:
-        // - CLOSED_FOR_REG  → you can draw winners
-        // - SELECTED_ENTRANTS → you can re-draw (e.g., after declines)
+        // - CLOSED_FOR_REG  -> you can draw winners
+        // - SELECTED_ENTRANTS -> you can re-draw (e.g., after declines)
         if (state == EventState.CLOSED_FOR_REG || state == EventState.SELECTED_ENTRANTS) {
             sampleBtn.setVisibility(View.VISIBLE);
 

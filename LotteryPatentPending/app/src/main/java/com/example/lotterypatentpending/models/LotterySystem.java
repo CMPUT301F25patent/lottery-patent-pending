@@ -22,7 +22,7 @@ public class LotterySystem {
      * - Sets winners to SELECTED
      * - Sets everyone else in that group to NOT_SELECTED
      *
-     * Other states (ACCEPTED, DECLINED, CANCELED, etc.) are NOT touched.
+     * Other states (ACCEPTED, DECLINED, CANCELED, NOT_IN) are NOT touched.
      */
     public static void lotteryDraw(List<Pair<User, WaitingListState>> list, int numSlots) {
         if (list == null || numSlots <= 0) {
