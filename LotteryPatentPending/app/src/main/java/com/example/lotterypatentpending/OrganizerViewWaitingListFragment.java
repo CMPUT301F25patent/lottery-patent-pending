@@ -432,7 +432,7 @@ public class OrganizerViewWaitingListFragment extends Fragment {
                     && !swEntered.isChecked()
                     && !swSelected.isChecked()
                     && !swCanceled.isChecked()) {
-                // nothing is on → force All back on
+                // nothing is on -> force All back on
                 swAll.setChecked(true);
             }
         };
