@@ -266,7 +266,7 @@ public class OrganizerViewWaitingListFragment extends Fragment {
 
         // rule:
         // - CLOSED_FOR_REG  -> you can draw winners
-        // - SELECTED_ENTRANTS -> you can re-draw (e.g., after declines)
+        // - SELECTED_ENTRANTS -> you can re-draw (after declines or no accepts)
         if (state == EventState.CLOSED_FOR_REG || state == EventState.SELECTED_ENTRANTS) {
             sampleBtn.setVisibility(View.VISIBLE);
 

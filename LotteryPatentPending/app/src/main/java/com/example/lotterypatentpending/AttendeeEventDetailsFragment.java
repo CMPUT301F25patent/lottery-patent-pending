@@ -460,7 +460,7 @@ public class AttendeeEventDetailsFragment extends Fragment {
                 break;
 
             case NOT_SELECTED:
-                userStateView.setText("Not selected for event, but if not all users accept you will be entered into raffle again");
+                userStateView.setText("You have not been selected for the event, but if not all users accept you will be entered into raffle again");
                 leaveButton.setVisibility(View.VISIBLE);
                 leaveButton.setOnClickListener(v -> {
                     leaveEventHelper();
@@ -490,11 +490,16 @@ public class AttendeeEventDetailsFragment extends Fragment {
                 break;
 
             case CANCELED:
-                userStateView.setText("You have canceled the event, you no longer can rejoin the event");
+                userStateView.setText("You have canceled the event");
+
+                rejoinButton.setVisibility(View.VISIBLE);
+                rejoinButton.setOnClickListener(v -> {
+                    rejoinEventHelper();
+                });
 
                 leaveButton.setVisibility(View.VISIBLE);
                 leaveButton.setOnClickListener(v -> {
-                    leaveEventHelper();
+                    cancelEventHelper();
                 });
                 break;
 
