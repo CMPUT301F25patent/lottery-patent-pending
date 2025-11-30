@@ -1,5 +1,8 @@
 package com.example.lotterypatentpending.models;
 
+/**
+ * Represents the stages that an event can be in
+ */
 public enum EventState {
     NOT_STARTED,
     OPEN_FOR_REG,

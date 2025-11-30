@@ -70,7 +70,6 @@ import java.io.ByteArrayOutputStream;
  * <p>This class follows the Singleton design pattern to ensure that a single
  * instance manages all database interactions throughout the app lifecycle.</p>
  */
-
 public class FirebaseManager {
     // --- Firebase Instances ---
     private static FirebaseManager instance;
@@ -85,7 +84,6 @@ public class FirebaseManager {
      *
      * @return the shared {@code FirebaseManager} instance.
      */
-
     public static FirebaseManager getInstance() {
         if (instance == null) {
             instance = new FirebaseManager();
@@ -149,12 +147,12 @@ public class FirebaseManager {
      *
      * @param userId Firestore document ID of the user.
      */
-
     public void deleteUser(String userId) {
         db.collection("users").document(userId).delete()
                 .addOnSuccessListener(aVoid -> System.out.println("User deleted successfully: " + userId))
                 .addOnFailureListener(e -> System.err.println("Error deleting user: " + e.getMessage()));
     }
+
     /**
      * Adds or updates an event document in Firestore.
      *
@@ -171,6 +169,10 @@ public class FirebaseManager {
                 });
     }
 
+    /**
+     * Deletes a specified event from Firebase
+     * @param event The event to be deleted
+     */
     public void deleteEventFromDB(Event event){
         CollectionReference eventsRef = db.collection("events");
         DocumentReference eventDocRef = eventsRef.document(event.getId());
@@ -182,6 +184,12 @@ public class FirebaseManager {
 //        DocumentReference eventDocRef = eventsRef.document(event.getId());
 //        eventDocRef.delete();
 //    };
+
+    /**
+     * Converts a user to a map, used for storing in Firebase
+     * @param user the user to be converted
+     * @return map object of the user
+     */
     private Map<String, Object> userToMap(User user) {
         Map<String, Object> map = new HashMap<>();
         map.put("userId", user.getUserId());
@@ -192,7 +200,11 @@ public class FirebaseManager {
         return map;
     }
 
-    // mapping event objects to firestore
+    /**
+     * Converts an event to a map, used for storing in Firebase
+     * @param event the event to be converted
+     * @return map object of the event
+     */
     private Map<String, Object> eventToMap(Event event) {
         Map<String, Object> data = new HashMap<>();
 
@@ -254,11 +266,11 @@ public class FirebaseManager {
     }
 
     /**
-     *
+     * Updates an event's field
      * @param field_name field that will be updated
      * @param event event to be updated
      * @param updated_value field value. Make sure this is a firestore compatible type
-     * @param <T> generic
+     * @param <T> generic value to update to
      */
     public <T> void updateEventField(String field_name, Event event, T updated_value){
         Map<String, Object> update = new HashMap<>();
@@ -274,7 +286,11 @@ public class FirebaseManager {
     }
 
 
-    //Converts Firestore data back into an Event object
+    /**
+     * Converts Firestore data back into an Event object
+     * @param data map to convert to an event
+     * @return event
+     */
     public Event mapToEvent(Map<String, Object> data) {
         if (data == null) return null;
 
@@ -393,7 +409,11 @@ public class FirebaseManager {
         return event;
     }
 
-
+    /**
+     * Serializes a waiting list to a map for Firebase
+     * @param list Waiting list array
+     * @return map object of the waiting list
+     */
     public Map<String, Object> serializeWaitingList(ArrayList<Pair<User, WaitingListState>> list) {
         Map<String, Object> map = new HashMap<>();
 
@@ -407,7 +427,11 @@ public class FirebaseManager {
     }
 
 
-    //new deserialize for storing it as map keyed by user id (more efficient on lookup, update and delete
+    /**
+     * new deserialize for storing it as map keyed by user id (more efficient on lookup, update and delete)
+     * @param raw_map map object to deserialize into a list
+     * @param callback callback that returns an arraylist for the waiting list
+     */
     public void deserializeWaitingList(
             Map<String, Object> raw_map,
             FirebaseCallback<ArrayList<Pair<User, WaitingListState>>> callback
@@ -446,7 +470,11 @@ public class FirebaseManager {
         }
     }
 
-
+    /**
+     * Adds or updates an event (if it already exists) in Firebase
+     * @param eventId The event ID to update
+     * @param event The new event
+     */
     public void addOrUpdateEvent(String eventId, Event event) {
         if (eventId == null || eventId.isEmpty()) {
             eventId = event.getId(); // fallback to event’s own ID
@@ -483,7 +511,12 @@ public class FirebaseManager {
                 .addOnFailureListener(callback::onFailure);
     }
 
-    // This will get a live event
+    /**
+     * Creates a real time listener for a document in Firebase
+     * @param eventId the event ID to listen to
+     * @param callback the callback that returns the event
+     * @return the ListenerRegistration object
+     */
     public ListenerRegistration getEventLive(String eventId, FirebaseCallback<Event> callback) {
         return db.collection("events")
                 .document(eventId)
@@ -511,7 +544,6 @@ public class FirebaseManager {
      *
      * @param callback Callback that returns a list of all events or an error.
      */
-
     public void getAllEvents(FirebaseCallback<ArrayList<Event>> callback) {
         db.collection("events").get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
@@ -535,8 +567,8 @@ public class FirebaseManager {
     }
 
     /**
-     *
-     * @param callback
+     * Creates a real time listener for all events in Firebase
+     * @param callback The callback to handle real time results
      * @return ListenerRegistration, destroy this by ListenerRegistation.remove()
      */
     public ListenerRegistration getAllEventsLive(FirebaseCallback<ArrayList<Event>> callback) {
@@ -687,6 +719,11 @@ public class FirebaseManager {
                         Log.e("FIREBASE", "Failed to remove entrant from waiting list", e));
     }
 
+    /**
+     * Adds an event an entrant joined to the entrant's list of joined events
+     * @param event event to add
+     * @param userId entrant to add to
+     */
     public void addJoinedEventToEntrant(Event event, String userId) {
 
         db.collection("users")
@@ -700,6 +737,11 @@ public class FirebaseManager {
                 });
     }
 
+    /**
+     * Removes an event an entrant joined from the entrant's list of joined events
+     * @param eventId event to add
+     * @param entrantId entrant to add to
+     */
     public void removeJoinedEventFromEntrant(String eventId, String entrantId) {
         Log.d("DEBUG", "removeJoinedEventFromEntrant eventId param = " + eventId);
 
@@ -714,6 +756,11 @@ public class FirebaseManager {
                 });
     }
 
+    /**
+     * Adds an event an entrant previously interacted with to the entrant's list of past events
+     * @param event event to add
+     * @param userId entrant to add to
+     */
     public void addPastEventToEntrant(Event event, String userId) {
 
         db.collection("users")
@@ -727,6 +774,11 @@ public class FirebaseManager {
                 });
     }
 
+    /**
+     * Removes an event an entrant previously interacted with from the entrant's list of past events
+     * @param eventId event to add
+     * @param entrantId entrant to add to
+     */
     public void removePastEventFromEntrant(String eventId, String entrantId) {
         Log.d("DEBUG", "removeJoinedEventFromEntrant eventId param = " + eventId);
 
@@ -789,7 +841,11 @@ public class FirebaseManager {
                 .addOnFailureListener(callback::onFailure);
     }
 
-    // fetches events by event ID, utilized for deleting organizers by event
+    /**
+     * fetches events by event ID, utilized for deleting organizers by event
+     * @param eventId Event to get
+     * @param callback Event
+     */
     public void getEventById(String eventId, FirebaseCallback<DocumentSnapshot> callback) {
         db.collection("events")
                 .document(eventId)
@@ -798,7 +854,12 @@ public class FirebaseManager {
                 .addOnFailureListener(callback::onFailure);
     }
 
-    // Live listener: all events where organizer == userId
+    /**
+     * Live listener: all events where organizer == userId
+     * @param userId Organizer
+     * @param callback List of events an organizer organizes
+     * @return A listener for this
+     */
     public ListenerRegistration getOrganizedEvents(String userId, FirebaseCallback<ArrayList<Event>> callback) {
         return db.collection("events")
                 .whereEqualTo("organizer", userId)
@@ -833,6 +894,12 @@ public class FirebaseManager {
                 });
     }
 
+
+    /**
+     * Gets an event's waiting list from Firebase
+     * @param eventId Event to get from
+     * @param callback Callback that provides the waiting list
+     */
     public void getEventWaitingList(String eventId, FirebaseCallback<ArrayList<Pair<User, WaitingListState>>> callback) {
         db.collection("events").document(eventId).get()
                 .addOnSuccessListener(snapshot -> {
@@ -940,6 +1007,11 @@ public class FirebaseManager {
                 });
     }
 
+    /**
+     * Gets all of a user's past events
+     * @param user User to get from
+     * @param callback Callback that handles getting the list
+     */
     public void getUserPastEvents(User user, FirebaseCallback<List<Event>> callback) {
         List<String> eventIds = user.getPastEventIds();
 
@@ -978,6 +1050,12 @@ public class FirebaseManager {
                 });
     }
 
+    /**
+     * Saves a user and inputted location to FIrebase
+     * @param userId User to save
+     * @param lat latitude
+     * @param lng longitude
+     */
     public void saveLocationToFirestore(String userId, double lat, double lng) {
 
         Map<String, Object> locationMap = new HashMap<>();
@@ -994,6 +1072,11 @@ public class FirebaseManager {
                 .addOnFailureListener(e -> Log.e("FIREBASE", "Error", e));
     }
 
+    /**
+     * Gets entrant locations from Firebase
+     * @param eventId Event to get from
+     * @param callback Callback that gets list of locations
+     */
     public void getEntrantLocations(String eventId, FirebaseCallback<ArrayList<UserLocation>> callback){
         ArrayList<UserLocation> locations = new ArrayList<>();
 

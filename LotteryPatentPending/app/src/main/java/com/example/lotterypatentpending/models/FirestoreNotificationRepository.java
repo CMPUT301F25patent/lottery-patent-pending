@@ -99,6 +99,12 @@ public class FirestoreNotificationRepository implements NotificationRepository {
                 });
     }
 
+    /**
+     * Listens to a specific users notifications
+     * @param userId User to listen to
+     * @param listener NotificationsListener
+     * @return the listener
+     */
     @Override
     public ListenerRegistration listenUserNotifications(String userId,
                                                         NotificationsListener listener) {

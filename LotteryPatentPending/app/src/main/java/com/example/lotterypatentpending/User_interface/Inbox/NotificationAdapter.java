@@ -21,23 +21,63 @@ import com.example.lotterypatentpending.R;
  */
 
 public class NotificationAdapter extends ListAdapter<Notification, NotificationAdapter.Holder> {
+
     /**
-     * Callback used when a notification row is tapped.
-     * The Activity decides what to do -- show full message and mark read.
+     * Interface defining the callback for when a notification item is clicked.
      */
-    interface OnClick { void open(Notification n); }
+    interface OnClick {
+        /**
+         * Called when a notification row is tapped.
+         * The activity (caller) should handle showing the full message and marking the notification as read.
+         * @param n The {@link Notification} that was clicked.
+         */
+        void open(Notification n);
+    }
+
+    /** The callback instance to execute when a row is clicked. */
     private final OnClick onClick;
+
+    /**
+     * Constructs the adapter.
+     * @param onClick The {@link OnClick} listener to handle row taps.
+     */
     public NotificationAdapter(OnClick onClick){ super(DIFF); this.onClick=onClick; }
 
+    /**
+     * Differential callback used by {@link ListAdapter} to efficiently determine
+     * which items in the list have changed.
+     */
     static DiffUtil.ItemCallback<Notification> DIFF = new DiffUtil.ItemCallback<>() {
+        /**
+         * Checks if two items represent the same logical entity (based on Firestore ID).
+         */
         public boolean areItemsTheSame(@NonNull Notification a, @NonNull Notification b) {
             return a.getId() != null && a.getId().equals(b.getId());
         }
+
+        /**
+         * Checks if the content of two items is the same (based on the {@code equals} method of {@link Notification}).
+         */
         public boolean areContentsTheSame(@NonNull Notification a,@NonNull Notification b){ return a.equals(b); }
     };
 
+    /**
+     * ViewHolder class that holds references to the views for a single notification item row.
+     */
     static class Holder extends RecyclerView.ViewHolder {
-        TextView title, body, meta, readBadge;
+        /** TextView for the notification title. */
+        TextView title;
+        /** TextView for the truncated notification body preview. */
+        TextView body;
+        /** TextView for the category and timestamp metadata. */
+        TextView meta;
+        /** TextView acting as a visible badge for read status. */
+        TextView readBadge;
+
+        /**
+         * Constructs the ViewHolder and finds all necessary views within the row layout.
+         * @param v The root view of the item layout.
+         */
         Holder(View v){
             super(v);
             title=v.findViewById(R.id.title);
@@ -46,21 +86,37 @@ public class NotificationAdapter extends ListAdapter<Notification, NotificationA
             readBadge = v.findViewById(R.id.readBadge);}
     }
 
+    /**
+     * Creates new ViewHolder instances for the items in the RecyclerView.
+     * @param parent The ViewGroup into which the new View will be added.
+     * @param viewType The view type of the new View.
+     * @return A new {@link Holder} instance.
+     */
     @NonNull
     @Override
     public Holder onCreateViewHolder(@NonNull ViewGroup parent,int viewType){
         View row = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_notification, parent, false);
         return new Holder(row);}
+
+    /**
+     * Binds the data of a specific {@link Notification} item to the views in a {@link Holder}.
+     * This method handles formatting the body preview, timestamp, and setting the
+     * visual state (read/unread) of the row.
+     * @param h The {@link Holder} which should be updated to represent the contents of the item at the given position.
+     * @param pos The position of the item within the adapter's data set.
+     */
     @Override
     public void onBindViewHolder(@NonNull Holder h, int pos){
         Notification n = getItem(pos);
         h.title.setText(n.getTitle());
+
         // Body preview (truncate to 1–2 lines)
         String preview = n.getBody();
         if (preview.length() > 80) preview = preview.substring(0, 77) + "…";
         h.body.setText(preview);
 
+        // Format timestamp
         String ts = n.getCreatedAt() == null ? "" :
                 new SimpleDateFormat("MMM d, HH:mm", Locale.getDefault()).format(n.getCreatedAt());
         h.meta.setText(n.getCategory() + " • " + ts);
@@ -97,4 +153,3 @@ public class NotificationAdapter extends ListAdapter<Notification, NotificationA
         });
     }
 }
-

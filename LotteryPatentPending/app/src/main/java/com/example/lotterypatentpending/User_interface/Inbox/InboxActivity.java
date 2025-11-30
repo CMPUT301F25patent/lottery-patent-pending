@@ -33,13 +33,27 @@ import java.util.List;
  */
 
 public class InboxActivity extends AppCompatActivity {
+    /** The repository used to interact with notification data (e.g., Firestore). */
     private final NotificationRepository repo = new FirestoreNotificationRepository();
+
+    /** Registration object for the real-time listener observing the unread count. */
     @Nullable
     private ListenerRegistration unreadReg;
+
+    /** Adapter for rendering the list of notifications in the RecyclerView. */
     private NotificationAdapter adapter;
+
+    /** Registration object for the real-time listener observing the user's notifications list. */
     private ListenerRegistration notificationsReg;
+
+    /** The unique ID of the currently signed-in user. */
     private String currentUserId;
 
+    /**
+     * Initializes the activity, sets up the toolbar and the RecyclerView with its adapter.
+     * It checks for the current signed-in user ID.
+     * @param savedInstanceState Contains data most recently supplied in {@code onSaveInstanceState(Bundle)}.
+     */
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -76,6 +90,11 @@ public class InboxActivity extends AppCompatActivity {
         }
         currentUserId = u.getUid();
     }
+
+    /**
+     * Called after {@code onCreate(Bundle)} — or after {@code onRestart()} when the activity is
+     * re-starting. This is where real-time Firestore listeners are activated.
+     */
     @Override
     protected void onStart() {
         super.onStart();
@@ -84,6 +103,7 @@ public class InboxActivity extends AppCompatActivity {
             return;
         }
 
+        // Listens for the user's notifications in real-time
         notificationsReg = repo.listenUserNotifications(
                 currentUserId,
                 new NotificationRepository.NotificationsListener() {
@@ -117,7 +137,7 @@ public class InboxActivity extends AppCompatActivity {
                 }
         );
 
-        // REAL-TIME unread count (for the badge – the badge UI)
+        // Listens for the real-time unread count (for the badge UI)
         unreadReg = repo.listenUnreadCount(
                 currentUserId,
                 count -> {
@@ -127,6 +147,10 @@ public class InboxActivity extends AppCompatActivity {
         );
     }
 
+    /**
+     * Called when the activity is no longer visible to the user.
+     * This is where all active Firestore listeners are unregistered using {@link ListenerRegistration#remove()}.
+     */
     @Override
     protected void onStop() {
         super.onStop();
@@ -140,4 +164,3 @@ public class InboxActivity extends AppCompatActivity {
         }
     }
 }
-

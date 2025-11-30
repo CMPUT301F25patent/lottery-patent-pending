@@ -395,25 +395,38 @@ public class Event {
     }
 
     /**
-     *
+     * Selects the entrants for the event from the waiting list using a lottery system, up to the event's capacity.
+     * After selecting, the state is set to SELECTED_ENTRANTS
      */
     public void selectEntrants() {
         this.waitingList.lotterySelect(this.capacity);
         this.eventState = EventState.SELECTED_ENTRANTS;
     }
 
+    /**
+     * Reselects entrants, only after selecting entrants is finished
+     */
     public void reselectEntrants() {
 
     }
 
+    /**
+     * Sets the event to CONFIRMED_ENTRANTS
+     */
     public void confirmEntrants() {
         this.eventState = EventState.CONFIRMED_ENTRANTS;
     }
 
+    /**
+     * Sets the event to ENDED
+     */
     public void endEvent() {
         this.eventState = EventState.ENDED;
     }
 
+    /**
+     * Sets the event to CANCELLED
+     */
     public void cancelEvent() {
         this.eventState = EventState.CANCELLED;
     }
