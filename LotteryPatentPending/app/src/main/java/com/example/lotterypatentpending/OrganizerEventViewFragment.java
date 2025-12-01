@@ -1,7 +1,7 @@
 package com.example.lotterypatentpending;
 
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,18 +13,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.lotterypatentpending.data.FirestoreUsersDataSource;
-import com.example.lotterypatentpending.data.UserDataSource;
-import com.example.lotterypatentpending.domain.OrganizerNotifier;
-import com.example.lotterypatentpending.models.AdminLogRepository;
-import com.example.lotterypatentpending.models.Event;
-import com.example.lotterypatentpending.models.FirestoreAdminLogRepository;
-import com.example.lotterypatentpending.models.FirestoreNotificationRepository;
-import com.example.lotterypatentpending.models.NotificationRepository;
-import com.example.lotterypatentpending.models.WaitingListState;
-import com.example.lotterypatentpending.viewModels.UserEventRepository;
-import com.example.lotterypatentpending.models.User;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.util.Pair;
@@ -32,12 +20,18 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
 
-import com.example.lotterypatentpending.helpers.DateTimeFormatHelper;
+import com.example.lotterypatentpending.data.FirestoreUsersDataSource;
+import com.example.lotterypatentpending.domain.OrganizerNotifier;
+import com.example.lotterypatentpending.models.Event;
+import com.example.lotterypatentpending.models.FirestoreNotificationRepository;
+import com.example.lotterypatentpending.domain.OrganizerNotifier;
 import com.example.lotterypatentpending.models.QRGenerator;
+import com.example.lotterypatentpending.models.User;
 import com.example.lotterypatentpending.viewModels.EventViewModel;
+import com.example.lotterypatentpending.viewModels.UserEventRepository;
+import com.example.lotterypatentpending.helpers.DateTimeFormatHelper;
 
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 
 
 /**
@@ -54,52 +48,26 @@ import android.graphics.BitmapFactory;
 public class OrganizerEventViewFragment extends Fragment {
 
     private TextView eventTitle, eventDescr, eventLocation, eventDate, eventRegStart, eventRegEnd, maxEntrants, waitListCap, eventTag;
-    private ImageView qrView;
-
-    private ImageView posterImage;
-
-    private String eventId;
+    private ImageView qrView, posterImage;
+    private String eventId, currentOrganizerId;
     private Button viewWLBtn, viewMapBtn, generateQRCode;
     private CheckBox geoLocationReq;
     private ImageButton notiButton;
     private OrganizerNotifier organizerNotifier;
     private Event currentEvent;
-    private String currentOrganizerId;
 
-    // Who the notification is going to
-    private enum TargetGroup {
-        CHOSEN_SIGNUP,
-        WAITLIST,
-        SELECTED,
-        CANCELLED
-    }
+    private enum TargetGroup { CHOSEN_SIGNUP, WAITLIST, ATTENDING, CANCELLED }
 
-
-    /**
-     * Inflates the fragment's layout.
-     *
-     * @param inflater The LayoutInflater object to inflate views.
-     * @param container The parent ViewGroup.
-     * @param savedInstanceState Bundle containing saved instance state.
-     * @return The root View of the fragment's layout.
-     */
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.organizer_fragment_event_view, container, false);
-
     }
 
-    /**
-     * Called after the view has been created.
-     * Initializes UI elements, sets observers and click listeners for buttons and checkbox.
-     *
-     * @param v The root view of the fragment.
-     * @param savedInstanceState Bundle containing saved instance state.
-     */
     @Override
     public void onViewCreated(@NonNull View v, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(v, savedInstanceState);
+        EventViewModel eventViewModel = new ViewModelProvider(requireActivity()).get(EventViewModel.class);
+
         eventTitle = v.findViewById(R.id.eventTitle);
         eventDescr = v.findViewById(R.id.eventLongDescription);
         eventLocation = v.findViewById(R.id.location);
@@ -198,305 +166,94 @@ public class OrganizerEventViewFragment extends Fragment {
             waitListCap.setText(waitListText);
             eventTag.setText(tagText);
             eventId = event.getId();
-
+            eventTitle.setText(event.getTitle());
+            eventDescr.setText(event.getDescription());
+            eventLocation.setText("Location: " + (event.getLocation() == null ? "TBD" : event.getLocation()));
+            eventDate.setText("Date: " + (event.getDate() == null ? "TBD" : DateTimeFormatHelper.formatTimestamp(event.getDate())));
+            eventRegStart.setText("Registration Start: " + (event.getRegStartDate() == null ? "TBD" : DateTimeFormatHelper.formatTimestamp(event.getRegStartDate())));
+            eventRegEnd.setText("Registration End: " + (event.getRegEndDate() == null ? "TBD" : DateTimeFormatHelper.formatTimestamp(event.getRegEndDate())));
+            maxEntrants.setText("Event Capacity: " + event.getCapacity());
+            waitListCap.setText("Waiting List Capacity: " + (event.getWaitingListCapacity() == -1 ? "N/A" : event.getWaitingListCapacity()));
+            eventTag.setText("Tag: " + event.getTag());
             geoLocationReq.setChecked(event.isGeolocationRequired());
-
-            byte[] posterBytes = event.getPosterBytes();
-            if (posterBytes != null && posterBytes.length > 0) {
-                Bitmap bmp = BitmapFactory.decodeByteArray(posterBytes, 0, posterBytes.length);
-                posterImage.setImageBitmap(bmp);
+            if (event.getPosterBytes() != null && event.getPosterBytes().length > 0) {
+                posterImage.setImageBitmap(BitmapFactory.decodeByteArray(event.getPosterBytes(), 0, event.getPosterBytes().length));
             }
         });
 
-        NotificationRepository notifRepo = new FirestoreNotificationRepository();
-        UserDataSource usersDs = new FirestoreUsersDataSource();
-        AdminLogRepository logRepo = new FirestoreAdminLogRepository();
-        organizerNotifier = new OrganizerNotifier(notifRepo, usersDs, logRepo);
+        // --- FIX: Instantiation with 2 arguments ---
+        organizerNotifier = new OrganizerNotifier(
+                new FirestoreNotificationRepository(),
+                new FirestoreUsersDataSource()
+        );
 
         notiButton.setOnClickListener(view -> showNotificationOptionsDialog());
-
-        geoLocationReq.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            viewModel.updateGeoRequired(isChecked);
-        });
-
-        generateQRCode.setOnClickListener(view ->{
-            generateEventQRCode(eventId, qrView);
-        });
-
-        viewWLBtn.setOnClickListener(view -> {
-            NavHostFragment.findNavController(OrganizerEventViewFragment.this)
-                    .navigate(R.id.action_EventView_to_WaitingList);
-        });
-
-        viewMapBtn.setOnClickListener(view -> {
-            Event currentEvent = viewModel.getEvent().getValue();
-
-            if(currentEvent.isGeolocationRequired()) {
-                NavHostFragment.findNavController(OrganizerEventViewFragment.this)
-                        .navigate(R.id.action_EventView_to_MapView);
-            }else{
-                Toast.makeText(requireContext(),
-                        "Enable geo-location to view entrant locations.",
-                        Toast.LENGTH_LONG).show();
+        geoLocationReq.setOnCheckedChangeListener((bv, isChecked) -> eventViewModel.updateGeoRequired(isChecked));
+        generateQRCode.setOnClickListener(view -> {
+            if (eventId != null) {
+                QRGenerator.setQRToView(qrView, eventId, 300);
+                qrView.setVisibility(View.VISIBLE);
             }
         });
-
+        viewWLBtn.setOnClickListener(view -> NavHostFragment.findNavController(this).navigate(R.id.action_EventView_to_WaitingList));
+        viewMapBtn.setOnClickListener(view -> {
+            if(currentEvent != null && currentEvent.isGeolocationRequired()) {
+                NavHostFragment.findNavController(this).navigate(R.id.action_EventView_to_MapView);
+            } else {
+                Toast.makeText(requireContext(), "Enable geo-location first.", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
-    /**
-     * Generates a QR code for the given event ID and sets it to the provided ImageView.
-     *
-     * @param eventId The ID of the event for which the QR code is generated.
-     * @param qrView The ImageView to display the generated QR code.
-     */
-    public void generateEventQRCode(String eventId, ImageView qrView){
-        QRGenerator.setQRToView(qrView, eventId, 300);
-        qrView.setVisibility(View.VISIBLE);
-    }
-
-    /** First dialog: choose which group you want to message. */
     private void showNotificationOptionsDialog() {
-        // Get the logged-in organizer from the shared repository
         User organizer = UserEventRepository.getInstance().getUser().getValue();
-
-        if (organizer == null) {
-            Log.e("Organizer", "Organizer user is null in UserEventRepository");
-            Toast.makeText(
-                    getContext(),
-                    "User not loaded yet. Please try again.",
-                    Toast.LENGTH_SHORT
-            ).show();
+        if (organizer == null || currentEvent == null) {
+            Toast.makeText(getContext(), "Data not loaded.", Toast.LENGTH_SHORT).show();
             return;
         }
-
-        if (currentEvent == null) {
-            Toast.makeText(
-                    getContext(),
-                    "Event not loaded yet. Please try again.",
-                    Toast.LENGTH_SHORT
-            ).show();
-            return;
-        }
-
         currentOrganizerId = organizer.getUserId();
-
         new androidx.appcompat.app.AlertDialog.Builder(requireContext())
                 .setTitle("Send notification to…")
                 .setItems(new CharSequence[]{
-                        "Chosen entrants to sign up",
-                        "All waitlisted entrants",
-                        "All selected entrants",
-                        "All cancelled entrants"
-                }, (dialog, which) -> {
-                    switch (which) {
-                        case 0:
-                            // NOTE: this still needs chosenIds from UI later
-                            showComposeDialog(TargetGroup.CHOSEN_SIGNUP);
-                            break;
-                        case 1:
-                            showComposeDialog(TargetGroup.WAITLIST);
-                            break;
-                        case 2:
-                            showComposeDialog(TargetGroup.SELECTED);
-                            break;
-                        case 3:
-                            showComposeDialog(TargetGroup.CANCELLED);
-                            break;
-                    }
-                })
-                .show();
+                        "Chosen entrants to sign up",  // SELECTED
+                        "All waitlisted entrants",     // ENTERED
+                        "All entrants attending",      // ACCEPTED
+                        "All cancelled entrants"       // CANCELED
+                }, (d, which) -> {
+                    if (which == 0) showComposeDialog(TargetGroup.CHOSEN_SIGNUP);
+                    else if (which == 1) showComposeDialog(TargetGroup.WAITLIST);
+                    else if (which == 2) showComposeDialog(TargetGroup.ATTENDING);
+                    else if (which == 3) showComposeDialog(TargetGroup.CANCELLED);
+                }).show();
     }
 
-    /**
-     * Second dialog: text box to compose the actual message.
-     *  @param group The recipient group chosen in the previous dialog.
-     */
     private void showComposeDialog(TargetGroup group) {
-        LayoutInflater inflater = LayoutInflater.from(getContext());
-        View dialogView = inflater.inflate(R.layout.dialog_notification_compose, null);
+        View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_notification_compose, null);
         EditText input = dialogView.findViewById(R.id.editMessage);
-
-        input.setSelection(input.getText().length()); // cursor at end
-
-        androidx.appcompat.app.AlertDialog dialog =
-                new androidx.appcompat.app.AlertDialog.Builder(requireContext())
-                        .setTitle("Compose notification")
-                        .setView(dialogView)
-                        .setNegativeButton("Cancel", null)
-                        // We’ll wire the positive button manually after show()
-                        .setPositiveButton("Send", null)
-                        .create();
+        androidx.appcompat.app.AlertDialog dialog = new androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                .setTitle("Compose notification").setView(dialogView)
+                .setNegativeButton("Cancel", null).setPositiveButton("Send", null).create();
 
         dialog.setOnShowListener(d -> {
-            // Grab the real button after the dialog is shown
-            final android.widget.Button sendButton =
-                    dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE);
-
-            // Initial enabled state (false if empty, true if there’s starter text)
-            sendButton.setEnabled(input.getText().toString().trim().length() > 0);
-
-            // Watch text changes to enable/disable Send
+            Button sendBtn = dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE);
+            sendBtn.setEnabled(false);
             input.addTextChangedListener(new android.text.TextWatcher() {
-                @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-                @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
-                    sendButton.setEnabled(s.toString().trim().length() > 0);
-                }
-                @Override public void afterTextChanged(android.text.Editable s) {}
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+                public void onTextChanged(CharSequence s, int start, int before, int count) { sendBtn.setEnabled(s.toString().trim().length() > 0); }
+                public void afterTextChanged(android.text.Editable s) {}
             });
-
-            // Only send when there is text (button will be disabled otherwise)
-            sendButton.setOnClickListener(v -> {
+            sendBtn.setOnClickListener(v -> {
                 String body = input.getText().toString().trim();
-                if (body.isEmpty()) {
-                    // Should never hit this because button is disabled, but just in case
-                    return;
-                }
+                String eventName = currentEvent.getTitle();
+                if (group == TargetGroup.CHOSEN_SIGNUP) organizerNotifier.notifySelectedToSignUp(currentOrganizerId, currentEvent.getId(), eventName, body);
+                else if (group == TargetGroup.WAITLIST) organizerNotifier.notifyEntrantsInWaitlist(currentOrganizerId, currentEvent.getId(), eventName, body);
+                else if (group == TargetGroup.ATTENDING) organizerNotifier.notifyEntrantsAttending(currentOrganizerId, currentEvent.getId(), eventName, body);
+                else if (group == TargetGroup.CANCELLED) organizerNotifier.notifyCancelledEntrants(currentOrganizerId, currentEvent.getId(), eventName, body);
 
-                switch (group) {
-                    case CHOSEN_SIGNUP:
-                        sendChosenSignUp(body);
-                        break;
-                    case WAITLIST:
-                        sendWaitlist(body);
-                        break;
-                    case SELECTED:
-                        sendSelected(body);
-                        break;
-                    case CANCELLED:
-                        sendCancelled(body);
-                        break;
-                }
+                Toast.makeText(getContext(), "Notification Sent", Toast.LENGTH_SHORT).show();
                 dialog.dismiss();
             });
         });
-
         dialog.show();
-    }
-
-    private String currentOrganizerId() {
-        return currentOrganizerId;
-    }
-    /**
-     * Verifies that the current event and organizer ID have been loaded.
-     * Shows a toast message on failure.
-     *
-     * @return true if both are loaded; false otherwise.
-     */
-    private boolean ensureEventAndOrganizerLoaded() {
-        if (currentEvent == null) {
-            Toast.makeText(getContext(), "Event not loaded yet. Please try again.", Toast.LENGTH_SHORT).show();
-            return false;
-        }
-        if (currentOrganizerId == null || currentOrganizerId.isEmpty()) {
-            Toast.makeText(getContext(), "Organizer not loaded yet. Please try again.", Toast.LENGTH_SHORT).show();
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * Sends a notification to entrants chosen to sign up. This currently
-     * uses an empty placeholder list of entrant IDs until the UI selection
-     * is wired in.
-     *
-     * @param body The message body to send.
-     */
-    private void sendChosenSignUp(String body) {
-        if (!ensureEventAndOrganizerLoaded()) return;
-        String orgId = currentOrganizerId();
-        String eventId = currentEvent.getId();
-        String title = "Sign up for " + currentEvent.getTitle();
-
-        // TODO: supply real chosenIds from UI selection
-        java.util.List<String> chosenIds = new java.util.ArrayList<>();
-
-        organizerNotifier.notifyChosenToSignup(orgId, eventId, title, body, chosenIds)
-                .thenAccept(ids -> requireActivity().runOnUiThread(() ->
-                        Toast.makeText(
-                                getContext(),
-                                "Notified " + ids.size() + " entrants",
-                                Toast.LENGTH_SHORT
-                        ).show()))
-                .exceptionally(e -> {
-                    e.printStackTrace();
-                    requireActivity().runOnUiThread(() ->
-                            Toast.makeText(
-                                    getContext(),
-                                    "Failed to send notification",
-                                    Toast.LENGTH_SHORT
-                            ).show());
-                    return null;
-                });
-    }
-    /**
-     * Sends a notification to all entrants on the event's waitlist.
-     *
-     * @param body The message body to send.
-     */
-    private void sendWaitlist(String body) {
-        if (!ensureEventAndOrganizerLoaded()) return;
-        String orgId = currentOrganizerId();
-        String eventId = currentEvent.getId();
-        String title = "Update for " + currentEvent.getTitle();
-
-        organizerNotifier.notifyAllWaitlist(orgId, eventId, title, body)
-                .thenAccept(ids -> requireActivity().runOnUiThread(() ->
-                        Toast.makeText(
-                                getContext(),
-                                "Notified " + ids.size() + " waitlisted entrants",
-                                Toast.LENGTH_SHORT
-                        ).show()))
-                .exceptionally(e -> {
-                    e.printStackTrace();
-                    return null;
-                });
-    }
-    /**
-     * Sends a notification to all entrants who have been selected
-     * for participation.
-     *
-     * @param body The message body to send.
-     */
-    private void sendSelected(String body) {
-        if (!ensureEventAndOrganizerLoaded()) return;
-        String orgId = currentOrganizerId();
-        String eventId = currentEvent.getId();
-        String title = "Update for " + currentEvent.getTitle();
-
-        organizerNotifier.notifyAllSelected(orgId, eventId, title, body)
-                .thenAccept(ids -> requireActivity().runOnUiThread(() ->
-                        Toast.makeText(
-                                getContext(),
-                                "Notified " + ids.size() + " selected entrants",
-                                Toast.LENGTH_SHORT
-                        ).show()))
-                .exceptionally(e -> {
-                    e.printStackTrace();
-                    return null;
-                });
-    }
-    /**
-     * Sends a notification to all entrants whose participation
-     * has been cancelled.
-     *
-     * @param body The message body to send.
-     */
-    private void sendCancelled(String body) {
-        if (!ensureEventAndOrganizerLoaded()) return;
-        String orgId = currentOrganizerId();
-        String eventId = currentEvent.getId();
-        String title = "Event cancelled: " + currentEvent.getTitle();
-
-        organizerNotifier.notifyAllCancelled(orgId, eventId, title, body)
-                .thenAccept(ids -> requireActivity().runOnUiThread(() ->
-                        Toast.makeText(
-                                getContext(),
-                                "Notified " + ids.size() + " cancelled entrants",
-                                Toast.LENGTH_SHORT
-                        ).show()))
-                .exceptionally(e -> {
-                    e.printStackTrace();
-                    return null;
-                });
     }
 }

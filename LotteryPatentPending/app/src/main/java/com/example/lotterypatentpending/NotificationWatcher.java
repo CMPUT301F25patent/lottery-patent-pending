@@ -1,18 +1,22 @@
 package com.example.lotterypatentpending;
 
+import android.Manifest;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Build;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
+import androidx.core.content.ContextCompat;
 
 import com.example.lotterypatentpending.R;
+import com.example.lotterypatentpending.User_interface.Inbox.InboxActivity;
 import com.example.lotterypatentpending.models.FirestoreNotificationRepository;
 import com.example.lotterypatentpending.models.Notification;
 import com.example.lotterypatentpending.models.NotificationRepository;
@@ -35,131 +39,94 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class NotificationWatcher {
 
-    // ---- functional interfaces for lambdas ----
-    @FunctionalInterface
-    public interface IntCallback {
-        void onValue(@Nullable Integer value);
-    }
+    private static final String CHANNEL_ID = "inbox_channel";
+    private static NotificationWatcher INSTANCE;
 
-    @FunctionalInterface
-    public interface ErrorCallback {
-        void onError(@NonNull Exception e);
-    }
-
-    // ---- singleton boilerplate ----
-    private static NotificationWatcher instance;
-
-    public static synchronized NotificationWatcher getInstance() {
-        if (instance == null) {
-            instance = new NotificationWatcher();
-        }
-        return instance;
-    }
+    private final NotificationRepository repo = new FirestoreNotificationRepository();
+    private ListenerRegistration unreadReg;
+    private ListenerRegistration popupReg;
+    private Context appContext;
 
     private NotificationWatcher() {}
 
-    // ---- dependencies ----
-    private final NotificationRepository repo = new FirestoreNotificationRepository();
-    private final FirebaseFirestore db = FirebaseFirestore.getInstance();
+    public static synchronized NotificationWatcher getInstance() {
+        if (INSTANCE == null) {
+            INSTANCE = new NotificationWatcher();
+        }
+        return INSTANCE;
+    }
 
-    // Firestore listener for badge
-    @Nullable
-    private ListenerRegistration unreadBadgeReg;
+    //UNREAD BADGE
 
-    // Firestore listener for popup stream
-    @Nullable
-    private ListenerRegistration popupReg;
-
-    // Track last popup so we don't double-show on config changes
-    @Nullable
-    private String lastPopupId;
-
-    // Simple counter for system notification IDs
-    private final AtomicInteger notifIdCounter = new AtomicInteger(1);
-
-    // ========== BADGE WATCHER ==========
+    public interface CountCallback {
+        void onCount(Long count);
+    }
+    public interface ErrorCallback {
+        void onError(Exception e);
+    }
 
     /**
-     * Start watching the unread-count for a user and forward updates
-     * to the provided callback. If there's already a watcher active,
-     * it is removed first.
+     * Start listening for unread count updates for the badge dot.
      */
     public void startUnreadBadge(@NonNull String userId,
-                                 @NonNull IntCallback onCount,
+                                 @NonNull CountCallback onCount,
                                  @NonNull ErrorCallback onError) {
         stopUnreadBadge();
-
-        unreadBadgeReg = repo.listenUnreadCount(
+        unreadReg = repo.listenUnreadCount(
                 userId,
-                count -> onCount.onValue(count),
-                e -> onError.onError(e)
+                count -> {
+                    Long c = (count == null) ? 0L : count;
+                    onCount.onCount(c);
+                },
+                onError::onError
         );
     }
 
-    /**
-     * Stop watching the unread badge count (e.g. when AttendeeActivity stops).
-     */
     public void stopUnreadBadge() {
-        if (unreadBadgeReg != null) {
-            unreadBadgeReg.remove();
-            unreadBadgeReg = null;
+        if (unreadReg != null) {
+            unreadReg.remove();
+            unreadReg = null;
         }
     }
 
-    // ========== POPUP STREAM ==========
+    //POPUP STREAM
 
     /**
-     * Starts a realtime listener on users/{uid}/notifications and shows
-     * a system notification whenever a NEW unread document is added.
-     *
-     * Called from MainActivity AFTER the user document is loaded.
+     * Listens in real time to the newest notifications for this user and
+     * shows a banner when a NEW unread notification is added.
      */
-    public void startPopupStream(@NonNull Context appContext,
+    public void startPopupStream(@NonNull Context context,
                                  @NonNull String userId) {
-        // we want application context for NotificationManager
-        final Context ctx = appContext.getApplicationContext();
+        appContext = context.getApplicationContext();
+        ensureChannel(appContext);
 
-        // remove previous listener if any
-        stopPopupStream();
+        // Clear any old listener
+        if (popupReg != null) {
+            popupReg.remove();
+            popupReg = null;
+        }
 
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
         popupReg = db.collection("users")
                 .document(userId)
                 .collection("notifications")
                 .orderBy("createdAt", Query.Direction.DESCENDING)
-                .limit(10)
+                .limit(10)   // safety
                 .addSnapshotListener((snap, err) -> {
-                    if (err != null) {
-                        err.printStackTrace();
-                        return;
-                    }
-                    if (snap == null) return;
+                    if (err != null || snap == null) return;
 
-                    for (DocumentChange dc : snap.getDocumentChanges()) {
-                        if (dc.getType() != DocumentChange.Type.ADDED) continue;
+                    for (DocumentChange change : snap.getDocumentChanges()) {
+                        if (change.getType() != DocumentChange.Type.ADDED) continue;
 
-                        DocumentSnapshot d = dc.getDocument();
-                        String docId = d.getId();
-
-                        // Avoid double popup for same document (e.g. re-attach listener)
-                        if (docId.equals(lastPopupId)) continue;
-                        lastPopupId = docId;
-
-                        // Only popup for unread notifications
-                        Boolean read = d.getBoolean("read");
-                        if (Boolean.TRUE.equals(read)) continue;
-
-                        Notification n = d.toObject(Notification.class);
+                        Notification n = change.getDocument().toObject(Notification.class);
                         if (n == null) continue;
+                        if (n.isRead()) continue;  // don't pop for already-read
 
-                        showSystemNotification(ctx, n);
+                        showSystemNotification(n);
                     }
                 });
     }
 
-    /**
-     * Stop listening for popup notifications.
-     * (You can call this from a top-level onDestroy if you ever want to.)
-     */
     public void stopPopupStream() {
         if (popupReg != null) {
             popupReg.remove();
@@ -167,56 +134,56 @@ public class NotificationWatcher {
         }
     }
 
-    // ========== SYSTEM NOTIFICATION HELPERS ==========
-
-    private static final String CHANNEL_ID = "inbox_high_1";
-
     private void ensureChannel(Context ctx) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel ch = new NotificationChannel(
-                    CHANNEL_ID,
-                    "Inbox notifications",
-                    NotificationManager.IMPORTANCE_HIGH   // 👈 important
-            );
-            ch.setDescription("Notifications from organizers and lotteries");
-            NotificationManager nm = ctx.getSystemService(NotificationManager.class);
-            if (nm != null) nm.createNotificationChannel(ch);
+            NotificationManager nm =
+                    (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
+            if (nm.getNotificationChannel(CHANNEL_ID) == null) {
+                NotificationChannel ch = new NotificationChannel(
+                        CHANNEL_ID,
+                        "Inbox messages",
+                        NotificationManager.IMPORTANCE_HIGH
+                );
+                nm.createNotificationChannel(ch);
+            }
         }
     }
 
-    private void showSystemNotification(Context ctx, Notification n) {
-        ensureChannel(ctx);
+    private void showSystemNotification(@NonNull Notification n) {
+        if (appContext == null) return;
 
-        String title = (n.getTitle() != null && !n.getTitle().isEmpty())
-                ? n.getTitle()
-                : "New notification";
-        String body  = n.getBody() != null ? n.getBody() : "";
+        // Runtime permission check for Android 13+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(
+                    appContext,
+                    Manifest.permission.POST_NOTIFICATIONS
+            ) != PackageManager.PERMISSION_GRANTED) {
+                return;
+            }
+        }
 
-        // When the user taps the system notification, open the InboxActivity
-        Intent intent = new Intent(ctx, com.example.lotterypatentpending.User_interface.Inbox.InboxActivity.class);
+        // Tap banner → open Inbox
+        Intent intent = new Intent(appContext, InboxActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-
-        PendingIntent pendingIntent = PendingIntent.getActivity(
-                ctx,
+        PendingIntent pi = PendingIntent.getActivity(
+                appContext,
                 0,
                 intent,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
         );
 
-        NotificationCompat.Builder builder =
-                new NotificationCompat.Builder(ctx, CHANNEL_ID)
-                        .setSmallIcon(R.drawable.ic_notification_white_24dp)
-                        .setContentTitle(title)
-                        .setContentText(body)
-                        .setStyle(new NotificationCompat.BigTextStyle().bigText(body))
-                        .setPriority(NotificationCompat.PRIORITY_HIGH)   // for < Android 8
-                        .setDefaults(NotificationCompat.DEFAULT_ALL)      // 🔔 sound + vibration + lights
-                        .setAutoCancel(true)
-                        .setContentIntent(pendingIntent);
-        // <— make it clickable
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(appContext, CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_notification_white_24dp) // use your bell icon here
+                .setContentTitle(n.getTitle())
+                .setContentText(n.getBody())
+                .setStyle(new NotificationCompat.BigTextStyle().bigText(n.getBody()))
+                .setAutoCancel(true)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setDefaults(NotificationCompat.DEFAULT_ALL)
+                .setContentIntent(pi);
 
-        NotificationManagerCompat.from(ctx)
-                .notify(notifIdCounter.getAndIncrement(), builder.build());
+        // Use a random-ish id so multiple notifications can stack
+        int id = (int) (System.currentTimeMillis() & 0xFFFFFFF);
+        NotificationManagerCompat.from(appContext).notify(id, builder.build());
     }
-
 }

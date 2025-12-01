@@ -15,7 +15,7 @@
         android:contentDescription="@string/notificationImage"
         android:src="@drawable/ic_notification_white_24dp"/>
 
-    <TextView
+    <View
         android:id="@+id/badgeDot"
         android:layout_width="10dp"
         android:layout_height="10dp"

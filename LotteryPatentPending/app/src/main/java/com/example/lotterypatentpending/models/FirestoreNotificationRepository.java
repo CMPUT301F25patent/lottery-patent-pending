@@ -126,5 +126,24 @@ public class FirestoreNotificationRepository implements NotificationRepository {
                 });
     }
 
+    @Override
+    public CompletableFuture<String> createForUser(String userId, Notification n) {
+        CompletableFuture<String> f = new CompletableFuture<>();
+
+        db.collection("users")
+                .document(userId)
+                .collection("notifications")
+                .add(n)
+                .addOnSuccessListener(ref -> {
+                    String id = ref.getId();
+                    n.setId(ref.getId());
+                    f.complete(ref.getId());
+                })
+                .addOnFailureListener(f::completeExceptionally);
+
+        return f;
+    }
+
+
 }
 

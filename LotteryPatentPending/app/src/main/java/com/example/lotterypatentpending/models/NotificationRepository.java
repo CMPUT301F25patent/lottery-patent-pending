@@ -31,6 +31,10 @@ public interface NotificationRepository {
      * Fetch all notifications for a user, newest first.
      */
     CompletableFuture<List<Notification>> getForUser(String userId);
+    /**
+     * Create a notification for a single user and return the new document id.
+     */
+    CompletableFuture<String> createForUser(String userId, Notification notification);
 
     /**
      * Observe unread count for a user. Call {@link ListenerRegistration#remove()}

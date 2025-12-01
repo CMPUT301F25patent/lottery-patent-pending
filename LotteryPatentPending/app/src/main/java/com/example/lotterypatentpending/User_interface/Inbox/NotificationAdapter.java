@@ -65,7 +65,6 @@ public class NotificationAdapter extends ListAdapter<Notification, NotificationA
                 new SimpleDateFormat("MMM d, HH:mm", Locale.getDefault()).format(n.getCreatedAt());
         h.meta.setText(n.getCategory() + " • " + ts);
 
-        // ===== READ / UNREAD UI =====
         if (n.isRead()) {
             h.title.setTextColor(Color.parseColor("#B0B0B0"));
             h.body.setTextColor(Color.parseColor("#A6A6A6"));
@@ -84,16 +83,8 @@ public class NotificationAdapter extends ListAdapter<Notification, NotificationA
             h.readBadge.setVisibility(View.GONE);
         }
 
-        // ===== CLICK =====
         h.itemView.setOnClickListener(v -> {
             onClick.open(n);
-
-            // Show full message dialog
-            new AlertDialog.Builder(v.getContext())
-                    .setTitle(n.getTitle())
-                    .setMessage(n.getBody())
-                    .setPositiveButton("Close", null)
-                    .show();
         });
     }
 }

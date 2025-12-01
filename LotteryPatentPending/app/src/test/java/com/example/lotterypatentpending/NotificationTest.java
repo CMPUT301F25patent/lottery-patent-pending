@@ -56,12 +56,12 @@ public class NotificationTest {
 
     @Test
     public void testEqualsAndHashCodeBasedOnId() {
-        Notification a = new Notification("u","e","o","t","b", Notification.Category.WIN);
-        Notification b = new Notification("u","e","o","t","b", Notification.Category.WIN);
+        Notification a = new Notification("u","e","o","t","b", Notification.Category.LOTTERY_WIN);
+        Notification b = new Notification("u","e","o","t","b", Notification.Category.LOTTERY_WIN);
         a.setId("X");
         b.setId("X");
 
-        Notification c = new Notification("u","e","o","t","b", Notification.Category.WIN);
+        Notification c = new Notification("u","e","o","t","b", Notification.Category.LOTTERY_WIN);
         c.setId("Y");
 
         assertEquals(a, b);
