@@ -39,7 +39,7 @@ android {
 
     testOptions {
         unitTests.all {
-            it.useJUnitPlatform()
+            it.useJUnit()
         }
     }
 }
@@ -58,8 +58,7 @@ dependencies {
     implementation(libs.androidx.junit)
 
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.0")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.11.0")
+    testImplementation("junit:junit:4.13.2")
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
 
@@ -82,4 +81,10 @@ dependencies {
     implementation("com.google.android.gms:play-services-maps:18.1.0")
     implementation("com.google.android.gms:play-services-location:21.1.0")
 
+    // mocks
+    testImplementation("org.mockito:mockito-core:5.20.0")
+    testImplementation("org.mockito:mockito-junit-jupiter:5.20.0")
+
+    // roboelectric
+    testImplementation("org.robolectric:robolectric:4.16")
 }

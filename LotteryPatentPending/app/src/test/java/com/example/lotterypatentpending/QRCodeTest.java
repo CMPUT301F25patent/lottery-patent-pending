@@ -1,8 +1,8 @@
 package com.example.lotterypatentpending;
 
 
-import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.Test;
+import static org.junit.Assert.*;
 import com.example.lotterypatentpending.models.QRCode;
 
 

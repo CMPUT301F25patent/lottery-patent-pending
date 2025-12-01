@@ -375,15 +375,7 @@ public class Event {
             return;
         }
 
-        // Count how many spots are already taken
-        int alreadyIn = 0;
-        for (Pair<User, WaitingListState> entry : waitingList.getList()) {
-            WaitingListState s = entry.second;
-            if (s == WaitingListState.SELECTED || s == WaitingListState.ACCEPTED) {
-                alreadyIn++;
-            }
-        }
-
+        int alreadyIn = getTakenSpotsCount();
         int remainingSpots = capacity - alreadyIn;
         if (remainingSpots <= 0) {
             return;
@@ -419,6 +411,51 @@ public class Event {
         }
 
         return WaitingListState.NOT_IN;
+    }
+
+    /**
+     * @return number of entrants who have ACCEPTED the event.
+     */
+    public int getAcceptedCount() {
+        if (waitingList == null || waitingList.getList() == null) {
+            return 0;
+        }
+
+        int count = 0;
+        for (Pair<User, WaitingListState> entry : waitingList.getList()) {
+            if (entry != null && entry.second == WaitingListState.ACCEPTED) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    /**
+     * @return number of entrants who currently occupy a spot:
+     *         SELECTED (pending response) or ACCEPTED.
+     */
+    public int getTakenSpotsCount() {
+        if (waitingList == null || waitingList.getList() == null) {
+            return 0;
+        }
+
+        int count = 0;
+        for (Pair<User, WaitingListState> entry : waitingList.getList()) {
+            if (entry == null) continue;
+            WaitingListState s = entry.second;
+            if (s == WaitingListState.SELECTED || s == WaitingListState.ACCEPTED) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    /**
+     * @return how many spots are left given the event capacity and current
+     *         SELECTED + ACCEPTED entrants.
+     */
+    public int getRemainingCapacity() {
+        return capacity - getTakenSpotsCount();
     }
 
 

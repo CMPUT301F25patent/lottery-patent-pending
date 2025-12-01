@@ -15,6 +15,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.util.Pair;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
@@ -30,6 +31,20 @@ import com.example.lotterypatentpending.viewModels.EventViewModel;
 import com.example.lotterypatentpending.viewModels.UserEventRepository;
 import com.example.lotterypatentpending.helpers.DateTimeFormatHelper;
 
+import android.graphics.Bitmap;
+
+
+/**
+ * Fragment that displays the details of a selected Event.
+ * <p>
+ * Observes an Event object from EventViewModel and updates the UI accordingly.
+ * Provides functionality for generating QR codes, toggling geolocation requirement,
+ * and navigating back or home.
+ * </p>
+ *
+ * @author
+ * @contributor
+ */
 public class OrganizerEventViewFragment extends Fragment {
 
     private TextView eventTitle, eventDescr, eventLocation, eventDate, eventRegStart, eventRegEnd, maxEntrants, waitListCap, eventTag;
@@ -70,9 +85,86 @@ public class OrganizerEventViewFragment extends Fragment {
         viewMapBtn = v.findViewById(R.id.viewMapBtn);
         posterImage = v.findViewById(R.id.eventImage);
 
-        eventViewModel.getEvent().observe(getViewLifecycleOwner(), event -> {
-            if(event == null) return;
+
+        EventViewModel viewModel = new ViewModelProvider(requireActivity()).get(EventViewModel.class);
+        viewModel.getEvent().observe(getViewLifecycleOwner(), event -> {
+            if (event == null) return;
+
+            eventTitle.setText(event.getTitle());
+            eventDescr.setText(event.getDescription());
             currentEvent = event;
+
+            // ----- 1) Capacity usage: ACCEPTED / CAPACITY -----
+            int capacity = event.getCapacity();
+            int acceptedCount = 0;
+            int wlCap = event.getWaitingListCapacity();
+            int currentWLSize = 0;
+
+            if (event.getWaitingList() != null &&
+                    event.getWaitingList().getList() != null) {
+
+                for (Pair<User, WaitingListState> entry : event.getWaitingList().getList()) {
+                    if (entry == null) continue;
+
+                    currentWLSize++;  // everyone in the list counts towards size
+
+                    if (entry.second == WaitingListState.ACCEPTED) {
+                        acceptedCount++;
+                    }
+                }
+            }
+
+            String maxEntrantsText = acceptedCount + " / " + capacity;
+
+            // ----- 2) Waiting list usage: WL_SIZE / WL_CAP -----
+            String waitListText = "";
+            if (wlCap == -1) {
+                // unlimited waiting list → show "size / N/A"
+                waitListText += currentWLSize + " / N/A" ;
+            } else {
+                waitListText += currentWLSize + " / " + wlCap;
+            }
+
+            // ----- 3) Other fields (same as before) -----
+            String locationText = "";
+            String dateText = "";
+            String regStartText = "";
+            String regEndText = "";
+            String tagText = "" + event.getTag();
+
+            String location = event.getLocation();
+
+            if (location == null || location.isEmpty()) {
+                locationText += "TBD";
+            } else {
+                locationText += location;
+            }
+
+            if (event.getDate() == null) {
+                dateText += "TBD";
+            } else {
+                dateText += DateTimeFormatHelper.formatTimestamp(event.getDate());
+            }
+
+            if (event.getRegStartDate() == null) {
+                regStartText += "TBD";
+            } else {
+                regStartText += DateTimeFormatHelper.formatTimestamp(event.getRegStartDate());
+            }
+
+            if (event.getRegEndDate() == null) {
+                regEndText += "TBD";
+            } else {
+                regEndText += DateTimeFormatHelper.formatTimestamp(event.getRegEndDate());
+            }
+
+            eventLocation.setText(locationText);
+            eventDate.setText(dateText);
+            eventRegStart.setText(regStartText);
+            eventRegEnd.setText(regEndText);
+            maxEntrants.setText(maxEntrantsText);
+            waitListCap.setText(waitListText);
+            eventTag.setText(tagText);
             eventId = event.getId();
             eventTitle.setText(event.getTitle());
             eventDescr.setText(event.getDescription());

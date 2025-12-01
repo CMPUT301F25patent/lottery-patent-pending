@@ -1,12 +1,12 @@
 package com.example.lotterypatentpending;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.Assert.*;
 
 import com.example.lotterypatentpending.models.Event;
 import com.example.lotterypatentpending.models.User;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Unit tests for the Event class.
@@ -16,15 +16,15 @@ public class EventModelTest {
     private User organizer;
     private Event event;
 
-    @BeforeEach
-    void setup() {
+    @Before
+    public void setup() {
         organizer = new User("uid123", "Test Organizer", "email@email.com", "5789223354");
         event = new Event("Test Event", "Description", 10, organizer);
     }
 
     // ---------- Constructor ----------
     @Test
-    void testConstructorInitializesFields() {
+    public void testConstructorInitializesFields() {
         assertNotNull(event.getId());
         assertEquals("Test Event", event.getTitle());
         assertEquals("Description", event.getDescription());
@@ -37,7 +37,7 @@ public class EventModelTest {
 
     // ---------- Getters & Setters ----------
     @Test
-    void testSettersAndGetters() {
+    public void testSettersAndGetters() {
         event.setTitle("Updated Title");
         event.setDescription("Updated Desc");
         event.setCapacity(20);
@@ -51,7 +51,7 @@ public class EventModelTest {
 
     // ---------- Waiting List ----------
     @Test
-    void testAddToWaitingList() {
+    public void testAddToWaitingList() {
         User u = new User("id1", "User 1", "u1@example.com", "556");
         event.addToWaitingList(u);
 
@@ -59,7 +59,7 @@ public class EventModelTest {
     }
 
     @Test
-    void testRemoveFromWaitingList() {
+    public void testRemoveFromWaitingList() {
         User u = new User("id1", "User 1", "u1@example.com", "5222");
         event.addToWaitingList(u);
         event.removeFromWaitingList(u);
@@ -68,7 +68,7 @@ public class EventModelTest {
     }
 
     @Test
-    void testJoinEventUnlimitedWaitingList() {
+    public void testJoinEventUnlimitedWaitingList() {
         event.setWaitingListCapacity(-1); // unlimited
         User u = new User("id1", "User 1", "u1@example.com", "57921");
 
@@ -78,7 +78,7 @@ public class EventModelTest {
     }
 
     @Test
-    void testJoinEventRespectsCapacity() {
+    public void testJoinEventRespectsCapacity() {
         event.setWaitingListCapacity(1);
 
         User u1 = new User("1", "A", "a@a.com", "432233");
@@ -92,7 +92,7 @@ public class EventModelTest {
     }
 
     @Test
-    void testJoinEventDoesNotDuplicateUsers() {
+    public void testJoinEventDoesNotDuplicateUsers() {
         event.setWaitingListCapacity(5);
         User u = new User("id1", "User 1", "u1@example.com", "fsffdsfd");
 
@@ -104,7 +104,7 @@ public class EventModelTest {
 
     // ---------- Geo Location ----------
     @Test
-    void testGeolocationRequiredFlag() {
+    public void testGeolocationRequiredFlag() {
         assertFalse(event.isGeolocationRequired());
 
         event.setGeolocationRequired(true);
@@ -114,7 +114,7 @@ public class EventModelTest {
 
     // ---------- Activity State ----------
     @Test
-    void testIsActive_NoDates() {
+    public void testIsActive_NoDates() {
         event.setRegStartDate(null);
         event.setRegEndDate(null);
 
