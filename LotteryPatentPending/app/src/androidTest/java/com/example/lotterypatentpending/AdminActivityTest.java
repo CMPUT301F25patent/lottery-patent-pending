@@ -53,7 +53,6 @@ public class AdminActivityTest {
         );
     }
 
-    // 2. Use the Intent in the ActivityScenarioRule
     @Rule
     public ActivityScenarioRule<AdminActivity> activityRule =
             new ActivityScenarioRule<>(getAdminActivityIntent());
@@ -70,8 +69,6 @@ public class AdminActivityTest {
 
     @After
     public void tearDown() {
-        // Reset the user in the repository after each test if necessary
-        // to prevent test leakage, though the setup should handle this.
     }
 
 
@@ -99,9 +96,6 @@ public class AdminActivityTest {
         intended(hasComponent(AdminOrganizersActivity.class.getName()));
     }
 
-    // NOTE: Fragment navigation (Browse Users/Events/Images) doesn't use Intents,
-    // but we can verify fragment containers become visible.
-
     @Test
     public void testAdminUser_CanNavigateToAdminUsersFragment() {
         // GIVEN: Admin user is active
@@ -113,7 +107,6 @@ public class AdminActivityTest {
         // THEN: Admin content layout is hidden and fragment container is visible
         onView(withId(R.id.adminContent)).check(matches(not(isDisplayed())));
         onView(withId(R.id.adminFragmentContainer)).check(matches(isDisplayed()));
-        // Note: A more robust test would check if AdminUsersFragment is in the container.
     }
 
     @Test
@@ -127,10 +120,7 @@ public class AdminActivityTest {
         // THEN: Admin content layout is hidden and fragment container is visible
         onView(withId(R.id.adminContent)).check(matches(not(isDisplayed())));
         onView(withId(R.id.adminFragmentContainer)).check(matches(isDisplayed()));
-        // Note: A more robust test would check if AdminImagesFragment is in the container.
     }
-
-    // --- Normal User Tests (Access Denied) ---
 
     @Test
     public void testNormalUser_CannotLaunchNotificationAdminActivity() {
@@ -142,8 +132,6 @@ public class AdminActivityTest {
 
         // THEN: NotificationAdminActivity is NOT launched, and a Toast is shown
         intended(hasComponent(NotificationAdminActivity.class.getName()), times(0));
-        // Note: Espresso doesn't directly assert Toast messages, but we rely on the
-        // side effect of the Intent not being launched and the code path executing showAdminDeniedToast().
     }
 
     @Test
