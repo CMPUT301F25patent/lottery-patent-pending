@@ -329,38 +329,82 @@ public class OrganizerViewWaitingListFragment extends Fragment {
 
     /**
      * Handles the logic for cancelling a selected entrant.
+     * Only entrants in the SELECTED state can be cancelled.
+     *
      * @param entrant The User/WaitingListState pair to cancel.
      */
     private void cancelEntrantHelper(Pair<User, WaitingListState> entrant) {
         if (entrant == null) return;
 
+        // Hard safety check: only allow cancel if they are SELECTED
+        if (entrant.second != WaitingListState.SELECTED) {
+            Toast.makeText(
+                    requireContext(),
+                    "You can only cancel entrants who are in the SELECTED state.",
+                    Toast.LENGTH_SHORT
+            ).show();
+            return;
+        }
+
         loading.show();
 
         User userToCancel = entrant.first;
-        String eventId = evm.getEvent().getValue().getId();
+        Event currentEvent = evm.getEvent().getValue();
 
-        int index = waitingList.indexOf(entrant);
+        if (currentEvent == null || currentEvent.getWaitingList() == null) {
+            Toast.makeText(requireContext(), "Event or waiting list not available.", Toast.LENGTH_SHORT).show();
+            if (loading != null) loading.hide();
+            return;
+        }
+
+        String eventId = currentEvent.getId();
+
+        // Find the entry in the master waitingList by userId
+        int index = -1;
+        for (int i = 0; i < waitingList.size(); i++) {
+            Pair<User, WaitingListState> p = waitingList.get(i);
+            if (p.first != null
+                    && p.first.getUserId() != null
+                    && p.first.getUserId().equals(userToCancel.getUserId())) {
+                index = i;
+                break;
+            }
+        }
 
         if (index != -1) {
+            // Double-check the current state from list too
+            WaitingListState currentState = waitingList.get(index).second;
+            if (currentState != WaitingListState.SELECTED) {
+                Toast.makeText(
+                        requireContext(),
+                        "You can only cancel entrants who are in the SELECTED state.",
+                        Toast.LENGTH_SHORT
+                ).show();
+                if (loading != null) loading.hide();
+                return;
+            }
+
+            // Update local waitingList entry to CANCELED
             Pair<User, WaitingListState> updatedEntrant =
                     new Pair<>(userToCancel, WaitingListState.CANCELED);
             waitingList.set(index, updatedEntrant);
 
+            // Clear selection
             selectedPosition = -1;
             selectedEntrant = null;
             cancelEntrantBtn.setEnabled(false);
             wLAdapter.setSelectedPosition(selectedPosition);
 
-            Event currentEvent = evm.getEvent().getValue();
+            // Push updated waiting list into Event + ViewModel
             currentEvent.getWaitingList().setList(this.waitingList);
             evm.setEvent(currentEvent);
 
+            // Update state in Firestore
             fm.updateEntrantState(eventId, userToCancel.getUserId(), WaitingListState.CANCELED);
 
-            // Rebuild visible list based on current filters
+            // Rebuild visible list based on filters
             applyUserFilter();
 
-            // hide loading after we're done updating UI
             if (loading != null) loading.hide();
 
         } else {
