@@ -425,7 +425,7 @@ public class AttendeeEventDetailsFragment extends Fragment {
         cancelButton.setVisibility(View.GONE);
         leaveButton.setVisibility(View.GONE);
 
-        if (!currentEvent.isOpenForReg()) {
+        if (!currentEvent.isOpenForReg() && !currentEvent.containsUser(currentUser)) {
             userStateView.setText("Registration is not open/closed");
             return;
         }
@@ -492,10 +492,6 @@ public class AttendeeEventDetailsFragment extends Fragment {
             case CANCELED:
                 userStateView.setText("You have canceled the event, you no longer can rejoin the event");
 
-                rejoinButton.setVisibility(View.VISIBLE);
-                rejoinButton.setOnClickListener(v -> {
-                    rejoinEventHelper();
-                });
                 cancelButton.setVisibility(View.VISIBLE);
                 cancelButton.setOnClickListener(v -> {
                     cancelEventHelper();
@@ -534,7 +530,7 @@ public class AttendeeEventDetailsFragment extends Fragment {
         // 2) Update waiting list text: "X / Y" (or "N/A" if unlimited)
         String waitListValue;
         if (wlCap == -1) {
-            waitListValue = currentSize + " / N/A";
+            waitListValue =  "N/A";
         } else {
             waitListValue = currentSize + " / " + wlCap;
         }
