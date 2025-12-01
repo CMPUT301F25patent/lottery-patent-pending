@@ -57,9 +57,10 @@ dependencies {
     implementation(libs.navigation.ui)
     implementation(libs.androidx.junit)
 
-
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation(libs.ext.junit)
+    implementation(libs.androidx.espresso.core)
+    implementation(libs.androidx.espresso.intents)
     androidTestImplementation(libs.espresso.core)
 
     // Firebase via BoM
