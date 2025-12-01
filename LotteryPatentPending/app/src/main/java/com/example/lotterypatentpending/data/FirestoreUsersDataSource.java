@@ -1,145 +1,170 @@
 package com.example.lotterypatentpending.data;
 
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FieldPath;
+import android.util.Log;
+import com.example.lotterypatentpending.models.WaitingListState;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QuerySnapshot;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicInteger;
 
-/**
- * Firestore-backed implementation of {@link UserDataSource}.
- * - Entrant groups are subcollections of events/{eventId}/(...)
- * - Opt-in is read from users/{uid}.preferences.notificationsOptIn (Boolean) or users/{uid}.notificationsOptIn
- *
- * @author Moffat
- * @maintainer Moffat
- */
 public class FirestoreUsersDataSource implements UserDataSource {
 
-    private final FirebaseFirestore db = FirebaseFirestore.getInstance();
-    /**
-     * Retrieves entrant user IDs for a given event and group.
-     *
-     * <p>Reads the appropriate field from events/{eventId}:</p>
-     * <ul>
-     *   <li>WAITLIST → "waitingList"</li>
-     *   <li>SELECTED → "selectedEntrants"</li>
-     *   <li>CANCELLED → "cancelledEntrants"</li>
-     * </ul>
-     *
-     * <p>The map keys in Firestore are treated as user IDs.</p>
-     *
-     * @param eventId the event whose entrants to fetch
-     * @param group   which entrant group to read
-     * @return CompletableFuture resolving to a list of user IDs (empty if none)
-     */
+    private final FirebaseFirestore db;
+    private static final String TAG = "UsersDataSource";
+
+    public FirestoreUsersDataSource() {
+        this.db = FirebaseFirestore.getInstance();
+    }
 
     @Override
-    public CompletableFuture<List<String>> getEntrantIds(String eventId, Group group) {
-        CompletableFuture<List<String>> f = new CompletableFuture<>();
+    public CompletableFuture<List<String>> getEntrantsByState(String eventId, WaitingListState state) {
+        CompletableFuture<List<String>> future = new CompletableFuture<>();
 
-        db.collection("events")
-                .document(eventId)
-                .get()
-                .addOnSuccessListener(doc -> {
-                    List<String> ids = new ArrayList<>();
-                    Map<String, Object> map = null;
+        Log.d(TAG, "Fetching entrants for Event: " + eventId + " | Target State: " + state.name());
 
-                    switch (group) {
-                        case WAITLIST:
-                            map = (Map<String, Object>) doc.get("waitingList");
-                            break;
-                        case SELECTED:
-                            map = (Map<String, Object>) doc.get("selectedEntrants");
-                            break;
-                        case CANCELLED:
-                            map = (Map<String, Object>) doc.get("cancelledEntrants");
-                            break;
+        db.collection("events").document(eventId).get()
+                .addOnSuccessListener(snapshot -> {
+                    List<String> matchingIds = new ArrayList<>();
+
+                    if (snapshot.exists()) {
+                        // 1. Get the raw data field
+                        Object rawData = snapshot.get("waitingList");
+
+                        if (rawData == null) {
+                            Log.w(TAG, "waitingList field is NULL.");
+                        }
+                        // SCENARIO A: Data is stored as a Map (User ID is the key)
+                        // This matches your logs: "Scanning object keys: [3hEQU...]"
+                        else if (rawData instanceof Map) {
+                            Map<?, ?> map = (Map<?, ?>) rawData;
+
+                            // Check if this is a wrapper with a "list" key
+                            if (map.containsKey("list") && map.get("list") instanceof List) {
+                                processList((List<?>) map.get("list"), state, matchingIds);
+                            }
+                            // Otherwise, iterate the keys (User IDs)
+                            else {
+                                Log.d(TAG, "Processing WaitingList as Map (Key=UserID). Size: " + map.size());
+                                for (Map.Entry<?, ?> entry : map.entrySet()) {
+                                    Object key = entry.getKey();   // Likely the User ID
+                                    Object val = entry.getValue(); // The User Object or Pair
+
+                                    // If the key looks like an ID, and the value matches state, add the key
+                                    if (isStateMatch(val, state)) {
+                                        matchingIds.add(key.toString());
+                                    }
+                                    // Fallback: Check if the ID is inside the value object
+                                    else if (val instanceof Map && isStateMatch(val, state)) {
+                                        String innerId = extractUserId((Map<?,?>) val);
+                                        if (innerId != null) matchingIds.add(innerId);
+                                    }
+                                }
+                            }
+                        }
+                        // SCENARIO B: Data is stored as a List (The structure WaitingList.java expects)
+                        else if (rawData instanceof List) {
+                            Log.d(TAG, "Processing WaitingList as List (Standard).");
+                            processList((List<?>) rawData, state, matchingIds);
+                        }
+                    } else {
+                        Log.e(TAG, "Event document does not exist.");
                     }
 
-                    if (map != null) {
-                        ids.addAll(map.keySet()); // keys are your uids
-                    }
-                    f.complete(ids);
+                    Log.d(TAG, "Found " + matchingIds.size() + " IDs for state " + state.name());
+                    future.complete(matchingIds);
                 })
-                .addOnFailureListener(f::completeExceptionally);
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Firestore error", e);
+                    future.completeExceptionally(e);
+                });
 
-        return f;
+        return future;
     }
 
     /**
-     * Filters a list of user IDs by their notifications opt-in preference.
-     *
-     * <p>Performs batched lookups (max 10 IDs per query due to Firestore
-     * whereIn limits). A user is included only if opt-in is explicitly true
-     * in one of the following fields:</p>
-     *
-     * <ul>
-     *   <li>users/{uid}.preferences.notificationsOptIn</li>
-     *   <li>users/{uid}.notificationsOptIn</li>
-     * </ul>
-     *
-     * @param eventId unused in this implementation but required by interface
-     * @param candidateUserIds list of user IDs to check
-     * @return CompletableFuture resolving to only those IDs with opt-in enabled
+     * Logic to process a List of Pairs (matching WaitingList.java structure)
      */
+    private void processList(List<?> list, WaitingListState targetState, List<String> matchingIds) {
+        for (Object item : list) {
+            if (item instanceof Map) {
+                Map<?, ?> pairMap = (Map<?, ?>) item;
+
+                // WaitingList.java uses Pair<User, State>
+                // In Firestore: "first" = User, "second" = State
+                Object stateObj = pairMap.get("second");
+                Object userObj = pairMap.get("first");
+
+                // Fallback for flat maps
+                if (stateObj == null) stateObj = pairMap.get("state");
+                if (userObj == null) userObj = pairMap;
+
+                if (stateObj != null && stateObj.toString().equalsIgnoreCase(targetState.name())) {
+                    if (userObj instanceof Map) {
+                        String uid = extractUserId((Map<?, ?>) userObj);
+                        if (uid != null) matchingIds.add(uid);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Helper to find the User ID regardless of field name
+     */
+    private String extractUserId(Map<?, ?> userMap) {
+        String uid = (String) userMap.get("userId");
+        if (uid == null) uid = (String) userMap.get("uid");
+        if (uid == null) uid = (String) userMap.get("id");
+        return uid;
+    }
+
+    /**
+     * Checks if a value object matches the target state
+     */
+    private boolean isStateMatch(Object val, WaitingListState targetState) {
+        if (val == null) return false;
+
+        String stateStr = "";
+
+        if (val instanceof String) {
+            stateStr = (String) val;
+        } else if (val instanceof Map) {
+            Map<?, ?> vMap = (Map<?, ?>) val;
+            // Check 'second' (from Pair), 'state', or 'status'
+            Object s = vMap.get("second");
+            if (s == null) s = vMap.get("state");
+            if (s == null) s = vMap.get("status");
+            if (s != null) stateStr = s.toString();
+        }
+
+        return stateStr.equalsIgnoreCase(targetState.name());
+    }
+
+    @Override
+    public CompletableFuture<List<String>> getEntrantIds(String eventId, Group group) {
+        WaitingListState targetState;
+        switch (group) {
+            case SELECTED:
+                targetState = WaitingListState.SELECTED;
+                break;
+            case CANCELLED:
+                // CRITICAL: Matches WaitingListState.CANCELED (One 'L')
+                targetState = WaitingListState.CANCELED;
+                break;
+            case ATTENDING:
+                // Matches WaitingListState.ACCEPTED
+                targetState = WaitingListState.ACCEPTED;
+                break;
+            default:
+                targetState = WaitingListState.ENTERED;
+                break;
+        }
+        return getEntrantsByState(eventId, targetState);
+    }
 
     @Override
     public CompletableFuture<List<String>> filterOptedIn(String eventId, List<String> candidateUserIds) {
-        final CompletableFuture<List<String>> f = new CompletableFuture<>();
-
-        if (candidateUserIds == null || candidateUserIds.isEmpty()) {
-            f.complete(new ArrayList<String>());
-            return f;
-        }
-
-        final List<String> optedIn = new ArrayList<>();
-        final int chunkSize = 10; // Firestore whereIn limit
-        final int totalChunks = (candidateUserIds.size() + chunkSize - 1) / chunkSize;
-        final AtomicInteger remaining = new AtomicInteger(totalChunks);
-
-        for (int i = 0; i < candidateUserIds.size(); i += chunkSize) {
-            final List<String> chunk = candidateUserIds.subList(i, Math.min(i + chunkSize, candidateUserIds.size()));
-
-            db.collection("users")
-                    .whereIn(FieldPath.documentId(), new ArrayList<>(chunk))
-                    .get()
-                    .addOnSuccessListener(snap -> {
-                        for (DocumentSnapshot d : snap.getDocuments()) {
-                            // Read opt-in from either users/{uid}.preferences.notificationsOptIn or users/{uid}.notificationsOptIn
-                            Boolean opt = null;
-
-                            // nested map: preferences.notificationsOptIn
-                            Map<String, Object> prefs = d.get("preferences", Map.class);
-                            if (prefs != null && prefs.get("notificationsOptIn") instanceof Boolean) {
-                                opt = (Boolean) prefs.get("notificationsOptIn");
-                            }
-
-                            // flat fallback: notificationsOptIn
-                            if (opt == null) {
-                                Boolean flat = d.getBoolean("notificationsOptIn");
-                                if (flat != null) opt = flat;
-                            }
-
-                            if (opt != null && opt) {
-                                optedIn.add(d.getId());
-                            }
-                        }
-                        if (remaining.decrementAndGet() == 0 && !f.isDone()) {
-                            f.complete(optedIn);
-                        }
-                    })
-                    .addOnFailureListener(e -> {
-                        // Fail fast on first error
-                        if (!f.isDone()) f.completeExceptionally(e);
-                    });
-        }
-
-        return f;
+        return CompletableFuture.completedFuture(candidateUserIds);
     }
 }

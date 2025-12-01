@@ -1,13 +1,13 @@
 package com.example.lotterypatentpending;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import com.example.lotterypatentpending.models.AdminLogPresenter;
 import com.example.lotterypatentpending.models.NotificationLog;
 import com.example.lotterypatentpending.models.Notification.Category;
 
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.Calendar;

@@ -186,7 +186,7 @@ public class AttendeeActivity extends AppCompatActivity {
         NotificationWatcher.getInstance().startUnreadBadge(
                 userId,
                 count -> {
-                    int c = (count == null) ? 0 : count;
+                    long c = (count == null) ? 0 : count;
                     runOnUiThread(() -> {
                         boolean hasUnread = c > 0;
                         badge.setVisibility(hasUnread ? View.VISIBLE : View.GONE);

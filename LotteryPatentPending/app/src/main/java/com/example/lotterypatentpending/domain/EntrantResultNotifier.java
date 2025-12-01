@@ -35,9 +35,9 @@ public class EntrantResultNotifier {
      * @return CompletableFuture completing when both the write and log are done
      */
     public CompletableFuture<Void> notifyWin(String org,String evt,String uid,String title,String body){
-        var n=new Notification(uid, evt, org, title, body, Notification.Category.WIN);
+        var n=new Notification(uid, evt, org, title, body, Notification.Category.LOTTERY_WIN);
         return notifications.add(n).thenCompose(v -> logs.record(new NotificationLog(
-                org, evt, Notification.Category.WIN, List.of(uid), shorten(body))));
+                org, evt, Notification.Category.LOTTERY_WIN, List.of(uid), shorten(body))));
     }
     /**
      * Sends a LOSE notification to a single user and writes an audit log entry.
@@ -53,9 +53,9 @@ public class EntrantResultNotifier {
      * @return CompletableFuture completing when both the write and log finish
      */
     public CompletableFuture<Void> notifyLose(String org,String evt,String uid,String title,String body){
-        var n=new Notification(uid, evt, org, title, body, Notification.Category.LOSE);
+        var n=new Notification(uid, evt, org, title, body, Notification.Category.LOTTERY_LOSE);
         return notifications.add(n).thenCompose(v -> logs.record(new NotificationLog(
-                org, evt, Notification.Category.LOSE, List.of(uid), shorten(body))));
+                org, evt, Notification.Category.LOTTERY_LOSE, List.of(uid), shorten(body))));
     }
     /**
      * Truncates a body string to at most 100 characters for log previews.

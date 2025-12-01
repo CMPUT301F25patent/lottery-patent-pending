@@ -6,69 +6,53 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
-
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.core.util.Pair;
-
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.PopupWindow;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.util.Pair;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-
 import com.example.lotterypatentpending.adapters.WaitingListAdapter;
 import com.example.lotterypatentpending.helpers.LoadingOverlay;
 import com.example.lotterypatentpending.models.Event;
 import com.example.lotterypatentpending.models.EventState;
 import com.example.lotterypatentpending.models.FirebaseManager;
+import com.example.lotterypatentpending.models.LotterySystem;
 import com.example.lotterypatentpending.models.User;
 import com.example.lotterypatentpending.models.WaitingList;
 import com.example.lotterypatentpending.models.WaitingListState;
 import com.example.lotterypatentpending.viewModels.EventViewModel;
+import com.example.lotterypatentpending.viewModels.OrganizerViewModel;
+import com.example.lotterypatentpending.viewModels.UserEventRepository;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.switchmaterial.SwitchMaterial;
-
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.List;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 
-
-/**
- * Fragment that displays the waiting list for the currently selected event.
- * Allows the organizer to view entrants, select an entrant, and cancel their
- * participation. The list is sourced from Firestore and kept in sync with the
- * shared EventViewModel.
- */
 public class OrganizerViewWaitingListFragment extends Fragment {
     private MaterialButton sampleBtn;
-    private Button cancelEntrantBtn;
-    private Button exportBtn;
+    private Button cancelEntrantBtn, exportBtn;
     private EventViewModel evm;
+    private OrganizerViewModel organizerViewModel;
     private FirebaseManager fm;
     private LoadingOverlay loading;
     private ArrayList<Pair<User, WaitingListState>> waitingList = new ArrayList<>();
-    // Filtered list actually shown in ListView
     private ArrayList<Pair<User, WaitingListState>> visibleWaitingList = new ArrayList<>();
-
     private ListView waitinglistView;
     private WaitingListAdapter wLAdapter;
     private int selectedPosition = -1;
     private Pair<User, WaitingListState> selectedEntrant = null;
-
     private String csvContent;
-
-
-    // Popup + filter state
     private PopupWindow userFilterPopup;
     private boolean filterAllUsers = true;
     private boolean filterEnrolledUsers = false;
@@ -77,327 +61,244 @@ public class OrganizerViewWaitingListFragment extends Fragment {
 
     private final ActivityResultLauncher<Intent> createCsvFileLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
-
-                if (result.getResultCode() == Activity.RESULT_OK) {
-                    if (result.getData() != null) {
-                        Uri uri = result.getData().getData();
-                        writeToFile(uri, csvContent);
-                    }
+                if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                    Uri uri = result.getData().getData();
+                    writeToFile(uri, csvContent);
                 }
             });
 
-    /**
-     * Inflates the waiting list layout for the organizer.
-     *
-     * @return The root view for this fragment.
-     */
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.organizer_fragment_view_event_waiting_list, container, false);
-
     }
-    /**
-     * Initializes UI components, sets up the adapter, selection handling,
-     * and loads the waiting list from Firestore.
-     *
-     * @param v The fragment root view.
-     * @param savedInstanceState Previously saved state, if any.
-     */
+
     @Override
     public void onViewCreated(@NonNull View v, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(v, savedInstanceState);
+        evm = new ViewModelProvider(requireActivity()).get(EventViewModel.class);
+        organizerViewModel = new ViewModelProvider(requireActivity()).get(OrganizerViewModel.class);
+        fm = FirebaseManager.getInstance();
 
         waitinglistView = v.findViewById(R.id.waitingList);
         sampleBtn = v.findViewById(R.id.btn_lottery_sample);
         exportBtn = v.findViewById(R.id.organizer_event_waiting_list_button_export);
         cancelEntrantBtn = v.findViewById(R.id.organizer_event_waiting_list_button_cancel);
-        fm = FirebaseManager.getInstance();
 
-        // Attach loading screen
         ViewGroup root = v.findViewById(R.id.organizer_events_root);
-        View overlayView = getLayoutInflater().inflate(
-                R.layout.loading_screen,
-                root,
-                false);
-
-        // Add overlayView to root
+        View overlayView = getLayoutInflater().inflate(R.layout.loading_screen, root, false);
         root.addView(overlayView);
-
-        //set the filter
-        View filterIcon = v.findViewById(R.id.filterDropDown);
-        if (filterIcon != null) {
-            filterIcon.setOnClickListener(view -> showUserFilterPopup(view));
-        }
-
-        // Adds loading screen controller
         loading = new LoadingOverlay(overlayView, null);
-        evm = new ViewModelProvider(requireActivity()).get(EventViewModel.class);
-        String viewed_event_id = evm.getEvent().getValue().getId();
 
-        waitingList = evm.getEvent().getValue().getWaitingList().getList();
+        View filterIcon = v.findViewById(R.id.filterDropDown);
+        if (filterIcon != null) filterIcon.setOnClickListener(this::showUserFilterPopup);
+
+        if (evm.getEvent().getValue() != null) {
+            waitingList = evm.getEvent().getValue().getWaitingList().getList();
+        }
         wLAdapter = new WaitingListAdapter(requireContext(), visibleWaitingList);
         waitinglistView.setAdapter(wLAdapter);
 
-        // listeners
         waitinglistView.setOnItemClickListener((parent, view, position, id) -> {
             if (selectedPosition == position) {
-                // Deselect
                 selectedPosition = -1;
                 selectedEntrant = null;
                 cancelEntrantBtn.setEnabled(false);
             } else {
-                // Select new entrant
                 selectedPosition = position;
                 selectedEntrant = visibleWaitingList.get(position);
-
-                WaitingListState state = selectedEntrant.second;
-
-                if (state == WaitingListState.SELECTED) {
-                    // Only SELECTED (not yet accepted) can be cancelled
+                if (selectedEntrant.second == WaitingListState.SELECTED) {
                     cancelEntrantBtn.setEnabled(true);
                 } else {
                     cancelEntrantBtn.setEnabled(false);
-                    Toast.makeText(
-                            requireContext(),
-                            "You can only cancel entrants who are SELECTED and have not accepted yet.",
-                            Toast.LENGTH_SHORT
-                    ).show();
+                    Toast.makeText(requireContext(), "Can only cancel SELECTED users.", Toast.LENGTH_SHORT).show();
                 }
             }
-
             wLAdapter.setSelectedPosition(selectedPosition);
         });
 
         cancelEntrantBtn.setOnClickListener(v1 -> {
-            if (selectedEntrant != null) {
-                cancelEntrantHelper(selectedEntrant);
-            } else {
-                Toast.makeText(requireContext(), "Please select an entrant to cancel.", Toast.LENGTH_SHORT).show();
-            }
+            if (selectedEntrant != null) cancelEntrantHelper(selectedEntrant);
+            else Toast.makeText(requireContext(), "Select an entrant first.", Toast.LENGTH_SHORT).show();
         });
 
-        exportBtn.setOnClickListener(v2 -> {
-            exportAcceptedToCSV();
-        });
-        // init the button as disabled
+        exportBtn.setOnClickListener(v2 -> exportAcceptedToCSV());
         cancelEntrantBtn.setEnabled(false);
-//        exportBtn.setEnabled(false);
 
-
-
-        // this runs whenever the event object in the viewmodel changes
         evm.getEvent().observe(getViewLifecycleOwner(), event -> {
-
             if (event != null) {
                 updateButtons(event);
                 fetchWaitingList(event.getId());
             }
         });
-
     }
 
-    private void exportAcceptedToCSV(){
-        WaitingList wl = evm.getEvent().getValue().getWaitingList();
-
-        String csv_string = wl.exportAcceptedEntrantsToCsv();
-        saveCsv(csv_string, "accepted_attendees.csv");
-    }
-
-    private void saveCsv(String csvContent, String title) {
-        this.csvContent = csvContent;
-
-        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
-        intent.setType("text/csv");
-        intent.putExtra(Intent.EXTRA_TITLE, title);
-        createCsvFileLauncher.launch(intent);
-
-    }
-
-    private void writeToFile(Uri uri, String csv) {
-        try (OutputStream os = requireContext()
-                .getContentResolver()
-                .openOutputStream(uri)) {
-
-            os.write(csv.getBytes(StandardCharsets.UTF_8));
-            os.flush();
-            Log.d("Export To CSV", "Successfully exported attendants to csv");
-            Toast.makeText(requireContext(), "CSV exported!", Toast.LENGTH_SHORT).show();
-
-        } catch (Exception e) {
-            Log.e("Export To CSV", "Failed to export attendants to csv", e);
-            Toast.makeText(requireContext(), "Error exporting CSV", Toast.LENGTH_SHORT).show();
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (evm != null && evm.getEvent().getValue() != null) {
+            fetchWaitingList(evm.getEvent().getValue().getId());
         }
     }
 
-
-    private void fetchWaitingList(String eventId) {
+    private void sampleBtnHelper(Event event) {
+        if (event == null) return;
         loading.show();
-        fm.getEventWaitingList(eventId, new FirebaseManager.FirebaseCallback<ArrayList<Pair<User, WaitingListState>>>() {
+        String eventId = event.getId();
+        String eventTitle = event.getTitle();
+        User organizer = UserEventRepository.getInstance().getUser().getValue();
+        if (organizer == null) {
+            loading.hide();
+            Toast.makeText(getContext(), "Organizer not authenticated", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        String organizerId = organizer.getUserId();
+
+        fm.getWaitingListPairs(eventId, new FirebaseManager.FirebaseCallback<List<Pair<User, WaitingListState>>>() {
             @Override
-            public void onSuccess(ArrayList<Pair<User, WaitingListState>> result) {
-                waitingList.clear();
-                if (result != null) {
-                    waitingList.addAll(result);
+            public void onSuccess(List<Pair<User, WaitingListState>> pairs) {
+                if (pairs == null || pairs.isEmpty()) {
+                    loading.hide();
+                    Toast.makeText(getContext(), "No entrants to draw.", Toast.LENGTH_SHORT).show();
+                    return;
                 }
+                LotterySystem.lotteryDraw(pairs, event.getCapacity());
+                event.setEventState(EventState.SELECTED_ENTRANTS);
+                evm.setEvent(event);
 
-                applyUserFilter();  // build visibleWaitingList from waitingList
-
-                if (waitingList.isEmpty()){
-                    Toast.makeText(requireContext(), "No entrants yet", Toast.LENGTH_SHORT).show();
-                }
-
-                if (loading != null) loading.hide();
+                fm.updateWaitingListStates(eventId, pairs, new FirebaseManager.FirebaseCallback<Void>() {
+                    @Override
+                    public void onSuccess(Void unused) {
+                        fm.addOrUpdateEvent(eventId, event);
+                        List<String> allIds = new ArrayList<>();
+                        List<String> winIds = new ArrayList<>();
+                        for (Pair<User, WaitingListState> p : pairs) {
+                            if (p.first != null && p.first.getUserId() != null) {
+                                allIds.add(p.first.getUserId());
+                                if (p.second == WaitingListState.SELECTED) winIds.add(p.first.getUserId());
+                            }
+                        }
+                        organizerViewModel.publishResults(organizerId, eventId, eventTitle, allIds, winIds)
+                                .addOnSuccessListener(v -> {
+                                    loading.hide();
+                                    Toast.makeText(getContext(), "Draw complete! Notifications sent.", Toast.LENGTH_LONG).show();
+                                    fetchWaitingList(eventId);
+                                })
+                                .addOnFailureListener(e -> {
+                                    loading.hide();
+                                    Toast.makeText(getContext(), "Notifications failed.", Toast.LENGTH_LONG).show();
+                                    fetchWaitingList(eventId);
+                                });
+                    }
+                    @Override
+                    public void onFailure(Exception e) {
+                        loading.hide();
+                        Toast.makeText(getContext(), "Failed to save results.", Toast.LENGTH_SHORT).show();
+                    }
+                });
             }
-
             @Override
             public void onFailure(Exception e) {
-                Log.e("FirebaseManager", "Error getting waiting list: " + e.getMessage());
-                if (loading != null) loading.hide();
+                loading.hide();
+                Toast.makeText(getContext(), "Failed to load entrants.", Toast.LENGTH_SHORT).show();
             }
         });
-    }
-    /**
-     * Refreshes the ListView by notifying the adapter of data changes.
-     */
-    private void refreshListFromVisible(){
-        wLAdapter.notifyDataSetChanged();
     }
 
     private void updateButtons(Event currentEvent) {
         sampleBtn.setVisibility(View.GONE);
         exportBtn.setVisibility(View.GONE);
-        Log.i("OrganizerViewWaitingListFragment", "Event state: " + currentEvent.getEventState());
-
         EventState state = currentEvent.getEventState();
-
-        // rule:
-        // - CLOSED_FOR_REG  → you can draw winners
-        // - SELECTED_ENTRANTS → you can re-draw (e.g., after declines)
         if (state == EventState.CLOSED_FOR_REG || state == EventState.SELECTED_ENTRANTS) {
             sampleBtn.setVisibility(View.VISIBLE);
-
-            // Optional: change label depending on state
-            if (state == EventState.CLOSED_FOR_REG) {
-                sampleBtn.setText("Draw Attendants");
-            } else {
-                sampleBtn.setText("Redraw Attendants");
-            }
-
+            sampleBtn.setText(state == EventState.CLOSED_FOR_REG ? "Draw Attendants" : "Redraw Attendants");
             sampleBtn.setOnClickListener(v -> sampleBtnHelper(currentEvent));
         }
-
-        // did a switch for all event states in case we wanted to add stuff here later as well
-        switch (state) {
-            case NOT_STARTED:
-                break;
-
-            case OPEN_FOR_REG:
-                // nothing special for now, but kept in case we add logic later
-                break;
-
-            case SELECTED_ENTRANTS:
-            case CONFIRMED_ENTRANTS:
-            case CANCELLED:
-            case CLOSED_FOR_REG:
-            case ENDED:
-                exportBtn.setVisibility(View.VISIBLE);
-                exportBtn.setOnClickListener(v2 -> {
-                    exportAcceptedToCSV();
-                });
-                break;
+        if (state == EventState.SELECTED_ENTRANTS || state == EventState.CONFIRMED_ENTRANTS || state == EventState.CANCELLED || state == EventState.CLOSED_FOR_REG || state == EventState.ENDED) {
+            exportBtn.setVisibility(View.VISIBLE);
         }
     }
 
-    private void sampleBtnHelper(Event event) {
-        loading.show();
-
-        // Unified lottery logic in Event
-        event.runLottery();
-
-        // Update ViewModel so the rest of the UI sees the new state
-        evm.setEvent(event);
-
-        // Push updated event (state + waiting list) to Firestore
-        fm.addOrUpdateEvent(event.getId(), event);
-
-        // Reload the waiting list so the adapter sees updated states
-        fetchWaitingList(event.getId());
-
-        if (loading != null) loading.hide();
+    private void exportAcceptedToCSV(){
+        WaitingList wl = evm.getEvent().getValue().getWaitingList();
+        saveCsv(wl.exportAcceptedEntrantsToCsv(), "accepted_attendees.csv");
     }
 
-    /**
-     * Handles the logic for cancelling a selected entrant.
-     * @param entrant The User/WaitingListState pair to cancel.
-     */
+    private void saveCsv(String csvContent, String title) {
+        this.csvContent = csvContent;
+        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+        intent.setType("text/csv");
+        intent.putExtra(Intent.EXTRA_TITLE, title);
+        createCsvFileLauncher.launch(intent);
+    }
+
+    private void writeToFile(Uri uri, String csv) {
+        try (OutputStream os = requireContext().getContentResolver().openOutputStream(uri)) {
+            os.write(csv.getBytes(StandardCharsets.UTF_8));
+            os.flush();
+            Toast.makeText(requireContext(), "CSV exported!", Toast.LENGTH_SHORT).show();
+        } catch (Exception e) {
+            Toast.makeText(requireContext(), "Error exporting CSV", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void fetchWaitingList(String eventId) {
+        fm.getEventWaitingList(eventId, new FirebaseManager.FirebaseCallback<ArrayList<Pair<User, WaitingListState>>>() {
+            @Override
+            public void onSuccess(ArrayList<Pair<User, WaitingListState>> result) {
+                waitingList.clear();
+                if (result != null) waitingList.addAll(result);
+                applyUserFilter();
+                if (loading != null) loading.hide();
+            }
+            @Override
+            public void onFailure(Exception e) {
+                if (loading != null) loading.hide();
+            }
+        });
+    }
+
     private void cancelEntrantHelper(Pair<User, WaitingListState> entrant) {
         if (entrant == null) return;
-
         loading.show();
-
         User userToCancel = entrant.first;
         String eventId = evm.getEvent().getValue().getId();
-
         int index = waitingList.indexOf(entrant);
-
         if (index != -1) {
-            Pair<User, WaitingListState> updatedEntrant =
-                    new Pair<>(userToCancel, WaitingListState.CANCELED);
-            waitingList.set(index, updatedEntrant);
-
+            waitingList.set(index, new Pair<>(userToCancel, WaitingListState.CANCELED));
             selectedPosition = -1;
             selectedEntrant = null;
             cancelEntrantBtn.setEnabled(false);
             wLAdapter.setSelectedPosition(selectedPosition);
-
             Event currentEvent = evm.getEvent().getValue();
             currentEvent.getWaitingList().setList(this.waitingList);
             evm.setEvent(currentEvent);
-
             fm.updateEntrantState(eventId, userToCancel.getUserId(), WaitingListState.CANCELED);
-
-            // Rebuild visible list based on current filters
             applyUserFilter();
-
-            // hide loading after we're done updating UI
-            if (loading != null) loading.hide();
-
+            loading.hide();
         } else {
-            Toast.makeText(requireContext(), "Entrant not found in list.", Toast.LENGTH_SHORT).show();
-            if (loading != null) loading.hide();
+            loading.hide();
         }
     }
 
-
     private void applyUserFilter() {
         visibleWaitingList.clear();
-
         boolean useStateFilter = filterAllUsers;
-
         for (Pair<User, WaitingListState> entry : waitingList) {
             if (useStateFilter) {
                 visibleWaitingList.add(entry);
                 continue;
             }
-
             WaitingListState state = entry.second;
             boolean include = false;
-
-            if (filterEnrolledUsers && state == WaitingListState.ACCEPTED)  include = true;
+            if (filterEnrolledUsers && state == WaitingListState.ACCEPTED) include = true;
             if (filterSelectedUsers && state == WaitingListState.SELECTED) include = true;
             if (filterCanceledUsers && state == WaitingListState.CANCELED) include = true;
-
-            if (include) {
-                visibleWaitingList.add(entry);
-            }
+            if (include) visibleWaitingList.add(entry);
         }
-
-        //  clear selection because the list changed
         selectedPosition = -1;
         selectedEntrant = null;
         cancelEntrantBtn.setEnabled(false);
-        wLAdapter.setSelectedPosition(selectedPosition);  // this also calls notifyDataSetChanged()
+        wLAdapter.setSelectedPosition(selectedPosition);
     }
 
     private void showUserFilterPopup(View anchor) {
@@ -405,136 +306,45 @@ public class OrganizerViewWaitingListFragment extends Fragment {
             userFilterPopup.dismiss();
             return;
         }
-
-        View content = LayoutInflater.from(requireContext())
-                .inflate(R.layout.organizer_user_popup_filter, null, false);
-
-        userFilterPopup = new PopupWindow(
-                content,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                true
-        );
-
+        View content = LayoutInflater.from(requireContext()).inflate(R.layout.organizer_user_popup_filter, null, false);
+        userFilterPopup = new PopupWindow(content, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, true);
         userFilterPopup.setOutsideTouchable(true);
         userFilterPopup.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-
         SwitchMaterial swAll = content.findViewById(R.id.browseAllUsers);
         SwitchMaterial swEnrolled = content.findViewById(R.id.browseEnrolledUsers);
         SwitchMaterial swSelected = content.findViewById(R.id.browseSelectedUsers);
         SwitchMaterial swCanceled = content.findViewById(R.id.browseCanceledUsers);
-
-        // restore current state
         swAll.setChecked(filterAllUsers);
         swEnrolled.setChecked(filterEnrolledUsers);
         swSelected.setChecked(filterSelectedUsers);
         swCanceled.setChecked(filterCanceledUsers);
-
-        // guard to avoid infinite loops when we call setChecked() inside listeners
         final boolean[] updating = {false};
-
-        // helper to enforce "at least one is ON"
         Runnable ensureAtLeastOneOn = () -> {
-            if (!swAll.isChecked()
-                    && !swEnrolled.isChecked()
-                    && !swSelected.isChecked()
-                    && !swCanceled.isChecked()) {
-                // nothing is on → force All back on
+            if (!swAll.isChecked() && !swEnrolled.isChecked() && !swSelected.isChecked() && !swCanceled.isChecked()) {
                 swAll.setChecked(true);
             }
         };
-
-        // All: when ON, turn others OFF
         swAll.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (updating[0]) return;
             updating[0] = true;
-
             filterAllUsers = isChecked;
-
             if (isChecked) {
-                filterEnrolledUsers = false;
-                filterSelectedUsers = false;
-                filterCanceledUsers = false;
-
-                swEnrolled.setChecked(false);
-                swSelected.setChecked(false);
-                swCanceled.setChecked(false);
-            } else {
-                // if user turns All off, make sure at least one other stays on
-                ensureAtLeastOneOn.run();
-            }
-
+                filterEnrolledUsers = filterSelectedUsers = filterCanceledUsers = false;
+                swEnrolled.setChecked(false); swSelected.setChecked(false); swCanceled.setChecked(false);
+            } else ensureAtLeastOneOn.run();
             updating[0] = false;
         });
-
-        // Enrolled = ACCEPTED
-        swEnrolled.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            if (updating[0]) return;
-            updating[0] = true;
-
-            filterEnrolledUsers = isChecked;
-            if (isChecked) {
-                filterAllUsers = false;
-                swAll.setChecked(false);
-            } else {
-                ensureAtLeastOneOn.run();
-            }
-
-            updating[0] = false;
-        });
-
-        // Selected = SELECTED
-        swSelected.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            if (updating[0]) return;
-            updating[0] = true;
-
-            filterSelectedUsers = isChecked;
-            if (isChecked) {
-                filterAllUsers = false;
-                swAll.setChecked(false);
-            } else {
-                ensureAtLeastOneOn.run();
-            }
-
-            updating[0] = false;
-        });
-
-        // Canceled = CANCELED
-        swCanceled.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            if (updating[0]) return;
-            updating[0] = true;
-
-            filterCanceledUsers = isChecked;
-            if (isChecked) {
-                filterAllUsers = false;
-                swAll.setChecked(false);
-            } else {
-                ensureAtLeastOneOn.run();
-            }
-
-            updating[0] = false;
-        });
-
+        swEnrolled.setOnCheckedChangeListener((v, c) -> { if(!updating[0]) { updating[0]=true; filterEnrolledUsers=c; if(c) { filterAllUsers=false; swAll.setChecked(false);} else ensureAtLeastOneOn.run(); updating[0]=false; }});
+        swSelected.setOnCheckedChangeListener((v, c) -> { if(!updating[0]) { updating[0]=true; filterSelectedUsers=c; if(c) { filterAllUsers=false; swAll.setChecked(false);} else ensureAtLeastOneOn.run(); updating[0]=false; }});
+        swCanceled.setOnCheckedChangeListener((v, c) -> { if(!updating[0]) { updating[0]=true; filterCanceledUsers=c; if(c) { filterAllUsers=false; swAll.setChecked(false);} else ensureAtLeastOneOn.run(); updating[0]=false; }});
         userFilterPopup.setOnDismissListener(() -> {
-            // sync final state into fragment fields
-            filterAllUsers      = swAll.isChecked();
-            filterEnrolledUsers  = swEnrolled.isChecked();
+            filterAllUsers = swAll.isChecked();
+            filterEnrolledUsers = swEnrolled.isChecked();
             filterSelectedUsers = swSelected.isChecked();
             filterCanceledUsers = swCanceled.isChecked();
-
-            // just in case, enforce the rule again
-            if (!filterAllUsers
-                    && !filterEnrolledUsers
-                    && !filterSelectedUsers
-                    && !filterCanceledUsers) {
-                filterAllUsers = true;
-            }
-
+            if (!filterAllUsers && !filterEnrolledUsers && !filterSelectedUsers && !filterCanceledUsers) filterAllUsers = true;
             applyUserFilter();
         });
-
         userFilterPopup.showAsDropDown(anchor, 0, 0);
     }
-
-
 }

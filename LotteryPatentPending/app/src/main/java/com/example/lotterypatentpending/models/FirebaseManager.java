@@ -33,6 +33,7 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
 import androidx.core.util.Pair;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -55,6 +56,10 @@ import com.google.firebase.firestore.SetOptions;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.firestore.Blob;
+import com.example.lotterypatentpending.models.User;
+import com.example.lotterypatentpending.models.WaitingListState;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 
 import java.io.ByteArrayOutputStream;
@@ -1238,5 +1243,113 @@ public class FirebaseManager {
         void onSuccess(T result);
         void onFailure(Exception e);
     }
+    /**
+     * Load waiting list for an event as pairs of (User-with-id-only, WaitingListState).
+     * We only need userId for the lottery + notifications.
+     */
+    public void getWaitingListPairs(String eventId,
+                                    FirebaseCallback<List<Pair<User, WaitingListState>>> cb) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("events").document(eventId)
+                .get()
+                .addOnSuccessListener(doc -> {
+                    List<Pair<User, WaitingListState>> out = new ArrayList<>();
+
+                    if (!doc.exists()) {
+                        cb.onSuccess(out);
+                        return;
+                    }
+
+                    // waitingList is stored as a map<userId, { state: "ENTERED", ... }>
+                    Object raw = doc.get("waitingList");
+                    if (!(raw instanceof Map)) {
+                        cb.onSuccess(out);
+                        return;
+                    }
+
+                    Map<String, Object> wlMap = (Map<String, Object>) raw;
+                    for (Map.Entry<String, Object> entry : wlMap.entrySet()) {
+                        String userId = entry.getKey();
+                        Object val = entry.getValue();
+                        if (!(val instanceof Map)) continue;
+
+                        Map<String, Object> stateMap = (Map<String, Object>) val;
+                        Object stateStrObj = stateMap.get("state");
+                        if (!(stateStrObj instanceof String)) continue;
+
+                        String stateStr = (String) stateStrObj;
+                        WaitingListState state;
+                        try {
+                            state = WaitingListState.valueOf(stateStr);
+                        } catch (IllegalArgumentException ex) {
+                            // unknown state, skip
+                            continue;
+                        }
+
+                        User u = new User();
+                        u.setUserId(userId);   // we only care about UID here
+                        out.add(new Pair<>(u, state));
+                    }
+
+                    cb.onSuccess(out);
+                })
+                .addOnFailureListener(cb::onFailure);
+    }
+
+    /**
+     * Persist new waiting list states back to the event document.
+     * We write them to events/{eventId}.waitingList.{uid}.state
+     */
+    // FirebaseManager or a dedicated EventRepository
+    public void updateWaitingListStates(
+            @NonNull String eventId,
+            @NonNull List<Pair<User, WaitingListState>> pairs,
+            @NonNull FirebaseCallback<Void> cb
+    ) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        DocumentReference eventRef = db.collection("events").document(eventId);
+
+        Map<String, Object> waitingList = new HashMap<>();
+
+        for (Pair<User, WaitingListState> p : pairs) {
+            User u = p.first;
+            WaitingListState state = p.second;
+
+            if (u == null || u.getUserId() == null) continue;
+
+            Map<String, Object> entry = new HashMap<>();
+            entry.put("state", state.name());   // e.g. "SELECTED", "NOT_SELECTED"
+
+            waitingList.put(u.getUserId(), entry);
+        }
+
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("waitingList", waitingList);
+
+        eventRef.update(updates)
+                .addOnSuccessListener(unused -> cb.onSuccess(null))
+                .addOnFailureListener(cb::onFailure);
+    }
+
+    public void updateWaitingListStates(
+            @NonNull String eventId,
+            @NonNull String userId,
+            @NonNull WaitingListState state,
+            @NonNull FirebaseCallback<Void> cb
+    ) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        DocumentReference eventRef = db.collection("events").document(eventId);
+
+        // Dot-notation update for nested map:
+        // waitingList -> { uid -> { state: "..." } }
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("waitingList." + userId + ".state", state.name());
+
+        eventRef.update(updates)
+                .addOnSuccessListener(unused -> cb.onSuccess(null))
+                .addOnFailureListener(cb::onFailure);
+    }
+
+
 }
 
