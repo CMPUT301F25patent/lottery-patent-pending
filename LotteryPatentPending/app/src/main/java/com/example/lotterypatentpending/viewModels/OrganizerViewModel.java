@@ -11,14 +11,11 @@ import java.util.List;
 
 /**
  * Thin ViewModel wrapper exposing "publish results" as a single Task.
- *
- * <p>UI (Activity/Fragment) observes the task to disable buttons, show toasts,
- * and handle errors without holding domain logic.
+ * Coordinates notifying winners and losers via LotteryResultNotifier.
  *
  * @author Moffat
  * @maintainer Moffat
  */
-
 public class OrganizerViewModel extends ViewModel {
 
     private final LotteryResultNotifier resultNotifier = new LotteryResultNotifier();
@@ -33,10 +30,12 @@ public class OrganizerViewModel extends ViewModel {
                                      @NonNull List<String> allEntrantIds,
                                      @NonNull List<String> winnerIds) {
 
-        Task<Void> tWin  = resultNotifier.notifyWinners(
+        // Notify Winners (Category.LOTTERY_WIN)
+        Task<Void> tWin = resultNotifier.notifyWinners(
                 organizerId, eventId, eventTitle, winnerIds
         );
 
+        // Notify Losers (Category.LOTTERY_LOSE)
         Task<Void> tLose = resultNotifier.notifyLosersFromPool(
                 organizerId, eventId, eventTitle, allEntrantIds, winnerIds
         );
