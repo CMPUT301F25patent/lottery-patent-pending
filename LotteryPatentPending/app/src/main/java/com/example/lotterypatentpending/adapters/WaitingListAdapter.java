@@ -90,4 +90,8 @@ public class WaitingListAdapter extends ArrayAdapter<Pair<User, WaitingListState
         notifyDataSetChanged();
     }
 
+    public int getSelectedPosition() {
+        return this.selectedPos;
+    }
+
 }
