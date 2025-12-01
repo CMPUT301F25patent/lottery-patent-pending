@@ -152,7 +152,7 @@ public class OrganizerEventViewFragment extends Fragment {
             String waitListText = "";
             if (wlCap == -1) {
                 // unlimited waiting list → show "size / N/A"
-                waitListText += currentWLSize + " / N/A" ;
+                waitListText += "N/A" ;
             } else {
                 waitListText += currentWLSize + " / " + wlCap;
             }
