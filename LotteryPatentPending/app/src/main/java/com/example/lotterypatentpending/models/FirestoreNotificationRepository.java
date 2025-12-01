@@ -136,7 +136,7 @@ public class FirestoreNotificationRepository implements NotificationRepository {
                 .add(n)
                 .addOnSuccessListener(ref -> {
                     String id = ref.getId();
-                    n.setId(ref.getId());              // if your model has setId(...)
+                    n.setId(ref.getId());
                     f.complete(ref.getId());
                 })
                 .addOnFailureListener(f::completeExceptionally);
