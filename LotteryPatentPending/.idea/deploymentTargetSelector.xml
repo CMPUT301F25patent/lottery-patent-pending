@@ -16,7 +16,7 @@
       <SelectionState runConfigName="AdminActivityTest">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="testAdminUser_CanNavigateToAdminUsersFragment()">
+      <SelectionState runConfigName="AttendeeActivityTest">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
     </selectionStates>
