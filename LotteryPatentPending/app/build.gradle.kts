@@ -42,6 +42,13 @@ android {
             it.useJUnit()
         }
     }
+
+    packaging {
+        resources {
+            excludes += "META-INF/LICENSE.md"
+            excludes += "META-INF/LICENSE-notice.md"
+        }
+    }
 }
 
 
@@ -56,6 +63,7 @@ dependencies {
     implementation(libs.navigation.fragment)
     implementation(libs.navigation.ui)
     implementation(libs.androidx.junit)
+    implementation(libs.androidx.fragment.testing)
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation(libs.ext.junit)
@@ -85,6 +93,11 @@ dependencies {
     // mocks
     testImplementation("org.mockito:mockito-core:5.20.0")
     testImplementation("org.mockito:mockito-junit-jupiter:5.20.0")
+    androidTestImplementation("org.mockito:mockito-core:5.20.0")
+    androidTestImplementation("org.mockito:mockito-android:5.20.0")
+    androidTestImplementation("org.mockito:mockito-junit-jupiter:5.20.0")
+
+
 
     // roboelectric
     testImplementation("org.robolectric:robolectric:4.16")
