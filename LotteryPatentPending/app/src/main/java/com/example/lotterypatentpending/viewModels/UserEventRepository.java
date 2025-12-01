@@ -40,7 +40,7 @@ public class UserEventRepository {
      * @param user
      */
     public void setUser(User user) {
-        this.user.setValue(user);
+        this.user.postValue(user);
     }
 
     /**
@@ -56,7 +56,7 @@ public class UserEventRepository {
      * @param event
      */
     public void setEvent(Event event) {
-        this.event.setValue(event);
+        this.event.postValue(event);
     }
 
     /**
