@@ -19,7 +19,7 @@ public class NotificationLogTest {
         log = new NotificationLog(
                 "org_1",
                 "event_9",
-                Notification.Category.WIN,
+                Notification.Category.LOTTERY_WIN,
                 Arrays.asList("u1","u2","u3"),
                 "Congrats on being selected!"
         );
@@ -29,7 +29,7 @@ public class NotificationLogTest {
     public void testCtrAndGetters() {
         assertEquals("org_1", log.getOrganizerId());
         assertEquals("event_9", log.getEventId());
-        assertEquals(Notification.Category.WIN, log.getCategory());
+        assertEquals(Notification.Category.LOTTERY_WIN, log.getCategory());
         assertEquals(3, log.getRecipientIds().size());
         assertTrue(log.getPayloadPreview().startsWith("Congrats"));
     }
