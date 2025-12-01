@@ -98,6 +98,10 @@ public class FirebaseManager {
         return instance;
     }
 
+    public static void setInstance(FirebaseManager mockFirebaseManager) {
+        instance = mockFirebaseManager;
+    }
+
     // generic user methods, will be updated when user class is looked at
 
     //utilizes user  class, add update, delete and get methods added
