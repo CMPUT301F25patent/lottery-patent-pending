@@ -285,18 +285,38 @@ public class MainActivity extends AppCompatActivity implements MainRegisterNewUs
         }
     }
 
-    @RequiresPermission(allOf = {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION})
+    @RequiresPermission(allOf = {
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+    })
     private void getUserLocation() {
-        User currentUser  = UserEventRepository.getInstance().getUser().getValue();
-
         FusedLocationProviderClient client =
                 LocationServices.getFusedLocationProviderClient(this);
 
         client.getLastLocation()
                 .addOnSuccessListener(location -> {
-                    if (location != null) {
-                        fm.saveLocationToFirestore(currentUser.getUserId(), location.getLatitude(), location.getLongitude());
+                    if (location == null) {
+                        Log.w("MainActivity", "Location is null, not saving.");
+                        return;
                     }
-                });
+
+                    User currentUser = UserEventRepository.getInstance()
+                            .getUser()
+                            .getValue();
+
+                    if (currentUser == null || currentUser.getUserId() == null) {
+                        Log.w("MainActivity", "User is null or missing ID, not saving location.");
+                        return;
+                    }
+
+                    fm.saveLocationToFirestore(
+                            currentUser.getUserId(),
+                            location.getLatitude(),
+                            location.getLongitude()
+                    );
+                })
+                .addOnFailureListener(e ->
+                        Log.e("MainActivity", "Failed to get location", e)
+                );
     }
 }
