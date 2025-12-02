@@ -1,8 +1,6 @@
 package com.example.lotterypatentpending;
 
-import android.Manifest;
-import android.annotation.SuppressLint;
-import android.content.pm.PackageManager;
+
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -17,22 +15,19 @@ import android.graphics.BitmapFactory;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import androidx.annotation.RequiresPermission;
-import androidx.core.content.ContextCompat;
+
 import androidx.core.util.Pair;
 import androidx.fragment.app.Fragment;
 
 import com.example.lotterypatentpending.helpers.DateTimeFormatHelper;
 import com.example.lotterypatentpending.models.Event;
-import com.example.lotterypatentpending.models.EventState;
+
 import com.example.lotterypatentpending.models.FirebaseManager;
 import com.example.lotterypatentpending.models.User;
 import com.example.lotterypatentpending.viewModels.UserEventRepository;
 import com.example.lotterypatentpending.models.WaitingListState;
 import com.google.firebase.firestore.ListenerRegistration;
 
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationServices;
 
 /**
  * Fragment that displays details for a selected event from the attendee view.
@@ -491,11 +486,6 @@ public class AttendeeEventDetailsFragment extends Fragment {
 
             case CANCELED:
                 userStateView.setText("You have canceled the event, you no longer can rejoin the event");
-
-                cancelButton.setVisibility(View.VISIBLE);
-                cancelButton.setOnClickListener(v -> {
-                    cancelEventHelper();
-                });
                 break;
 
             case NOT_IN:
