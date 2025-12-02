@@ -60,6 +60,7 @@ public class LotterySystem {
             WaitingListState newState =
                     (k < toSelect) ? WaitingListState.SELECTED : WaitingListState.NOT_SELECTED;
 
+
             list.set(idx, new Pair<>(oldPair.first, newState));
         }
     }

@@ -202,7 +202,17 @@ public class OrganizerViewWaitingListFragment extends Fragment {
                 }
 
                 // 1) Run lottery on the pairs
-                LotterySystem.lotteryDraw(pairs, event.getCapacity());
+
+                int remainingSpots = computeRemainingSpots(event, pairs);
+                if (remainingSpots <= 0) {
+                    loading.hide();
+                    Toast.makeText(getContext(),
+                            "No remaining spots to draw. Capacity already filled.",
+                            Toast.LENGTH_LONG).show();
+                    return;
+                }
+
+                LotterySystem.lotteryDraw(pairs, remainingSpots);
 
                 // 2) Update local event state
                 event.setEventState(EventState.SELECTED_ENTRANTS);
@@ -212,7 +222,6 @@ public class OrganizerViewWaitingListFragment extends Fragment {
                 fm.updateWaitingListStates(eventId, pairs, new FirebaseManager.FirebaseCallback<Void>() {
                     @Override
                     public void onSuccess(Void unused) {
-                        // ✅ ONLY update the eventState field; don't overwrite waitingList
                         fm.updateEventField("eventState", event, event.getEventState());
 
                         List<String> allIds = new ArrayList<>();
@@ -253,6 +262,23 @@ public class OrganizerViewWaitingListFragment extends Fragment {
                 Toast.makeText(getContext(), "Failed to load entrants.", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private int computeRemainingSpots(Event event, List<Pair<User, WaitingListState>> pairs) {
+        if (event == null || pairs == null) return 0;
+
+        int capacity = event.getCapacity();
+        int taken = 0;
+
+        for (Pair<User, WaitingListState> p : pairs) {
+            WaitingListState s = p.second;
+            if (s == WaitingListState.SELECTED || s == WaitingListState.ACCEPTED) {
+                taken++;
+            }
+        }
+
+        int remaining = capacity - taken;
+        return Math.max(remaining, 0);
     }
 
     private void updateButtons(Event currentEvent) {
