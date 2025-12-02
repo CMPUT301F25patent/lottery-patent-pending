@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,6 +33,8 @@ import com.example.lotterypatentpending.viewModels.OrganizerViewModel;
 import com.example.lotterypatentpending.viewModels.UserEventRepository;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.switchmaterial.SwitchMaterial;
+import com.google.firebase.firestore.ListenerRegistration;
+
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -58,6 +61,8 @@ public class OrganizerViewWaitingListFragment extends Fragment {
     private boolean filterEnrolledUsers = false;
     private boolean filterSelectedUsers = false;
     private boolean filterCanceledUsers = false;
+
+    private ListenerRegistration eventLiveRegistration;
 
     private final ActivityResultLauncher<Intent> createCsvFileLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
@@ -92,11 +97,16 @@ public class OrganizerViewWaitingListFragment extends Fragment {
         View filterIcon = v.findViewById(R.id.filterDropDown);
         if (filterIcon != null) filterIcon.setOnClickListener(this::showUserFilterPopup);
 
-        if (evm.getEvent().getValue() != null) {
-            waitingList = evm.getEvent().getValue().getWaitingList().getList();
+        // init waitingList & adapter
+        if (evm.getEvent().getValue() != null &&
+                evm.getEvent().getValue().getWaitingList() != null &&
+                evm.getEvent().getValue().getWaitingList().getList() != null) {
+            waitingList.clear();
+            waitingList.addAll(evm.getEvent().getValue().getWaitingList().getList());
         }
         wLAdapter = new WaitingListAdapter(requireContext(), visibleWaitingList);
         waitinglistView.setAdapter(wLAdapter);
+        applyUserFilter();
 
         waitinglistView.setOnItemClickListener((parent, view, position, id) -> {
             if (selectedPosition == position) {
@@ -125,9 +135,29 @@ public class OrganizerViewWaitingListFragment extends Fragment {
         cancelEntrantBtn.setEnabled(false);
 
         evm.getEvent().observe(getViewLifecycleOwner(), event -> {
-            if (event != null) {
-                updateButtons(event);
-                fetchWaitingList(event.getId());
+            if (event == null) return;
+
+            updateButtons(event);
+            fetchWaitingList(event.getId());
+
+            // attach live Firestore listener once
+            if (eventLiveRegistration == null) {
+                eventLiveRegistration = fm.getEventLive(
+                        event.getId(),
+                        new FirebaseManager.FirebaseCallback<Event>() {
+                            @Override
+                            public void onSuccess(Event liveEvent) {
+                                if (liveEvent == null) return;
+                                // push live event into ViewModel -> retriggers this observer
+                                evm.setEvent(liveEvent);
+                            }
+
+                            @Override
+                            public void onFailure(Exception e) {
+                                Log.e("OrganizerWaitingList", "getEventLive failed", e);
+                            }
+                        }
+                );
             }
         });
     }
@@ -137,6 +167,15 @@ public class OrganizerViewWaitingListFragment extends Fragment {
         super.onResume();
         if (evm != null && evm.getEvent().getValue() != null) {
             fetchWaitingList(evm.getEvent().getValue().getId());
+        }
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (eventLiveRegistration != null) {
+            eventLiveRegistration.remove();
+            eventLiveRegistration = null;
         }
     }
 
@@ -161,22 +200,32 @@ public class OrganizerViewWaitingListFragment extends Fragment {
                     Toast.makeText(getContext(), "No entrants to draw.", Toast.LENGTH_SHORT).show();
                     return;
                 }
+
+                // 1) Run lottery on the pairs
                 LotterySystem.lotteryDraw(pairs, event.getCapacity());
+
+                // 2) Update local event state
                 event.setEventState(EventState.SELECTED_ENTRANTS);
                 evm.setEvent(event);
 
+                // 3) Push new waitingList states to Firestore
                 fm.updateWaitingListStates(eventId, pairs, new FirebaseManager.FirebaseCallback<Void>() {
                     @Override
                     public void onSuccess(Void unused) {
-                        fm.addOrUpdateEvent(eventId, event);
+                        // ✅ ONLY update the eventState field; don't overwrite waitingList
+                        fm.updateEventField("eventState", event, event.getEventState());
+
                         List<String> allIds = new ArrayList<>();
                         List<String> winIds = new ArrayList<>();
                         for (Pair<User, WaitingListState> p : pairs) {
                             if (p.first != null && p.first.getUserId() != null) {
                                 allIds.add(p.first.getUserId());
-                                if (p.second == WaitingListState.SELECTED) winIds.add(p.first.getUserId());
+                                if (p.second == WaitingListState.SELECTED) {
+                                    winIds.add(p.first.getUserId());
+                                }
                             }
                         }
+
                         organizerViewModel.publishResults(organizerId, eventId, eventTitle, allIds, winIds)
                                 .addOnSuccessListener(v -> {
                                     loading.hide();
@@ -189,6 +238,7 @@ public class OrganizerViewWaitingListFragment extends Fragment {
                                     fetchWaitingList(eventId);
                                 });
                     }
+
                     @Override
                     public void onFailure(Exception e) {
                         loading.hide();
@@ -196,6 +246,7 @@ public class OrganizerViewWaitingListFragment extends Fragment {
                     }
                 });
             }
+
             @Override
             public void onFailure(Exception e) {
                 loading.hide();
@@ -357,6 +408,7 @@ public class OrganizerViewWaitingListFragment extends Fragment {
         selectedEntrant = null;
         cancelEntrantBtn.setEnabled(false);
         wLAdapter.setSelectedPosition(selectedPosition);
+        wLAdapter.notifyDataSetChanged();
     }
 
     private void showUserFilterPopup(View anchor) {
