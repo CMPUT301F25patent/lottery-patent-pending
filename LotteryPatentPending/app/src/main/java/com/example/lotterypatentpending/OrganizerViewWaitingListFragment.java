@@ -181,9 +181,12 @@ public class OrganizerViewWaitingListFragment extends Fragment {
 
     private void sampleBtnHelper(Event event) {
         if (event == null) return;
+
         loading.show();
+
         String eventId = event.getId();
         String eventTitle = event.getTitle();
+
         User organizer = UserEventRepository.getInstance().getUser().getValue();
         if (organizer == null) {
             loading.hide();
@@ -201,32 +204,35 @@ public class OrganizerViewWaitingListFragment extends Fragment {
                     return;
                 }
 
-                // 1) Run lottery on the pairs
-
-                int remainingSpots = computeRemainingSpots(event, pairs);
-                if (remainingSpots <= 0) {
-                    loading.hide();
-                    Toast.makeText(getContext(),
-                            "No remaining spots to draw. Capacity already filled.",
-                            Toast.LENGTH_LONG).show();
-                    return;
+                // Ensure the Event has a WaitingList instance
+                if (event.getWaitingList() == null) {
+                    event.setWaitingList(new WaitingList());
                 }
 
-                LotterySystem.lotteryDraw(pairs, remainingSpots);
+                //  1) Sync Firestore state → Event.waitingList
+                event.getWaitingList().setList(new ArrayList<>(pairs));
 
-                // 2) Update local event state
-                event.setEventState(EventState.SELECTED_ENTRANTS);
+                // 2) Run the domain lottery logic (capacity-aware)
+                event.runLottery();  // uses capacity - takenSpots and sets SELECTED_ENTRANTS
+
+                // Notify other observers that the Event has changed (state + waiting list)
                 evm.setEvent(event);
 
-                // 3) Push new waitingList states to Firestore
-                fm.updateWaitingListStates(eventId, pairs, new FirebaseManager.FirebaseCallback<Void>() {
+                // Use the updated list from the Event as the single source of truth
+                List<Pair<User, WaitingListState>> updatedPairs = event.getWaitingList().getList();
+
+                //  3) Push updated user states to Firestore
+                fm.updateWaitingListStates(eventId, updatedPairs, new FirebaseManager.FirebaseCallback<Void>() {
                     @Override
                     public void onSuccess(Void unused) {
-                        fm.updateEventField("eventState", event, event.getEventState());
 
+                        //  4) Save the event (including updated waiting list + state)
+                        fm.addOrUpdateEvent(eventId, event);
+
+                        // Build ID lists for notifications from the updated data
                         List<String> allIds = new ArrayList<>();
                         List<String> winIds = new ArrayList<>();
-                        for (Pair<User, WaitingListState> p : pairs) {
+                        for (Pair<User, WaitingListState> p : updatedPairs) {
                             if (p.first != null && p.first.getUserId() != null) {
                                 allIds.add(p.first.getUserId());
                                 if (p.second == WaitingListState.SELECTED) {
@@ -239,7 +245,7 @@ public class OrganizerViewWaitingListFragment extends Fragment {
                                 .addOnSuccessListener(v -> {
                                     loading.hide();
                                     Toast.makeText(getContext(), "Draw complete! Notifications sent.", Toast.LENGTH_LONG).show();
-                                    fetchWaitingList(eventId);
+                                    fetchWaitingList(eventId);   // refresh UI from backend
                                 })
                                 .addOnFailureListener(e -> {
                                     loading.hide();
@@ -262,23 +268,6 @@ public class OrganizerViewWaitingListFragment extends Fragment {
                 Toast.makeText(getContext(), "Failed to load entrants.", Toast.LENGTH_SHORT).show();
             }
         });
-    }
-
-    private int computeRemainingSpots(Event event, List<Pair<User, WaitingListState>> pairs) {
-        if (event == null || pairs == null) return 0;
-
-        int capacity = event.getCapacity();
-        int taken = 0;
-
-        for (Pair<User, WaitingListState> p : pairs) {
-            WaitingListState s = p.second;
-            if (s == WaitingListState.SELECTED || s == WaitingListState.ACCEPTED) {
-                taken++;
-            }
-        }
-
-        int remaining = capacity - taken;
-        return Math.max(remaining, 0);
     }
 
     private void updateButtons(Event currentEvent) {
@@ -324,9 +313,22 @@ public class OrganizerViewWaitingListFragment extends Fragment {
             public void onSuccess(ArrayList<Pair<User, WaitingListState>> result) {
                 waitingList.clear();
                 if (result != null) waitingList.addAll(result);
+
+                // Keep Event's WaitingList in sync with Firestore
+                Event e = evm.getEvent().getValue();
+                if (e != null) {
+                    if (e.getWaitingList() == null) {
+                        e.setWaitingList(new WaitingList());
+                    }
+                    e.getWaitingList().setList(new ArrayList<>(waitingList));
+                    // ⚠ Don't call evm.setEvent(e) here, or you'll re-trigger the observer and
+                    // loop into fetchWaitingList() again. Just mutate in place.
+                }
+
                 applyUserFilter();
                 if (loading != null) loading.hide();
             }
+
             @Override
             public void onFailure(Exception e) {
                 if (loading != null) loading.hide();
