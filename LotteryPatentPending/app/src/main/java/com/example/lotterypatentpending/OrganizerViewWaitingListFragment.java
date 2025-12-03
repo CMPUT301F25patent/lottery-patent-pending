@@ -204,12 +204,18 @@ public class OrganizerViewWaitingListFragment extends Fragment {
                     return;
                 }
 
+                if (event.getTakenSpotsCount() != 0){
+                    loading.hide();
+                    Toast.makeText(getContext(), "Lottery is full.", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
                 // Ensure the Event has a WaitingList instance
                 if (event.getWaitingList() == null) {
                     event.setWaitingList(new WaitingList());
                 }
 
-                //  1) Sync Firestore state → Event.waitingList
+                //  1) Sync Firestore state -> Event.waitingList
                 event.getWaitingList().setList(new ArrayList<>(pairs));
 
                 // 2) Run the domain lottery logic (capacity-aware)
@@ -321,7 +327,7 @@ public class OrganizerViewWaitingListFragment extends Fragment {
                         e.setWaitingList(new WaitingList());
                     }
                     e.getWaitingList().setList(new ArrayList<>(waitingList));
-                    // ⚠ Don't call evm.setEvent(e) here, or you'll re-trigger the observer and
+                    // Don't call evm.setEvent(e) here, or you'll re-trigger the observer and
                     // loop into fetchWaitingList() again. Just mutate in place.
                 }
 
